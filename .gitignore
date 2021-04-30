@@ -1,0 +1,10 @@
+build
+dist
+*.egg-info
+saildrone*
+local_notes.txt
+ZMFR_sample.json
+scratch*
+.idea
+.run
+CDMS_insitu.parquet
