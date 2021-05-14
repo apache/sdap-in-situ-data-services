@@ -1,8 +1,6 @@
 import json
 import logging
 import os
-import uuid
-from multiprocessing import Process
 
 from flask_restx import Resource, Namespace, fields
 from flask import request
@@ -10,7 +8,7 @@ from flask import request
 from parquet_flask.io_logic.ingest_new_file import IngestNewJsonFile
 
 api = Namespace('ingest_json', description="Ingesting JSON files")
-
+LOGGER = logging.getLogger(__name__)
 
 @api.route('', methods=["put"])
 class IngestParquet(Resource):
