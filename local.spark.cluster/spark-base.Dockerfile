@@ -13,6 +13,15 @@ RUN apt-get update -y && \
     mkdir /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/logs && \
     rm spark.tgz
 
+RUN apt install vim -y
+
+COPY ./aws-java-sdk-1.7.4.jar /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/jars/
+COPY ./hadoop-aws-2.7.4.jar /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/jars/
+COPY ./spark-defaults.conf /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/conf/
+# /usr/bin/spark-3.0.0-bin-hadoop2.7/jars
+
+ENV spark_version=3.0.0
+ENV hadoop_version=2.7
 ENV SPARK_HOME /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}
 ENV SPARK_MASTER_HOST spark-master
 ENV SPARK_MASTER_PORT 7077
