@@ -9,6 +9,10 @@ class Config(metaclass=Singleton):
             'master_spark_url',
             'spark_app_name',
             'parquet_file_name',
+            'aws_access_key_id',
+            'aws_secret_access_key',
+            'aws_session_token',
+            'in_situ_schema',
         ]
         self.__optional_keys = [
             'spark_ram_size',

@@ -1,9 +1,9 @@
 import os
 
 # os.environ['master_spark_url'] = 'spark://bigdata-1.oceanworks:7077'
-os.environ['master_spark_url'] = 'spark://localhost:7077'
-os.environ['spark_app_name'] = 'pyspark-flask'
-os.environ['parquet_file_name'] = 'CDMS_insitu.parquet'
+# os.environ['master_spark_url'] = 'spark://localhost:7077'
+# os.environ['spark_app_name'] = 'pyspark-flask'
+# os.environ['parquet_file_name'] = 'CDMS_insitu.parquet'
 
 def flask_me():
     import logging

@@ -24,6 +24,8 @@ docker build \
   -f spark-worker.Dockerfile \
   -t spark-worker .
 
+docker build -f parquet-flask.Dockerfile -t parquet-flask ..
+
 docker build \
   --build-arg spark_version="${SPARK_VERSION}" \
   --build-arg jupyterlab_version="${JUPYTERLAB_VERSION}" \

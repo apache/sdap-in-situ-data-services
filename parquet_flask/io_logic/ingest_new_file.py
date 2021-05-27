@@ -18,7 +18,7 @@ class IngestNewJsonFile:
     def ingest(self, abs_file_path, time_col=None, partitions=[]):
         if not FileUtils.file_exist(abs_file_path):
             raise ValueError('missing file to ingest it. path: {}'.format(abs_file_path))
-        input_json = SanitizeRecord('in_situ_schema.json').start(abs_file_path)
+        input_json = SanitizeRecord(Config().get_value('in_situ_schema')).start(abs_file_path)
         df = self.__sss.retrieve_spark_session(self.__app_name, self.__master_spark).createDataFrame(input_json)
         if time_col is not None:
             df = df.withColumn('time_obj', to_timestamp(time_col))

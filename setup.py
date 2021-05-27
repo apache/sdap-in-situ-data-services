@@ -4,8 +4,9 @@ install_requires = [
     'pyspark===3.1.1',
     # 'fastparquet===0.5.0',  # not using it. sticking to pyspark with spark cluster according to Nga
     'findspark===1.4.2',
-    'flask>=1.1.2', 'flask_restful', 'flask-restx',  # to create Flask server
+    'flask===1.1.2', 'flask_restful', 'flask-restx',  # to create Flask server
     'gevent===1.4.0', 'greenlet===0.4.16',  # to run flask server
+    'werkzeug===0.16.1',
     'jsonschema',  # to verify json objects
 ]
 
