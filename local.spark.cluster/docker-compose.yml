@@ -4,6 +4,19 @@ volumes:
     name: "hadoop-distributed-file-system"
     driver: local
 services:
+  parquet-flask:
+    image: parquet-flask
+    container_name: parquet-flask
+    environment:
+      - parquet_file_name=s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet
+      - master_spark_url=spark://spark-master:7077
+      - spark_app_name=pyspark-flask
+    ports:
+      - 9801:9801
+    volumes:
+      - /Users/wphyo/Projects/access/parquet_test_1/saildrone.sample-1026-atomic-2020_01_18.v1.json:/tmp/input/saildrone.sample-1026-atomic-2020_01_18.v1.json:ro
+      - /Users/wphyo/Projects/access/parquet_test_1/local.spark.cluster/export_aws_var.sh:/config/export_aws_var.sh:ro
+      - shared-workspace:/opt/workspace
   jupyterlab:
     image: jupyterlab
     container_name: jupyterlab
