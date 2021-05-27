@@ -11,4 +11,4 @@ RUN python3 /usr/app/setup.py install
 ENV PYTHONPATH="${PYTHONPATH}:/usr/app/"
 ENV in_situ_schema=/usr/app/in_situ_schema.json
 
-CMD /config/export_aws_var.sh && python3 /usr/app/flask_server.py
+CMD python3 /usr/app/flask_server.py

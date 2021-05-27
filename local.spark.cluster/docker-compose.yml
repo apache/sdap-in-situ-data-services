@@ -8,6 +8,9 @@ services:
     image: parquet-flask
     container_name: parquet-flask
     environment:
+      - aws_access_key_id=${aws_access_key_id}
+      - aws_secret_access_key=${aws_secret_access_key}
+      - aws_session_token=${aws_session_token}
       - parquet_file_name=s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet
       - master_spark_url=spark://spark-master:7077
       - spark_app_name=pyspark-flask

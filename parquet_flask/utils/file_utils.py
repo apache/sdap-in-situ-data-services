@@ -13,7 +13,9 @@ class FileUtils:
 
     @staticmethod
     def del_file(path):
-        return Path(path).unlink(missing_ok=True)
+        if FileUtils.file_exist(path):
+            Path(path).unlink()
+        return
 
     @staticmethod
     def read_json(path):
