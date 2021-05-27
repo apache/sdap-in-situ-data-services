@@ -1,7 +1,6 @@
 import findspark
 findspark.init()
 
-
 def flask_me():
     import logging
 

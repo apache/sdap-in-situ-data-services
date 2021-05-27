@@ -8,6 +8,7 @@ install_requires = [
     'gevent===1.4.0', 'greenlet===0.4.16',  # to run flask server
     'werkzeug===0.16.1',
     'jsonschema',  # to verify json objects
+    'boto3', 'botocore',
 ]
 
 setup(

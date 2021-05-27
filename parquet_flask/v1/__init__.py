@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask_restx import Api
-from .ingest import api as ingest_parquet
+from .ingest_json_file import api as ingest_parquet_json_file
+from .ingest_json_s3 import api as ingest_parquet_json_s3
 
 _version = "1.0"
 
@@ -15,4 +16,5 @@ api = Api(blueprint,
           )
 
 # Register namespaces
-api.add_namespace(ingest_parquet)
+api.add_namespace(ingest_parquet_json_file)
+api.add_namespace(ingest_parquet_json_s3)
