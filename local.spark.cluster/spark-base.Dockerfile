@@ -3,7 +3,8 @@ FROM cluster-base
 # -- Layer: Apache Spark
 
 ARG spark_version=3.0.0
-ARG hadoop_version=2.7
+ARG hadoop_version=3.2
+USER root
 
 RUN apt-get update -y && \
     apt-get install -y curl && \
@@ -15,13 +16,16 @@ RUN apt-get update -y && \
 
 RUN apt install vim -y
 
-COPY ./aws-java-sdk-1.7.4.jar /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/jars/
-COPY ./hadoop-aws-2.7.4.jar /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/jars/
+RUN apt-get install python3-pip -y
+RUN python3 -m pip install pyspark
+RUN python3 -m pip install findspark
+RUN mkdir /tmp/spark-events
+COPY ./aws-java-sdk-bundle-1.11.563.jar /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/jars/
+COPY ./hadoop-aws-3.2.0.jar /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/jars/
 COPY ./spark-defaults.conf /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}/conf/
-# /usr/bin/spark-3.0.0-bin-hadoop2.7/jars
 
 ENV spark_version=3.0.0
-ENV hadoop_version=2.7
+ENV hadoop_version=3.2
 ENV SPARK_HOME /usr/bin/spark-${spark_version}-bin-hadoop${hadoop_version}
 ENV SPARK_MASTER_HOST spark-master
 ENV SPARK_MASTER_PORT 7077
