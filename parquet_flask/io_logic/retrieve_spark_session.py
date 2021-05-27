@@ -1,4 +1,3 @@
-import findspark
 from pyspark import SparkConf
 from pyspark.sql import SparkSession
 
@@ -8,7 +7,6 @@ from parquet_flask.utils.singleton import Singleton
 
 class RetrieveSparkSession(metaclass=Singleton):
     def __init__(self):
-        findspark.init()
         self.__sparks = {}
 
     def retrieve_spark_session(self, app_name, master_spark, ram='512m'):
@@ -21,10 +19,7 @@ class RetrieveSparkSession(metaclass=Singleton):
             conf.set('spark.hadoop.fs.s3a.session.token', Config().get_value('aws_session_token'))
             conf.set('spark.hadoop.fs.s3a.connection.ssl.enabled', 'true')
             # conf.set('spark.hadoop.fs.s3a.endpoint', 's3.us-gov-west-1.amazonaws.com')
-
-            findspark.init()
-            self.__sparks[session_key] = SparkSession.builder.appName(app_name).config(conf=conf).getOrCreate()
-            # self.__sparks[session_key] = SparkSession.builder.appName(app_name).master(master_spark).config('spark.executor.memory', ram).getOrCreate()
+            self.__sparks[session_key] = SparkSession.builder.appName(app_name).config(conf=conf).master(master_spark).getOrCreate()
         return self.__sparks[session_key]
 
     def stop_spark_session(self, app_name, master_spark):

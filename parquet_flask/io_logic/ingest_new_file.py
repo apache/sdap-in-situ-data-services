@@ -1,9 +1,9 @@
-from pyspark.sql.functions import to_timestamp
-
 from parquet_flask.io_logic.retrieve_spark_session import RetrieveSparkSession
 from parquet_flask.io_logic.sanitize_record import SanitizeRecord
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.file_utils import FileUtils
+
+from pyspark.sql.functions import to_timestamp
 
 
 class IngestNewJsonFile:
