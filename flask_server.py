@@ -5,11 +5,18 @@ findspark.init()
 def flask_me():
     import logging
 
+    file_handler = logging.FileHandler('/tmp/parquet_flask.log', mode='a')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s'))
+
+    logging.basicConfig(
+        level=logging.DEBUG,  # TODO set it from container level
+        format="%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s",
+        handlers=[file_handler]
+    )
+
     LOGGER = logging.getLogger(__name__)
     LOGGER.setLevel(logging.INFO)
-    sh = logging.StreamHandler()
-    sh.setLevel(logging.INFO)
-    LOGGER.addHandler(sh)
 
     from gevent.pywsgi import WSGIServer
     from parquet_flask import get_app
