@@ -9,6 +9,7 @@ from jsonschema import validate, FormatChecker, ValidationError
 from parquet_flask.aws.aws_s3 import AwsS3
 from parquet_flask.io_logic.ingest_new_file import IngestNewJsonFile
 from parquet_flask.utils.file_utils import FileUtils
+from parquet_flask.utils.general_utils import GeneralUtils
 
 api = Namespace('ingest_json_s3', description="Ingesting JSON files")
 LOGGER = logging.getLogger(__name__)
@@ -59,15 +60,13 @@ class IngestParquet(Resource):
         :return:
         """
         payload = request.get_json()
-        try:
-            validate(instance=payload, schema=_QUERY_SCHEMA, format_checker=FormatChecker())
-        except ValidationError as error:
-            return {'message': 'invalid request body', 'details': str(error)}, 400
+        is_valid, json_error = GeneralUtils.is_json_valid(payload, _QUERY_SCHEMA)
+        if not is_valid:
+            return {'message': 'invalid request body', 'details': str(json_error)}, 400
 
         try:
             saved_file_name = AwsS3().download(payload['s3_url'], self.__saved_dir)
-            IngestNewJsonFile().ingest(saved_file_name, time_col=self.__get_time_col(request.form),
-                                       partitions=self.__get_partition_list(request.form))
+            IngestNewJsonFile().ingest(saved_file_name, payload.get('time_col', None), payload.get('partitions', []))
             FileUtils.del_file(saved_file_name)
             return {'message': 'ingested'}, 201
         except Exception as e:

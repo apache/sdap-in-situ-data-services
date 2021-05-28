@@ -1,5 +1,9 @@
+import logging
+
 from parquet_flask.io_logic.retrieve_spark_session import RetrieveSparkSession
 from parquet_flask.utils.config import Config
+
+LOGGER = logging.getLogger(__name__)
 
 
 class QueryParquet:
@@ -130,7 +134,9 @@ class QueryParquet:
         sql_stmt = 'select * from ParquetTable '
         if len(conditions) > 0:
             sql_stmt = '{} where {} ; '.format(sql_stmt, conditions)
+        LOGGER.debug(f'query statement: {sql_stmt}')
         spark = self.__sss.retrieve_spark_session(self.__app_name, self.__master_spark)
         spark.read.parquet(self.__parquet_name).createOrReplaceTempView("parquetTable")
-        result = spark.sql(sql_stmt).limit(self.result_limit).collect()
+        result = spark.sql(sql_stmt).limit(self.limit).collect()
+        LOGGER.debug(f'query result: {result}')
         return [k.asDict() for k in result]
