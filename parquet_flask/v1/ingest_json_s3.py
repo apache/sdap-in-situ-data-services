@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import uuid
 
 from flask_restx import Resource, Namespace, fields
 from flask import request
@@ -25,13 +26,6 @@ _QUERY_SCHEMA = {
     'type': 'object',
     'properties': {
         's3_url': {'type': 'string'},
-        'time_col': {'type': 'string'},
-        'partitions': {
-            'type': 'array',
-            'items': {
-                'type': 'string'
-            }
-        },
     },
     'required': ['s3_url'],
 }
@@ -42,16 +36,6 @@ class IngestParquet(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
         self.__saved_dir = '/tmp'  # TODO update this
-
-    def __get_time_col(self, payload):
-        if 'time_col' not in payload:
-            return None
-        return payload['time_col']
-
-    def __get_partition_list(self, payload):
-        if 'partitions' not in payload:
-            return []
-        return payload['partitions']
 
     @api.expect(fields=query_model)
     def put(self):
@@ -64,14 +48,18 @@ class IngestParquet(Resource):
         is_valid, json_error = GeneralUtils.is_json_valid(payload, _QUERY_SCHEMA)
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
-
         try:
             s3 = AwsS3().set_s3_url(payload['s3_url'])
+            job_id = str(uuid.uuid4())
             saved_file_name = AwsS3().download(payload['s3_url'], self.__saved_dir)
-            IngestNewJsonFile().ingest(saved_file_name, payload.get('time_col', None), payload.get('partitions', []))
+            IngestNewJsonFile().ingest(saved_file_name, job_id)
             FileUtils.del_file(saved_file_name)
+            # TODO make it background process?
+            # TODO store job details in database
+            # TODO add these: job start time, job end time, validation metadata, s3 url, job id
             s3.add_tags_to_obj({
-                'parquet_ingested': TimeUtils.get_current_time_str()
+                'parquet_ingested': TimeUtils.get_current_time_str(),
+                'job_id': job_id,
             })
             return {'message': 'ingested'}, 201
         except Exception as e:
