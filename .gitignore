@@ -8,3 +8,4 @@ scratch*
 .idea
 .run
 CDMS_insitu.parquet
+__pycache__
