@@ -3,7 +3,7 @@ from parquet_flask.io_logic.sanitize_record import SanitizeRecord
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.file_utils import FileUtils
 
-from pyspark.sql.functions import to_timestamp
+from pyspark.sql.functions import to_timestamp, year, month
 
 
 class IngestNewJsonFile:
@@ -20,10 +20,14 @@ class IngestNewJsonFile:
             raise ValueError('missing file to ingest it. path: {}'.format(abs_file_path))
         input_json = SanitizeRecord(Config().get_value('in_situ_schema')).start(abs_file_path)
         df = self.__sss.retrieve_spark_session(self.__app_name, self.__master_spark).createDataFrame(input_json)
+        time_partitions = []
         if time_col is not None:
-            df = df.withColumn('time_obj', to_timestamp(time_col))
+            df = df.withColumn('time_obj', to_timestamp(time_col))\
+                .withColumn('year', year(time_col)).withColumn('month', month(time_col))
+            time_partitions = ['year', 'month']
         df_writer = df.write
-        if len(partitions) > 0:
+        all_partitions = partitions + time_partitions
+        if len(all_partitions) > 0:
             df_writer = df_writer.partitionBy(partitions)
         df_writer.mode(self.__mode).parquet(self.__parquet_name, compression='GZIP')
         return
