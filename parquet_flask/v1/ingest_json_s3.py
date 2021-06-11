@@ -10,6 +10,7 @@ from parquet_flask.aws.aws_s3 import AwsS3
 from parquet_flask.io_logic.ingest_new_file import IngestNewJsonFile
 from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.general_utils import GeneralUtils
+from parquet_flask.utils.time_utils import TimeUtils
 
 api = Namespace('ingest_json_s3', description="Ingesting JSON files")
 LOGGER = logging.getLogger(__name__)
@@ -65,9 +66,13 @@ class IngestParquet(Resource):
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
 
         try:
+            s3 = AwsS3().set_s3_url(payload['s3_url'])
             saved_file_name = AwsS3().download(payload['s3_url'], self.__saved_dir)
             IngestNewJsonFile().ingest(saved_file_name, payload.get('time_col', None), payload.get('partitions', []))
             FileUtils.del_file(saved_file_name)
+            s3.add_tags_to_obj({
+                'parquet_ingested': TimeUtils.get_current_time_str()
+            })
             return {'message': 'ingested'}, 201
         except Exception as e:
             return {'message': 'failed to ingest to parquest', 'details': str(e)}, 500
