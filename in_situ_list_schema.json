@@ -2,23 +2,11 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Cloud-based Data Match-Up Service In Situ Schema",
   "description": "Schema for in situ data",
-  "properties": {
-    "provider": {
-      "description": "",
-      "type": "string"
-    },
-    "project": {
-      "description": "",
-      "type": "string"
-    },
-    "observations": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/observation"
-      },
-      "minItems": 1
-    }
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/observation"
   },
+  "minItems": 1,
   "definitions": {
     "platform": {
       "description": "",
@@ -485,6 +473,14 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "provider": {
+          "description": "",
+          "type": "string"
+        },
+        "project": {
+          "description": "",
+          "type": "string"
+        },
         "time": {
           "description": "Time of the observation",
           "uri": "http://vocab.nerc.ac.uk/collection/P07/current/CFSN0115/",
@@ -2061,6 +2057,8 @@
       },
       "required": [
         "time",
+        "provider",
+        "project",
         "latitude",
         "longitude",
         "depth"
