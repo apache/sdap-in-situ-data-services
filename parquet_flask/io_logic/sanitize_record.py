@@ -58,8 +58,8 @@ class SanitizeRecord:
         is_valid, json_error = GeneralUtils.is_json_valid(json_obj, basic_schema)
         if not is_valid:
             raise ValueError(f'input file has invalid schema: {json_file_path}. errors; {json_error}')
+        LOGGER.warning('disabling validation of individual observation record. it is taking a long time')
         for each in json_obj[CDMSConstants.observations_key]:
-            LOGGER.warning('disabling validation of individual observation record. it is taking a long time')
             # is_valid, json_error = GeneralUtils.is_json_valid(each, self.__json_schema)
             # if not is_valid:
             #     raise ValueError(f'input file has invalid schema: {json_file_path}. errors; {json_error}')
