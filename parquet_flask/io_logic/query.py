@@ -115,17 +115,17 @@ class QueryParquet:
     def __construct_query(self):
         conditions = []
         if self.depth is not None:
-            conditions.append('depth >= {}'.format(self.depth))
+            conditions.append(f'depth >= {self.depth}')
         if self.min_time is not None:
-            conditions.append('time_obj >= \'{}\''.format(self.min_time))
+            conditions.append(f'time_obj >= {self.min_time}')
         if self.max_time is not None:
-            conditions.append('time_obj <= \'{}\''.format(self.max_time))
+            conditions.append(f'time_obj <= {self.max_time}')
         if self.min_lat_lon is not None:
-            conditions.append('latitude >= {}'.format(self.min_lat_lon[0]))
-            conditions.append('longitude >= {}'.format(self.min_lat_lon[1]))
+            conditions.append(f'latitude >= {self.min_lat_lon[0]}')
+            conditions.append(f'longitude >= {self.min_lat_lon[1]}')
         if self.max_lat_lon is not None:
-            conditions.append('latitude <= {}'.format(self.max_lat_lon[0]))
-            conditions.append('longitude <= {}'.format(self.max_lat_lon[1]))
+            conditions.append(f'latitude <= {self.max_lat_lon[0]}')
+            conditions.append(f'longitude <= {self.max_lat_lon[1]}')
         return conditions
 
     def search(self):
