@@ -3,8 +3,6 @@ import logging
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
-from parquet_flask.io_logic.cdms_constants import CDMSConstants
-from parquet_flask.io_logic.query import QueryParquet
 from parquet_flask.io_logic.query_v2 import QueryProps, Query, QUERY_PROPS_SCHEMA
 from parquet_flask.utils.general_utils import GeneralUtils
 
@@ -43,11 +41,6 @@ class IngestParquet(Resource):
         try:
             query = Query(QueryProps().from_json(payload))
             result_set = query.search()
-            removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
-            for each in result_set:
-                for eachCol in removing_cols:
-                    if eachCol in each:
-                        del each[eachCol]
             LOGGER.debug(f'search params: {payload}. result: {result_set}')
             return {'result_set': result_set}, 200
         except Exception as e:

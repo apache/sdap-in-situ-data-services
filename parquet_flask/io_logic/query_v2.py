@@ -283,7 +283,8 @@ class Query:
                 'results': [],
             }
         LOGGER.debug(f'returning size : {int(query_result.count())}')
-        result = query_result.limit(self.__props.start_at + self.__props.size).tail(self.__props.size)
+        removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
+        result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
         print(type(result[0]))
         return {
             'total': int(query_result.count()),
