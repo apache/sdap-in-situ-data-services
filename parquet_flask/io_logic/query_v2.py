@@ -7,6 +7,23 @@ from parquet_flask.utils.time_utils import TimeUtils
 
 LOGGER = logging.getLogger(__name__)
 
+QUERY_PROPS_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'start_from': {'type': 'integer'},
+        'size': {'type': 'integer'},
+        'provider': {'type': 'string'},
+        'project': {'type': 'string'},
+        'min_depth': {'type': 'number'},
+        'max_depth': {'type': 'number'},
+        'min_time': {'type': 'string'},
+        'max_time': {'type': 'string'},
+        'min_lat_lon': {'type': 'array', 'items': {'type': 'number'}, 'minItems': 2, 'maxItems': 2},
+        'max_lat_lon': {'type': 'array', 'items': {'type': 'number'}, 'minItems': 2, 'maxItems': 2},
+    },
+    'required': ['start_from', 'size', 'min_depth', 'max_depth', 'min_time', 'max_time', 'min_lat_lon', 'max_lat_lon'],
+}
+
 
 class QueryProps:
     def __init__(self):
@@ -22,6 +39,25 @@ class QueryProps:
         self.__max_lat_lon = None
         self.__start_at = 0
         self.__size = 0
+
+    def from_json(self, input_json):
+        self.start_at = input_json['start_from']
+        self.size = input_json['size']
+        self.min_depth = input_json['min_depth']
+        self.max_depth = input_json['max_depth']
+        self.min_datetime = input_json['min_time']
+        self.max_datetime = input_json['max_time']
+        self.min_lat_lon = input_json['min_lat_lon']
+        self.max_lat_lon = input_json['max_lat_lon']
+        if 'project' in input_json:
+            self.project = input_json['project']
+        if 'provider' in input_json:
+            self.provider = input_json['provider']
+        if 'device' in input_json:
+            self.provider = input_json['device']
+        if 'platform_id' in input_json:
+            self.platform_id = input_json['platform_id']
+        return self
 
     @property
     def project(self):
