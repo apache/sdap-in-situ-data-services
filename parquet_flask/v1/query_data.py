@@ -10,12 +10,15 @@ api = Namespace('query_data', description="Querying data")
 LOGGER = logging.getLogger(__name__)
 
 query_model = api.model('query_data', {
+    'start_from': fields.Integer(required=True, example=0),
+    'size': fields.Integer(required=True, example=0),
     'provider': fields.String(required=True, example='JPL'),
     'project': fields.String(required=True, example='ABCD'),
     'min_depth': fields.Float(required=True, example=-65.34),
     'max_depth': fields.Float(required=True, example=-65.34),
     'min_time': fields.String(required=True, example='2020-01-01T00:00:00Z'),
     'max_time': fields.String(required=True, example='2020-01-31T00:00:00Z'),
+    'columns': fields.List(fields.String, required=False, example=['latitudes', 'longitudes']),
     'min_lat_lon': fields.List(fields.Float, required=True, example=[-45, 175]),
     'max_lat_lon': fields.List(fields.Float, required=True, example=[-42.11, 175.16439819335938]),
 })
