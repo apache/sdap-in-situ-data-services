@@ -8,6 +8,8 @@ from parquet_flask.utils.file_utils import FileUtils
 
 from pyspark.sql.functions import to_timestamp, year, month, lit
 
+from parquet_flask.utils.time_utils import TimeUtils
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -17,7 +19,7 @@ class IngestNewJsonFile:
         config = Config()
         self.__app_name = config.get_value('spark_app_name')
         self.__master_spark = config.get_value('master_spark_url')
-        self.__mode = 'overwrite'
+        self.__mode = 'append'
         self.__parquet_name = config.get_value('parquet_file_name')
 
     @staticmethod
@@ -31,10 +33,11 @@ class IngestNewJsonFile:
             .withColumn(CDMSConstants.job_id_col, lit(job_id))\
             .withColumn(CDMSConstants.provider_col, lit(provider))\
             .withColumn(CDMSConstants.project_col, lit(project))
+            # .withColumn('ingested_date', lit(TimeUtils.get_current_time_str()))
         LOGGER.debug(f'create writer')
         df_writer = df.write
         all_partitions = [CDMSConstants.provider_col, CDMSConstants.project_col,
-                          CDMSConstants.year_col, CDMSConstants.month_col]
+                          CDMSConstants.year_col, CDMSConstants.month_col, CDMSConstants.job_id_col]
         LOGGER.debug(f'create partitions')
         df_writer = df_writer.partitionBy(all_partitions)
         LOGGER.debug(f'created partitions')
