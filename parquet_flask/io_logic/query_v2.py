@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
 
+from pyspark.sql.dataframe import DataFrame
+
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.time_utils import TimeUtils
@@ -39,6 +41,7 @@ class QueryProps:
         self.__max_lat_lon = None
         self.__start_at = 0
         self.__size = 0
+        self.__columns = []
 
     def from_json(self, input_json):
         self.start_at = input_json['start_from']
@@ -215,6 +218,19 @@ class QueryProps:
         self.__size = val
         return
 
+    @property
+    def columns(self):
+        return self.__columns
+
+    @columns.setter
+    def columns(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__columns = val
+        return
+
 
 class Query:
     def __init__(self, props=QueryProps()):
@@ -269,7 +285,7 @@ class Query:
         spark = self.__retrieve_spark() if spark_session is None else spark_session
         created_spark_session_time = datetime.now()
         LOGGER.debug(f'spark session created at {created_spark_session_time}. took: {created_spark_session_time - query_begin_time}')
-        read_df = spark.read.parquet(self.__parquet_name)
+        read_df: DataFrame = spark.read.parquet(self.__parquet_name)
         read_df_time = datetime.now()
         LOGGER.debug(f'parquet read created at {read_df_time}. took: {read_df_time - created_spark_session_time}')
         query_result = read_df.where(conditions)
@@ -282,6 +298,8 @@ class Query:
                 'total': int(query_result.count()),
                 'results': [],
             }
+        if len(self.__props.columns) > 0:
+            query_result = query_result.select(self.__props.columns)
         LOGGER.debug(f'returning size : {int(query_result.count())}')
         removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
         result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
