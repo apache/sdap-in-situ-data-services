@@ -8,24 +8,26 @@ from flask import request
 from jsonschema import validate, FormatChecker, ValidationError
 
 from parquet_flask.aws.aws_s3 import AwsS3
-from parquet_flask.io_logic.ingest_new_file import IngestNewJsonFile
+from parquet_flask.io_logic.replace_file import ReplaceJsonFile
 from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.utils.time_utils import TimeUtils
 
-api = Namespace('ingest_json_s3', description="Ingesting JSON files")
+api = Namespace('replace_json_s3', description="Ingesting JSON files")
 LOGGER = logging.getLogger(__name__)
 
-query_model = api.model('ingest_json_s3', {
+query_model = api.model('replace_json_s3', {
     's3_url': fields.String(required=True, example='s3://<bucket>/<key>'),
+    'job_id': fields.String(required=True, example='sample-uuid'),
 })
 
 _QUERY_SCHEMA = {
     'type': 'object',
     'properties': {
         's3_url': {'type': 'string'},
+        'job_id': {'type': 'string'},
     },
-    'required': ['s3_url'],
+    'required': ['s3_url', 'job_id'],
 }
 
 
@@ -48,9 +50,9 @@ class IngestParquet(Resource):
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         try:
             s3 = AwsS3().set_s3_url(payload['s3_url'])
-            job_id = str(uuid.uuid4())
+            job_id = payload['job_id']
             saved_file_name = AwsS3().download(payload['s3_url'], self.__saved_dir)
-            IngestNewJsonFile().ingest(saved_file_name, job_id)
+            ReplaceJsonFile().ingest(saved_file_name, job_id)
             FileUtils.del_file(saved_file_name)
             # TODO make it background process?
             # TODO store job details in database
