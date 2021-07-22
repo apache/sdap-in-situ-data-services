@@ -22,15 +22,15 @@ services:
     image: jupyterlab
     container_name: jupyterlab
     ports:
-      - 8888:8888
+      - 8478:8888
     volumes:
       - shared-workspace:/opt/workspace
   spark-master:
     image: spark-master
     container_name: spark-master
     ports:
-      - 8080:8080
-      - 7077:7077
+      - 8470:8080
+      - 7477:7077
     volumes:
       - shared-workspace:/opt/workspace
   spark-worker-1:
@@ -40,7 +40,7 @@ services:
       - SPARK_WORKER_CORES=1
       - SPARK_WORKER_MEMORY=512m
     ports:
-      - 8081:8081
+      - 8471:8081
     volumes:
       - shared-workspace:/opt/workspace
     depends_on:
@@ -52,7 +52,7 @@ services:
       - SPARK_WORKER_CORES=1
       - SPARK_WORKER_MEMORY=512m
     ports:
-      - 8082:8081
+      - 8472:8081
     volumes:
       - shared-workspace:/opt/workspace
     depends_on:
