@@ -47,10 +47,10 @@ class IngestParquet(Resource):
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         try:
-            LOGGER.debug(f'starting to ingest')
+            LOGGER.debug(f'starting to ingest: {payload["s3_url"]}')
             s3 = AwsS3().set_s3_url(payload['s3_url'])
             job_id = str(uuid.uuid4())
-            LOGGER.debug(f'downloading s3 file')
+            LOGGER.debug(f'downloading s3 file: {job_id}')
             saved_file_name = AwsS3().download( self.__saved_dir, payload['s3_url'])
             LOGGER.debug(f'ingesting')
             IngestNewJsonFile().ingest(saved_file_name, job_id)
