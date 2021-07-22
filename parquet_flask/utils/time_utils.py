@@ -7,6 +7,10 @@ class TimeUtils:
         return datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     @staticmethod
+    def get_current_time_unix():
+        return int(datetime.utcnow().timestamp() * 1000)
+
+    @staticmethod
     def get_datetime_obj(dt_str, fmt='%Y-%m-%dT%H:%M:%SZ'):
         return datetime.strptime(dt_str, fmt)
 
