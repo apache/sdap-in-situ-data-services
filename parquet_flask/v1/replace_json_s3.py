@@ -63,4 +63,4 @@ class IngestParquet(Resource):
             })
             return {'message': 'ingested'}, 201
         except Exception as e:
-            return {'message': 'failed to ingest to parquest', 'details': str(e)}, 500
+            return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500

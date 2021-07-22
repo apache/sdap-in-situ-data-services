@@ -47,18 +47,23 @@ class IngestParquet(Resource):
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         try:
+            LOGGER.debug(f'starting to ingest')
             s3 = AwsS3().set_s3_url(payload['s3_url'])
             job_id = str(uuid.uuid4())
+            LOGGER.debug(f'downloading s3 file')
             saved_file_name = AwsS3().download( self.__saved_dir, payload['s3_url'])
+            LOGGER.debug(f'ingesting')
             IngestNewJsonFile().ingest(saved_file_name, job_id)
+            LOGGER.debug(f'deleting used file')
             FileUtils.del_file(saved_file_name)
             # TODO make it background process?
             # TODO store job details in database
             # TODO add these: job start time, job end time, validation metadata, s3 url, job id
+            LOGGER.debug(f'tagging s3')
             s3.add_tags_to_obj({
                 'parquet_ingested': TimeUtils.get_current_time_str(),
                 'job_id': job_id,
             })
             return {'message': 'ingested'}, 201
         except Exception as e:
-            return {'message': 'failed to ingest to parquest', 'details': str(e)}, 500
+            return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500
