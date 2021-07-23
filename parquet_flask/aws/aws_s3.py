@@ -9,10 +9,15 @@ from parquet_flask.utils.file_utils import FileUtils
 class AwsS3:
     def __init__(self):
         self.__valid_s3_schemas = ['s3://', 's3a://', 's3s://']
-        self.__s3_client = boto3.Session(aws_access_key_id=Config().get_value('aws_access_key_id'),
-                                         aws_secret_access_key=Config().get_value('aws_secret_access_key'),
-                                         aws_session_token=Config().get_value('aws_session_token'),
-                                         region_name='us-west-2').client('s3')
+        boto3_session = {
+            'aws_access_key_id': Config().get_value('aws_access_key_id'),
+            'aws_secret_access_key': Config().get_value('aws_secret_access_key'),
+            'region_name': 'us-west-2',
+        }
+        aws_session_token = Config().get_value('aws_session_token')
+        if aws_session_token is not None:
+            boto3_session['aws_session_token'] = aws_session_token
+        self.__s3_client = boto3.Session(**boto3_session).client('s3')
         self.__target_bucket = None
         self.__target_key = None
 
