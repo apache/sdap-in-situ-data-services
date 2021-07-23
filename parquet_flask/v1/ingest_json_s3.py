@@ -51,7 +51,7 @@ class IngestParquet(Resource):
             s3 = AwsS3().set_s3_url(payload['s3_url'])
             job_id = str(uuid.uuid4())
             LOGGER.debug(f'downloading s3 file: {job_id}')
-            saved_file_name = AwsS3().download( self.__saved_dir, payload['s3_url'])
+            saved_file_name = AwsS3().download(self.__saved_dir)
             LOGGER.debug(f'ingesting')
             IngestNewJsonFile().ingest(saved_file_name, job_id)
             LOGGER.debug(f'deleting used file')
