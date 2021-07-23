@@ -41,7 +41,7 @@ class SanitizeRecord:
         if not FileUtils.file_exist(json_schema_path):
             raise ValueError('json_schema file does not exist: {}'.format(json_schema_path))
         self.__json_schema = FileUtils.read_json(json_schema_path)
-        self.__schema_key_values = {k: v for k, v in self.__json_schema['properties'].items()}
+        self.__schema_key_values = {k: v for k, v in self.__json_schema['definitions']['observation']['properties'].items()}
 
     def __sanitize_record(self, data_blk):
         for k, v in data_blk.items():
