@@ -25,7 +25,9 @@ class AwsS3:
         self.__target_key = None
 
     def set_s3_url(self, s3_url):
+        LOGGER.debug(f'setting s3_url: {s3_url}')
         self.__target_bucket, self.__target_key = self.split_s3_url(s3_url)
+        LOGGER.debug(f'props: {self.__target_bucket}, {self.__target_key}')
         return self
 
     def split_s3_url(self, s3_url):
