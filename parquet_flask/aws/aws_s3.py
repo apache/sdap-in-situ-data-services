@@ -1,9 +1,12 @@
+import logging
 import os
 
 import boto3
 
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.file_utils import FileUtils
+
+LOGGER = logging.getLogger(__name__)
 
 
 class AwsS3:
@@ -75,7 +78,10 @@ class AwsS3:
         if not FileUtils.dir_exist(local_dir):
             raise ValueError('missing directory')
         if file_name is None:
+            LOGGER.debug(f'setting the downloading filename from target_key: {self.__target_key}')
             file_name = os.path.basename(self.__target_key)
         local_file_path = os.path.join(local_dir, file_name)
+        LOGGER.debug(f'downloading to local_file_path: {local_file_path}')
         self.__s3_client.download_file(self.__target_bucket, self.__target_key, local_file_path)
+        LOGGER.debug(f'file downloaded')
         return local_file_path
