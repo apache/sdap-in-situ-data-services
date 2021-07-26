@@ -47,7 +47,7 @@ class IngestParquet(Resource):
         try:
             s3 = AwsS3().set_s3_url(payload['s3_url'])
             job_id = payload['job_id']
-            saved_file_name = AwsS3().download(payload['s3_url'], self.__saved_dir)
+            saved_file_name = s3.download(payload['s3_url'], self.__saved_dir)
             ReplaceJsonFile().ingest(saved_file_name, job_id)
             FileUtils.del_file(saved_file_name)
             # TODO make it background process?
