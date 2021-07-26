@@ -3,6 +3,7 @@ import logging
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.general_utils import GeneralUtils
+from parquet_flask.utils.parallel_json_validator import ParallelJsonValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ class SanitizeRecord:
             raise ValueError('json_schema file does not exist: {}'.format(json_schema_path))
         self.__json_schema = FileUtils.read_json(json_schema_path)
         self.__schema_key_values = {k: v for k, v in self.__json_schema['definitions']['observation']['properties'].items()}
+        self.__parallel_json_validator = ParallelJsonValidator()
 
     def __sanitize_record(self, data_blk):
         for k, v in data_blk.items():
@@ -51,17 +53,29 @@ class SanitizeRecord:
                 data_blk[k] = float(v)
         return
 
+    def __validate_json(self, data):
+        LOGGER.debug(f'validating input data')
+        chunked_data = [{
+            "provider": data['provider'],
+            "project": data['project'],
+            'observations': eachChunk,
+        } for eachChunk in GeneralUtils.chunk_list(data['observations'], 1000)]
+        if not self.__parallel_json_validator.is_schema_loaded():
+            self.__parallel_json_validator.load_schema(self.__json_schema)
+        result, error = self.__parallel_json_validator.validate_json(chunked_data)
+        return result, error
+
     def start(self, json_file_path):
         if not FileUtils.file_exist(json_file_path):
             raise ValueError('json file does not exist: {}'.format(json_file_path))
         json_obj = FileUtils.read_json(json_file_path)
-        is_valid, json_error = GeneralUtils.is_json_valid(json_obj, basic_schema)
+        is_valid, json_errors = GeneralUtils.is_json_valid(json_obj, basic_schema)
         if not is_valid:
-            raise ValueError(f'input file has invalid schema: {json_file_path}. errors; {json_error}')
+            raise ValueError(f'input file has invalid high level schema: {json_file_path}. errors; {json_errors}')
         LOGGER.warning('disabling validation of individual observation record. it is taking a long time')
+        is_valid, json_errors = self.__validate_json(json_obj)
+        if not is_valid:
+            raise ValueError(f'json has some error. Not validating: {json_errors}')
         for each in json_obj[CDMSConstants.observations_key]:
-            # is_valid, json_error = GeneralUtils.is_json_valid(each, self.__json_schema)
-            # if not is_valid:
-            #     raise ValueError(f'input file has invalid schema: {json_file_path}. errors; {json_error}')
             self.__sanitize_record(each)
         return json_obj

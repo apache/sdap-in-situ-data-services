@@ -1,11 +1,7 @@
-import json
 import logging
-import os
-import uuid
 
 from flask_restx import Resource, Namespace, fields
 from flask import request
-from jsonschema import validate, FormatChecker, ValidationError
 
 from parquet_flask.aws.aws_s3 import AwsS3
 from parquet_flask.io_logic.replace_file import ReplaceJsonFile

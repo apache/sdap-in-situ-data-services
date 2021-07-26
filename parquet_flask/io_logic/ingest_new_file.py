@@ -8,8 +8,6 @@ from parquet_flask.utils.file_utils import FileUtils
 
 from pyspark.sql.functions import to_timestamp, year, month, lit
 
-from parquet_flask.utils.time_utils import TimeUtils
-
 LOGGER = logging.getLogger(__name__)
 
 

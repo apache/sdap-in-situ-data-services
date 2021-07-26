@@ -9,3 +9,4 @@ scratch*
 .run
 CDMS_insitu.parquet
 __pycache__
+.DS_Store
