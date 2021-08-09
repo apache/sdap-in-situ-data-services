@@ -1,3 +1,4 @@
+import json
 import logging
 
 from flask_restx import Resource, Namespace, fields
@@ -30,14 +31,7 @@ class IngestParquet(Resource):
         super().__init__(api, args, kwargs)
         self.__saved_dir = '/tmp'  # TODO update this
 
-    @api.expect()
-    def post(self):
-        """
-        s3://ecsv-h5-data-v1/INDEX/GALILEO/filenames.txt.gz
-
-        :return:
-        """
-        payload = request.get_json()
+    def __execute_query(self, payload):
         is_valid, json_error = GeneralUtils.is_json_valid(payload, QUERY_PROPS_SCHEMA)
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
@@ -49,3 +43,32 @@ class IngestParquet(Resource):
         except Exception as e:
             LOGGER.exception(f'failed to query parquet. cause: {str(e)}')
             return {'message': 'failed to query parquet', 'details': str(e)}, 500
+
+    @api.expect()
+    def get(self):
+        query_json = {
+            'start_from': request.args.get('start_from', '0'),
+            'size': request.args.get('size', '10'),
+        }
+        if 'min_time' in request.args:
+            query_json['min_time'] = request.args.get('min_time')
+        if 'max_time' in request.args:
+            query_json['max_time'] = request.args.get('max_time')
+        if 'min_depth' in request.args:
+            query_json['min_depth'] = float(request.args.get('min_depth'))
+        if 'max_depth' in request.args:
+            query_json['max_depth'] = float(request.args.get('max_depth'))
+        if 'min_lat_lon' in request.args:
+            query_json['min_lat_lon'] = json.loads(request.args.get('min_lat_lon'))
+        if 'max_lat_lon' in request.args:
+            query_json['max_lat_lon'] = json.loads(request.args.get('max_lat_lon'))
+        return self.__execute_query(query_json)
+
+    @api.expect()
+    def post(self):
+        """
+        s3://ecsv-h5-data-v1/INDEX/GALILEO/filenames.txt.gz
+
+        :return:
+        """
+        return self.__execute_query(request.get_json())
