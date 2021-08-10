@@ -34,10 +34,12 @@ QUERY_PROPS_SCHEMA = {
 
 class QueryProps:
     def __init__(self):
+        self.__variable = None
+        self.__quality_flag = False
+        self.__platform_code = None
         self.__project = None
         self.__provider = None
         self.__device = None
-        self.__platform_id = None
         self.__min_depth = None
         self.__max_depth = None
         self.__min_datetime = None
@@ -47,6 +49,45 @@ class QueryProps:
         self.__start_at = 0
         self.__size = 0
         self.__columns = []
+
+    @property
+    def variable(self):
+        return self.__variable
+
+    @variable.setter
+    def variable(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__variable = val
+        return
+
+    @property
+    def quality_flag(self):
+        return self.__quality_flag
+
+    @quality_flag.setter
+    def quality_flag(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__quality_flag = val
+        return
+
+    @property
+    def platform_code(self):
+        return self.__platform_code
+
+    @platform_code.setter
+    def platform_code(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__platform_code = val
+        return
 
     def from_json(self, input_json):
         self.start_at = input_json['start_from']
@@ -106,19 +147,6 @@ class QueryProps:
         :return: None
         """
         self.__device = val
-        return
-
-    @property
-    def platform_id(self):
-        return self.__platform_id
-
-    @platform_id.setter
-    def platform_id(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__platform_id = val
         return
 
     @property
@@ -249,6 +277,9 @@ class Query:
 
     def __add_conditions(self):
         conditions = []
+        if self.__props.platform_code is not None:
+            LOGGER.debug(f'setting platform_code condition: {self.__props.platform_code}')
+            conditions.append(f"{CDMSConstants.platform_code_col} == '{self.__props.platform_code}'")
         if self.__props.provider is not None:
             LOGGER.debug(f'setting provider condition: {self.__props.provider}')
             conditions.append(f"{CDMSConstants.provider_col} == '{self.__props.provider}'")
@@ -277,6 +308,13 @@ class Query:
         if self.__props.max_depth is not None:
             LOGGER.debug(f'setting depth max condition: {self.__props.max_depth}')
             conditions.append(f"{CDMSConstants.depth_col} <= {self.__props.max_depth}")
+        if self.__props.variable is not None:
+            LOGGER.debug(f'setting not null variable: {self.__props.variable}')
+            conditions.append(f"{self.__props.variable} <= NULL")
+            self.__props.columns.append(self.__props.variable)
+            if self.__props.quality_flag is True:
+                LOGGER.debug(f'adding quality flag for : {self.__props.variable}')
+                self.__props.columns.append(f'{self.__props.variable}_quality')
         LOGGER.debug(f'conditions list: {conditions}')
         return ' AND '.join(conditions)
 
@@ -310,7 +348,6 @@ class Query:
         LOGGER.debug(f'returning size : {int(query_result.count())}')
         removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
         result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
-        print(type(result[0]))
         return {
             'total': int(query_result.count()),
             'results': [k.asDict() for k in result],
