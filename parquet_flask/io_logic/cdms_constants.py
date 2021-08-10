@@ -3,6 +3,8 @@ class CDMSConstants:
     provider_col = 'provider'
     project_col = 'project'
     platform_code_col = 'platform_code'
+    platform_col = 'platform'
+    code_col = 'code'
     job_id_col = 'job_id'
     time_obj_col = 'time_obj'
     year_col = 'year'

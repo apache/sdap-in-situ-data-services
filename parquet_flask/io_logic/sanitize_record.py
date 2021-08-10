@@ -36,6 +36,7 @@ basic_schema = {
     ]
 }
 
+
 class SanitizeRecord:
     def __init__(self, json_schema_path):
         self.__json_schema_path = json_schema_path

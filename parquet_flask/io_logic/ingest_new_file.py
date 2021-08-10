@@ -28,13 +28,14 @@ class IngestNewJsonFile:
         df = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))\
             .withColumn(CDMSConstants.year_col, year(CDMSConstants.time_col))\
             .withColumn(CDMSConstants.month_col, month(CDMSConstants.time_col))\
+            .withColumn(CDMSConstants.platform_code_col, df[CDMSConstants.platform_col][CDMSConstants.code_col])\
             .withColumn(CDMSConstants.job_id_col, lit(job_id))\
             .withColumn(CDMSConstants.provider_col, lit(provider))\
             .withColumn(CDMSConstants.project_col, lit(project))
             # .withColumn('ingested_date', lit(TimeUtils.get_current_time_str()))
         LOGGER.debug(f'create writer')
         df_writer = df.write
-        all_partitions = [CDMSConstants.provider_col, CDMSConstants.project_col,
+        all_partitions = [CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_code_col,
                           CDMSConstants.year_col, CDMSConstants.month_col, CDMSConstants.job_id_col]
         LOGGER.debug(f'create partitions')
         df_writer = df_writer.partitionBy(all_partitions)
