@@ -13,3 +13,10 @@ class CDMSConstants:
     lat_col = 'latitude'
     lon_col = 'longitude'
     depth_col = 'depth'
+
+    s3_url_key = 's3_url'
+    uuid_key = 'uuid'
+    ingested_date_key = 'ingested_date'
+    checksum_key = 'checksum'
+    file_size_key = 'file_size'
+    records_count_key = 'records_count'
