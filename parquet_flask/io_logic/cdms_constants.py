@@ -20,3 +20,5 @@ class CDMSConstants:
     checksum_key = 'checksum'
     file_size_key = 'file_size'
     records_count_key = 'records_count'
+    job_start_key = 'job_start_time'
+    job_end_key = 'job_end_time'

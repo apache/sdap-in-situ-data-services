@@ -44,4 +44,4 @@ class ReplaceJsonFile:
                                                 input_json[CDMSConstants.project_col])
         df_writer.mode(self.__mode).parquet(self.__parquet_name, compression='GZIP')
         LOGGER.debug(f'finished writing parquet')
-        return
+        return len(input_json[CDMSConstants.observations_key])

@@ -4,6 +4,8 @@ from flask_restx import Resource, Namespace, fields
 from flask import request
 
 from parquet_flask.aws.aws_s3 import AwsS3
+from parquet_flask.io_logic.cdms_constants import CDMSConstants
+from parquet_flask.io_logic.metadata_tbl_io import MetadataTblIO
 from parquet_flask.io_logic.replace_file import ReplaceJsonFile
 from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.general_utils import GeneralUtils
@@ -48,11 +50,24 @@ class IngestParquet(Resource):
             s3 = AwsS3().set_s3_url(payload['s3_url'])
             job_id = payload['job_id']
             saved_file_name = s3.download(payload['s3_url'], self.__saved_dir)
-            ReplaceJsonFile().ingest(saved_file_name, job_id)
+            start_time = TimeUtils.get_current_time_unix()
+            num_records = ReplaceJsonFile().ingest(saved_file_name, job_id)
+            end_time = TimeUtils.get_current_time_unix()
+            LOGGER.debug(f'uploading to metadata table')
+            db_io = MetadataTblIO()
+            db_io.insert_record({
+                CDMSConstants.s3_url_key: payload['s3_url'],
+                CDMSConstants.uuid_key: job_id,
+                CDMSConstants.ingested_date_key: TimeUtils.get_current_time_unix(),
+                CDMSConstants.file_size_key: FileUtils.get_size(saved_file_name),
+                CDMSConstants.checksum_key: FileUtils.get_checksum(saved_file_name),
+                CDMSConstants.job_start_key: start_time,
+                CDMSConstants.job_end_key: end_time,
+                CDMSConstants.records_count_key: num_records,
+            })
+            LOGGER.debug(f'deleting used file')
             FileUtils.del_file(saved_file_name)
             # TODO make it background process?
-            # TODO store job details in database
-            # TODO add these: job start time, job end time, validation metadata, s3 url, job id
             s3.add_tags_to_obj({
                 'parquet_ingested': TimeUtils.get_current_time_str(),
                 'job_id': job_id,
