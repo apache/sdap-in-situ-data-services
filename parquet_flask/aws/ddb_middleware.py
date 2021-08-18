@@ -192,7 +192,7 @@ class DDBMiddleware(AwsCred):
         query_key = {self.__props.hash_key: hash_val}
         if range_val is not None and self.__props.range_key is not None:
             query_key[self.__props.range_key] = range_val
-        item_result = self._ddb_resource().Table(self.__props.tbl_name).get_item(
+        item_result = self._ddb_resource.Table(self.__props.tbl_name).get_item(
             Key=query_key
         )
         if 'Item' not in item_result:
@@ -287,4 +287,29 @@ ddb.update_one_item('SET #created_at_key = #created_at_key + :created_at_val', {
         if 'Attributes' not in item_result:
             return None
         return self._replace_decimals(item_result['Attributes'])
-    pass
+
+    def __get_ddb_type(self, input_val):
+        if isinstance(input_val, str):
+            return 'S'
+        if isinstance(input_val, bool):
+            return 'B'
+        return 'N'
+
+    def get_from_index(self, index_name: str, hash_dict: dict):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.query
+        :param index_name: str - name of a secondary index
+        :param hash_dict: dictionary of {'name': 'value'} of a hash key. Only 1 is allowed
+        :return:
+        """
+        hash_val = [v for v in hash_dict.values()][0]
+        query_dict = {
+            'IndexName': index_name,
+            'Select': 'ALL_ATTRIBUTES',  # 'ALL_ATTRIBUTES'|'ALL_PROJECTED_ATTRIBUTES'|'SPECIFIC_ATTRIBUTES'|'COUNT'
+            'Limit': 1,
+            'ConsistentRead': False,
+            'KeyConditionExpression': boto3.dynamodb.conditions.Key([k for k in hash_dict.keys()][0]).between(hash_val),
+        }
+        item_result = self._ddb_resource.Table(self.__props.tbl_name).query(**query_dict)
+        updated_result = [self._replace_decimals(k) for k in item_result['Items']]
+        return updated_result
