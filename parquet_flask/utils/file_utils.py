@@ -4,18 +4,27 @@ import os
 import zlib
 from functools import partial
 from pathlib import Path
+from subprocess import Popen, PIPE
 
 
 class FileUtils:
 
     @staticmethod
-    def get_crc_checksum(file_path, chunksize=65536):
-        """Compute the CRC-32 checksum of the contents of the given filename"""
-        with open(file_path, "rb") as f:
-            checksum = 0
-            for buf in iter(partial(f.read, chunksize), b''):
-                checksum = zlib.crc32(buf, checksum)
-            return checksum
+    def gunzip_file_os(zipped_file_path, output_file_path=None):
+        if not FileUtils.file_exist(zipped_file_path):
+            raise ValueError('missing file: {}'.format(zipped_file_path))
+        session = Popen(['gunzip', zipped_file_path], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = session.communicate()
+        if stderr:
+            raise RuntimeError('error while gunzipping the file with Popen. filename: {}. error: {}'.format(zipped_file_path, stderr))
+        default_output_path = zipped_file_path[:-3]
+        if not FileUtils.file_exist(default_output_path):
+            raise ValueError('missing gunzipped file: {}'.format(default_output_path))
+        if output_file_path is None:
+            output_file_path = default_output_path
+        if FileUtils.file_exist(output_file_path) and default_output_path != output_file_path:
+            os.renames(default_output_path, output_file_path)
+        return output_file_path
 
     @staticmethod
     def get_checksum(file_path):

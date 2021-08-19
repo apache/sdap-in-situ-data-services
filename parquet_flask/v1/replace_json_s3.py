@@ -50,6 +50,10 @@ class IngestParquet(Resource):
             s3 = AwsS3().set_s3_url(payload['s3_url'])
             job_id = payload['job_id']
             saved_file_name = s3.download(payload['s3_url'], self.__saved_dir)
+            if saved_file_name.lower().endswith('.gz'):
+                LOGGER.debug(f's3 file is in gzipped form. unzipping. {saved_file_name}')
+                saved_file_name = FileUtils.gunzip_file_os(saved_file_name)
+            LOGGER.debug(f'ingesting file: {saved_file_name}')
             start_time = TimeUtils.get_current_time_unix()
             num_records = ReplaceJsonFile().ingest(saved_file_name, job_id)
             end_time = TimeUtils.get_current_time_unix()
