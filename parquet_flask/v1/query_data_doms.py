@@ -1,5 +1,6 @@
 import json
 import logging
+from copy import deepcopy
 
 from flask_restx import Resource, Namespace, fields
 from flask import request
@@ -27,9 +28,47 @@ query_model = api.model('query_data_doms', {
 class IngestParquet(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
-        self.__saved_dir = '/tmp'  # TODO update this
+        self.__start_from = 0
+        self.__size = 0
+
+    def __calculate_4_ranges(self, total_result):
+        if self.__size == 0:
+            return {
+                'first': 0,
+                'last': 0,
+                'prev': 0,
+                'next': 0,
+            }
+        div, mod = divmod(total_result, self.__size)
+        if mod > 0:
+            div += 1
+        page_info = {
+            'first': 0,
+            'last': div - 1,
+            'prev': 0 if self.__start_from == 0 else self.__start_from - 1,
+        }
+        page_info['next'] = page_info['last'] if self.__start_from == page_info['last'] else self.__start_from + 1
+        return page_info
+
+    def __replace_start_from(self, new_start_from):
+        new_args = deepcopy(dict(request.args))
+        new_args['startIndex'] = new_start_from
+        return '&'.join([f'{k}={v}' for k, v in new_args.items()])
 
     def __execute_query(self, payload):
+        """
+        TODO: transform the results to:
+        {
+            "last": "url",
+            "prev": "url",
+            "next": "url",
+            "first": "url",
+            "results": ["results"],
+            "total": "number
+        }
+        :param payload:
+        :return:
+        """
         is_valid, json_error = GeneralUtils.is_json_valid(payload, QUERY_PROPS_SCHEMA)
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
@@ -37,16 +76,23 @@ class IngestParquet(Resource):
             query = Query(QueryProps().from_json(payload))
             result_set = query.search()
             LOGGER.debug(f'search params: {payload}. result: {result_set}')
-            return {'result_set': result_set}, 200
+            page_info = self.__calculate_4_ranges(result_set['total'])
+            result_set['last'] = f'{request.base_url}?{self.__replace_start_from(page_info["last"])}'
+            result_set['first'] = f'{request.base_url}?{self.__replace_start_from(page_info["first"])}'
+            result_set['next'] = f'{request.base_url}?{self.__replace_start_from(page_info["next"])}'
+            result_set['prev'] = f'{request.base_url}?{self.__replace_start_from(page_info["prev"])}'
+            return result_set, 200
         except Exception as e:
             LOGGER.exception(f'failed to query parquet. cause: {str(e)}')
             return {'message': 'failed to query parquet', 'details': str(e)}, 500
 
     @api.expect()
     def get(self):
+        self.__start_from = int(request.args.get('startIndex', '0'))
+        self.__size = int(request.args.get('itemsPerPage', '10'))
         query_json = {
-            'start_from': int(request.args.get('startIndex', '0')),
-            'size': int(request.args.get('itemsPerPage', '10')),
+            'start_from': self.__start_from,
+            'size': self.__size,
         }
         if 'startTime' in request.args:
             query_json['min_time'] = request.args.get('startTime')
