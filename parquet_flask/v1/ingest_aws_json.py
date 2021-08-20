@@ -15,7 +15,7 @@ class IngestAwsJsonProps:
     def __init__(self):
         self.__s3_url = None
         self.__uuid = str(uuid.uuid4())
-        self.__working_dir = '/tmp'
+        self.__working_dir = f'/tmp/{str(uuid.uuid4())}'
 
     @property
     def working_dir(self):
@@ -78,6 +78,7 @@ class IngestAwsJson:
             LOGGER.debug(f'starting to ingest: {self.__props.s3_url}')
             s3 = AwsS3().set_s3_url(self.__props.s3_url)
             LOGGER.debug(f'downloading s3 file: {self.__props.uuid}')
+            FileUtils.mk_dir_p(self.__props.working_dir)
             self.__saved_file_name = s3.download(self.__props.working_dir)
             if self.__saved_file_name.lower().endswith('.gz'):
                 LOGGER.debug(f's3 file is in gzipped form. unzipping. {self.__saved_file_name}')

@@ -8,6 +8,10 @@ from subprocess import Popen, PIPE
 
 
 class FileUtils:
+    @staticmethod
+    def mk_dir_p(dir_path):
+        Path(dir_path).mkdir(parents=True, exist_ok=True)
+        return
 
     @staticmethod
     def gunzip_file_os(zipped_file_path, output_file_path=None):
