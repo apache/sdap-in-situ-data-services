@@ -23,7 +23,7 @@ query_model = api.model('query_data_doms', {
 })
 
 
-@api.route('', methods=["post"])
+@api.route('', methods=["get", "post"])
 class IngestParquet(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
@@ -45,8 +45,8 @@ class IngestParquet(Resource):
     @api.expect()
     def get(self):
         query_json = {
-            'start_from': request.args.get('startIndex', '0'),
-            'size': request.args.get('itemsPerPage', '10'),
+            'start_from': int(request.args.get('startIndex', '0')),
+            'size': int(request.args.get('itemsPerPage', '10')),
         }
         if 'startTime' in request.args:
             query_json['min_time'] = request.args.get('startTime')
