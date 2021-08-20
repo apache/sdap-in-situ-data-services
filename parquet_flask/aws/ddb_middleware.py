@@ -100,7 +100,7 @@ class DDBMiddleware(AwsCred):
         if self.__props.tbl_name is None:
             raise ValueError('missing tbl_name')
         try:
-            tbl_details = self._ddb_client().describe_table(TableName=self.__props.tbl_name)
+            tbl_details = self._ddb_client.describe_table(TableName=self.__props.tbl_name)
             return tbl_details
         except Exception as e:
             # TODO should check if exception is this one "ResourceNotFoundException". if not, throw the error
@@ -153,7 +153,7 @@ class DDBMiddleware(AwsCred):
         }
         if len(gsi_list) > 0:
             create_tbl_params['GlobalSecondaryIndexes'] = gsi_list
-        create_result = self._ddb_client().create_table(**create_tbl_params)
+        create_result = self._ddb_client.create_table(**create_tbl_params)
         return create_result
 
     def _replace_decimals(self, obj):
@@ -214,7 +214,7 @@ class DDBMiddleware(AwsCred):
         query_key = {self.__props.hash_key: hash_val}
         if range_val is not None and self.__props.range_key is not None:
             query_key[self.__props.range_key] = range_val
-        item_result = self._ddb_resource().Table(self.__props.tbl_name).delete_item(Key=query_key, ReturnValues='ALL_OLD')
+        item_result = self._ddb_resource.Table(self.__props.tbl_name).delete_item(Key=query_key, ReturnValues='ALL_OLD')
         if 'Attributes' not in item_result:
             LOGGER.warning('cannot retrieved deleted attributes.')
             return None
@@ -236,7 +236,7 @@ class DDBMiddleware(AwsCred):
             else:
                 condition = '{} = {}'.format(self.__props.hash_key, hash_val)
             addition_arguments['ConditionExpression'] = condition
-        item_result = self._ddb_resource().Table(self.__props.tbl_name).put_item(**addition_arguments)
+        item_result = self._ddb_resource.Table(self.__props.tbl_name).put_item(**addition_arguments)
         """
         {'ResponseMetadata': {'RequestId': '49876A3IFHPMRFIEUMANGFAO8VVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Mon, 08 Mar 2021 17:58:08 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '2', 'connection': 'keep-alive', 'x-amzn-requestid': '49876A3IFHPMRFIEUMANGFAO8VVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2745614147'}, 'RetryAttempts': 0}}
         """
@@ -245,7 +245,7 @@ class DDBMiddleware(AwsCred):
 
     def scan_tbl(self, conditions_dict):
         LOGGER.info('scanning items from DDB using they key')
-        current_tbl = self._ddb_resource().Table(self.__props.tbl_name)
+        current_tbl = self._ddb_resource.Table(self.__props.tbl_name)
         item_result = current_tbl.scan(
             Limit=1,
             ScanFilter=conditions_dict,
@@ -277,7 +277,7 @@ ddb.update_one_item('SET #created_at_key = #created_at_key + :created_at_val', {
         query_key = {self.__props.hash_key: hash_val}
         if range_val is not None and self.__props.range_key is not None:
             query_key[self.__props.range_key] = range_val
-        item_result = self._ddb_resource().Table(self.__props.tbl_name).update_item(
+        item_result = self._ddb_resource.Table(self.__props.tbl_name).update_item(
             Key=query_key,
             UpdateExpression=update_expression,
             ExpressionAttributeNames=expression_names,
