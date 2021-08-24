@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 VALID_KEY_TYPE = ['S', 'N', 'B']
 
 
-class DDBMiddlewareProps:
+class AwsDdbProps:
     def __init__(self):
         self.__tbl_name = None
         self.__hash_key = None
@@ -89,8 +89,8 @@ class DDBMiddlewareProps:
         return
 
 
-class DDBMiddleware(AwsCred):
-    def __init__(self, props=DDBMiddlewareProps()):
+class AwsDdb(AwsCred):
+    def __init__(self, props=AwsDdbProps()):
         super().__init__()
         self.__props = props
         self._ddb_client = boto3.Session(**self.boto3_session).client('dynamodb')
