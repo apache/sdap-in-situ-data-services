@@ -7,6 +7,10 @@ class MetadataTblInterface(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
+    def replace_record(self, new_record):
+        return
+
+    @abc.abstractmethod
     def get_by_s3_url(self, s3_url):
         return
 

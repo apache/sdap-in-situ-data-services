@@ -43,4 +43,5 @@ class IngestParquet(Resource):
         props = IngestAwsJsonProps()
         props.s3_url = payload['s3_url']
         props.uuid = payload['job_id']
+        props.is_replacing = True
         return IngestAwsJson(props).ingest()

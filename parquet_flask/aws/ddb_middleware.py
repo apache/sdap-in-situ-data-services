@@ -230,12 +230,17 @@ class DDBMiddleware(AwsCred):
             'Item': item_dict,
             'ReturnValues': 'ALL_OLD',
         }
-        if replace is False:
+        if replace is True:
             if range_val is not None and self.__props.range_key is not None:
                 condition = Attr(self.__props.hash_key).eq(hash_val) and Attr(self.__props.range_key).ne(range_val)
             else:
-                condition = '{} = {}'.format(self.__props.hash_key, hash_val)
-            addition_arguments['ConditionExpression'] = condition
+                condition = Attr(self.__props.hash_key).eq(hash_val)
+        else:
+            if range_val is not None and self.__props.range_key is not None:
+                condition = Attr(self.__props.hash_key).ne(hash_val) and Attr(self.__props.range_key).ne(range_val)
+            else:
+                condition = Attr(self.__props.hash_key).ne(hash_val)
+        addition_arguments['ConditionExpression'] = condition
         item_result = self._ddb_resource.Table(self.__props.tbl_name).put_item(**addition_arguments)
         """
         {'ResponseMetadata': {'RequestId': '49876A3IFHPMRFIEUMANGFAO8VVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Mon, 08 Mar 2021 17:58:08 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '2', 'connection': 'keep-alive', 'x-amzn-requestid': '49876A3IFHPMRFIEUMANGFAO8VVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2745614147'}, 'RetryAttempts': 0}}

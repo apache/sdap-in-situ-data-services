@@ -28,6 +28,10 @@ class MetadataTblIO(MetadataTblInterface):
         self.__ddb.add_one_item(new_record, new_record[CDMSConstants.s3_url_key])
         return
 
+    def replace_record(self, new_record):
+        self.__ddb.add_one_item(new_record, new_record[CDMSConstants.s3_url_key], replace=True)
+        return
+
     def get_by_s3_url(self, s3_url):
         return self.__ddb.get_one_item(s3_url)
 

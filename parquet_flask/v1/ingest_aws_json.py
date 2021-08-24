@@ -16,6 +16,20 @@ class IngestAwsJsonProps:
         self.__s3_url = None
         self.__uuid = str(uuid.uuid4())
         self.__working_dir = f'/tmp/{str(uuid.uuid4())}'
+        self.__is_replacing = False
+
+    @property
+    def is_replacing(self):
+        return self.__is_replacing
+
+    @is_replacing.setter
+    def is_replacing(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__is_replacing = val
+        return
 
     @property
     def working_dir(self):
@@ -89,7 +103,7 @@ class IngestAwsJson:
             end_time = TimeUtils.get_current_time_unix()
             LOGGER.debug(f'uploading to metadata table')
             db_io = MetadataTblIO()
-            db_io.insert_record({
+            new_record = {
                 CDMSConstants.s3_url_key: self.__props.s3_url,
                 CDMSConstants.uuid_key: self.__props.uuid,
                 CDMSConstants.ingested_date_key: self.__ingested_date,
@@ -98,7 +112,11 @@ class IngestAwsJson:
                 CDMSConstants.job_start_key: start_time,
                 CDMSConstants.job_end_key: end_time,
                 CDMSConstants.records_count_key: num_records,
-            })
+            }
+            if self.__props.is_replacing:
+                db_io.replace_record(new_record)
+            else:
+                db_io.insert_record(new_record)
             LOGGER.debug(f'deleting used file')
             FileUtils.del_file(self.__saved_file_name)
             # TODO make it background process?
