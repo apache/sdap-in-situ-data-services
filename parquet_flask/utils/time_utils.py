@@ -15,5 +15,6 @@ class TimeUtils:
         return datetime.strptime(dt_str, fmt)
 
     @staticmethod
-    def get_time_str(unix_timestamp, fmt='%Y-%m-%dT%H:%M:%SZ'):
-        return datetime.utcfromtimestamp(unix_timestamp).strftime(fmt)
+    def get_time_str(unix_timestamp, fmt='%Y-%m-%dT%H:%M:%SZ', in_ms=True):
+        converting_timestamp = unix_timestamp / 1000 if in_ms is True else unix_timestamp
+        return datetime.utcfromtimestamp(converting_timestamp).strftime(fmt)
