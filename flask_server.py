@@ -1,17 +1,30 @@
+import os
+import sys
+
 import findspark
 findspark.init()
 
 def flask_me():
     import logging
 
+    log_formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s')
+    log_level = getattr(logging, os.getenv('log_level', 'INFO').upper(), None)
+    if not isinstance(log_level, int):
+        print(f'invalid log_level:{log_level}. setting to INFO')
+        log_level = logging.INFO
+
     file_handler = logging.FileHandler('/tmp/parquet_flask.log', mode='a')
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s'))
+    file_handler.setLevel(log_level)
+    file_handler.setFormatter(log_formatter)
+
+    stream_handler = logging.StreamHandler(stream=sys.stdout)
+    stream_handler.setLevel(level=log_level)
+    stream_handler.setFormatter(log_formatter)
 
     logging.basicConfig(
-        level=logging.DEBUG,  # TODO set it from container level
-        format="%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s",
-        handlers=[file_handler]
+        level=log_level,
+        format=log_formatter,
+        handlers=[file_handler, stream_handler]
     )
 
     LOGGER = logging.getLogger(__name__)

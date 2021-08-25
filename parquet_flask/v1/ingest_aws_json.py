@@ -76,6 +76,7 @@ class IngestAwsJson:
         self.__props = props
         self.__saved_file_name = None
         self.__ingested_date = TimeUtils.get_current_time_unix()
+        self.__db_io = MetadataTblIO()
 
     def ingest(self):
         """
@@ -90,6 +91,15 @@ class IngestAwsJson:
         """
         try:
             LOGGER.debug(f'starting to ingest: {self.__props.s3_url}')
+            existing_record = self.__db_io.get_by_s3_url(self.__props.s3_url)
+            if existing_record is None and self.__props.is_replacing is True:
+                LOGGER.error(f'unable to replace file as it is new. {self.__props.s3_url}')
+                return {'message': 'unable to replace file as it is new'}, 500
+
+            if existing_record is not None and self.__props.is_replacing is False:
+                LOGGER.error(f'unable to ingest file as it is already ingested. {self.__props.s3_url}. ingested record: {existing_record}')
+                return {'message': 'unable to ingest file as it is already ingested'}, 500
+
             s3 = AwsS3().set_s3_url(self.__props.s3_url)
             LOGGER.debug(f'downloading s3 file: {self.__props.uuid}')
             FileUtils.mk_dir_p(self.__props.working_dir)
@@ -102,7 +112,6 @@ class IngestAwsJson:
             num_records = IngestNewJsonFile().ingest(self.__saved_file_name, self.__props.uuid)
             end_time = TimeUtils.get_current_time_unix()
             LOGGER.debug(f'uploading to metadata table')
-            db_io = MetadataTblIO()
             new_record = {
                 CDMSConstants.s3_url_key: self.__props.s3_url,
                 CDMSConstants.uuid_key: self.__props.uuid,
@@ -114,9 +123,9 @@ class IngestAwsJson:
                 CDMSConstants.records_count_key: num_records,
             }
             if self.__props.is_replacing:
-                db_io.replace_record(new_record)
+                self.__db_io.replace_record(new_record)
             else:
-                db_io.insert_record(new_record)
+                self.__db_io.insert_record(new_record)
             LOGGER.debug(f'deleting used file')
             FileUtils.del_file(self.__saved_file_name)
             # TODO make it background process?
