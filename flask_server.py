@@ -6,8 +6,8 @@ findspark.init()
 
 def flask_me():
     import logging
-
-    log_formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s')
+    log_format = '%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s'
+    log_formatter = logging.Formatter(log_format)
     log_level = getattr(logging, os.getenv('log_level', 'INFO').upper(), None)
     if not isinstance(log_level, int):
         print(f'invalid log_level:{log_level}. setting to INFO')
@@ -23,7 +23,7 @@ def flask_me():
 
     logging.basicConfig(
         level=log_level,
-        format=log_formatter,
+        format=log_format,
         handlers=[file_handler, stream_handler]
     )
 

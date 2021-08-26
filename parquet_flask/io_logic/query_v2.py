@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+# from pyspark import F
 from pyspark.sql.dataframe import DataFrame
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
@@ -323,34 +324,62 @@ class Query:
         spark = RetrieveSparkSession().retrieve_spark_session(self.__app_name, self.__master_spark)
         return spark
 
+    def __sql_query(self, spark_session=None):
+        conditions = self.__add_conditions()
+        sql_stmt = 'select count(*) from ParquetTable '
+        if len(conditions) > 0:
+            sql_stmt = f'{sql_stmt} where {conditions} ; '
+        LOGGER.debug(f'query statement: {sql_stmt}')
+        time_start = datetime.now()
+        spark = self.__retrieve_spark() if spark_session is None else spark_session
+        spark.read.parquet(self.__parquet_name).createOrReplaceTempView("parquetTable")
+        read_df_time = datetime.now()
+        LOGGER.debug(f'query_2 parquet read created at {read_df_time}. took: {read_df_time - time_start}')
+        result_count = spark.sql(sql_stmt).collect()
+        time_end = datetime.now()
+        LOGGER.debug(f'query_2 count duration: {time_end - time_start}')
+
+        sql_stmt = 'select * from ParquetTable '
+        if len(conditions) > 0:
+            sql_stmt = f'{sql_stmt} where {conditions} ; '  #  limit {self.__props.start_at + self.__props.size},{self.__props.size}
+        LOGGER.debug(f'query statement: {sql_stmt}')
+        removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
+        result = spark.sql(sql_stmt).coalesce(1).limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
+        time_end = datetime.now()
+        LOGGER.debug(f'query_2 result duration: {time_end - time_start}')
+        return {'result': result}
+
     def search(self, spark_session=None):
+        # LOGGER.debug(f'self.__sql_query(spark_session): {self.__sql_query(spark_session)}')
         conditions = self.__add_conditions()
         query_begin_time = datetime.now()
         LOGGER.debug(f'query begins at {query_begin_time}')
         spark = self.__retrieve_spark() if spark_session is None else spark_session
         created_spark_session_time = datetime.now()
-        LOGGER.debug(f'spark session created at {created_spark_session_time}. took: {created_spark_session_time - query_begin_time}')
+        LOGGER.debug(f'spark session created at {created_spark_session_time}. duration: {created_spark_session_time - query_begin_time}')
         read_df: DataFrame = spark.read.parquet(self.__parquet_name)
         read_df_time = datetime.now()
-        LOGGER.debug(f'parquet read created at {read_df_time}. took: {read_df_time - created_spark_session_time}')
+        LOGGER.debug(f'parquet read created at {read_df_time}. duration: {read_df_time - created_spark_session_time}')
         query_result = read_df.where(conditions)
         query_result = query_result.coalesce(1)
         query_time = datetime.now()
-        LOGGER.debug(f'parquet read filtered at {query_time}. took: {query_time - read_df_time}')
+        LOGGER.debug(f'parquet read filtered at {query_time}. duration: {query_time - read_df_time}')
         LOGGER.debug(f'total duration: {query_time - query_begin_time}')
-        total_result = int(query_result.count())
+        total_result = int(query_result.coalesce(1).count())
         LOGGER.debug(f'total calc count duration: {datetime.now() - query_time}')
         if self.__props.size < 1:
-            LOGGER.debug(f'returning only the size: {int(query_result.count())}')
+            LOGGER.debug(f'returning only the size: {total_result}')
             return {
                 'total': total_result,
                 'results': [],
             }
         query_time = datetime.now()
-        if len(self.__props.columns) > 0:
-            query_result = query_result.select(self.__props.columns)
-        LOGGER.debug(f'returning size : {total_result}')
+        # result = query_result.withColumn('_id', F.monotonically_increasing_id())
         removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
+        # result = result.where(F.col('_id').between(self.__props.start_at, self.__props.start_at + self.__props.size)).drop(*removing_cols)
+        if len(self.__props.columns) > 0:
+            result = query_result.select(self.__props.columns)
+        LOGGER.debug(f'returning size : {total_result}')
         result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
         LOGGER.debug(f'total retrieval duration: {datetime.now() - query_time}')
         return {
