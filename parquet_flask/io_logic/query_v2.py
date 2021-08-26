@@ -334,21 +334,26 @@ class Query:
         read_df_time = datetime.now()
         LOGGER.debug(f'parquet read created at {read_df_time}. took: {read_df_time - created_spark_session_time}')
         query_result = read_df.where(conditions)
+        query_result = query_result.coalesce(1)
         query_time = datetime.now()
         LOGGER.debug(f'parquet read filtered at {query_time}. took: {query_time - read_df_time}')
         LOGGER.debug(f'total duration: {query_time - query_begin_time}')
+        total_result = int(query_result.count())
+        LOGGER.debug(f'total calc count duration: {datetime.now() - query_time}')
         if self.__props.size < 1:
             LOGGER.debug(f'returning only the size: {int(query_result.count())}')
             return {
-                'total': int(query_result.count()),
+                'total': total_result,
                 'results': [],
             }
+        query_time = datetime.now()
         if len(self.__props.columns) > 0:
             query_result = query_result.select(self.__props.columns)
-        LOGGER.debug(f'returning size : {int(query_result.count())}')
+        LOGGER.debug(f'returning size : {total_result}')
         removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
         result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
+        LOGGER.debug(f'total retrieval duration: {datetime.now() - query_time}')
         return {
-            'total': int(query_result.count()),
+            'total': total_result,
             'results': [k.asDict() for k in result],
         }
