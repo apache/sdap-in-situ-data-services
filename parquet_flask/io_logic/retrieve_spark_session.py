@@ -18,6 +18,7 @@ class RetrieveSparkSession(metaclass=Singleton):
             conf.set('spark.hadoop.fs.s3a.secret.key', Config().get_value('aws_secret_access_key'))
             conf.set('spark.hadoop.fs.s3a.session.token', Config().get_value('aws_session_token'))
             conf.set('spark.hadoop.fs.s3a.connection.ssl.enabled', 'true')
+            # conf.set('spark.default.parallelism', '10')
             # conf.set('spark.hadoop.fs.s3a.endpoint', 's3.us-gov-west-1.amazonaws.com')
             self.__sparks[session_key] = SparkSession.builder.appName(app_name).config(conf=conf).master(master_spark).getOrCreate()
         return self.__sparks[session_key]
