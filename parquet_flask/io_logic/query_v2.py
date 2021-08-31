@@ -365,8 +365,8 @@ class Query:
         query_time = datetime.now()
         LOGGER.debug(f'parquet read filtered at {query_time}. duration: {query_time - read_df_time}')
         LOGGER.debug(f'total duration: {query_time - query_begin_time}')
-        # total_result = int(query_result.coalesce(1).count())
-        total_result = 1000  # faking this for now. TODO revert it.
+        total_result = int(query_result.coalesce(3).count())
+        # total_result = 1000  # faking this for now. TODO revert it.
         LOGGER.debug(f'total calc count duration: {datetime.now() - query_time}')
         if self.__props.size < 1:
             LOGGER.debug(f'returning only the size: {total_result}')
