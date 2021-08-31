@@ -38,8 +38,8 @@ services:
     image: spark-worker
     container_name: spark-worker-1
     environment:
-      - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=1024m
+      - SPARK_WORKER_CORES=3
+      - SPARK_WORKER_MEMORY=3072m
     ports:
       - 8471:8081
     volumes:
@@ -50,10 +50,22 @@ services:
     image: spark-worker
     container_name: spark-worker-2
     environment:
-      - SPARK_WORKER_CORES=1
-      - SPARK_WORKER_MEMORY=1024m
+      - SPARK_WORKER_CORES=3
+      - SPARK_WORKER_MEMORY=3072m
     ports:
       - 8472:8081
+    volumes:
+      - shared-workspace:/opt/workspace
+    depends_on:
+      - spark-master
+  spark-worker-3:
+    image: spark-worker
+    container_name: spark-worker-3
+    environment:
+      - SPARK_WORKER_CORES=3
+      - SPARK_WORKER_MEMORY=3072m
+    ports:
+      - 8473:8081
     volumes:
       - shared-workspace:/opt/workspace
     depends_on:

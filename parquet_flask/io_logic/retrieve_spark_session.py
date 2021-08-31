@@ -9,7 +9,7 @@ class RetrieveSparkSession(metaclass=Singleton):
     def __init__(self):
         self.__sparks = {}
 
-    def retrieve_spark_session(self, app_name, master_spark, ram='1024m'):
+    def retrieve_spark_session(self, app_name, master_spark, ram='3072m'):
         session_key = '{}__{}'.format(app_name, master_spark)
         if session_key not in self.__sparks:
             conf = SparkConf()
