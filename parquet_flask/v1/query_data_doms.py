@@ -106,4 +106,6 @@ class IngestParquet(Resource):
             bounding_box = json.loads(request.args.get('bbox'))
             query_json['min_lat_lon'] = [bounding_box[1], bounding_box[0]]
             query_json['max_lat_lon'] = [bounding_box[3], bounding_box[2]]
+        if 'platform' in request.args:
+            query_json['platform_code'] = request.args.get('platform')
         return self.__execute_query(query_json)

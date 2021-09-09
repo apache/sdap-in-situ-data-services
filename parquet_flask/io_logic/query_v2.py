@@ -20,6 +20,7 @@ QUERY_PROPS_SCHEMA = {
             'items': {'type': 'string'},
             'minItems': 0,
         },
+        'platform_code': {'type': 'string'},
         'provider': {'type': 'string'},
         'project': {'type': 'string'},
         'min_depth': {'type': 'number'},
@@ -105,8 +106,8 @@ class QueryProps:
             self.provider = input_json['provider']
         if 'device' in input_json:
             self.provider = input_json['device']
-        if 'platform_id' in input_json:
-            self.platform_id = input_json['platform_id']
+        if 'platform_code' in input_json:
+            self.platform_code = input_json['platform_code']
         if 'columns' in input_json:
             self.columns = input_json['columns']
         return self
