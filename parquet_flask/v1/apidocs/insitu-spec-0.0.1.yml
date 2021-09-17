@@ -1,0 +1,263 @@
+openapi: 3.0.3
+info:
+  title: in-situ-data-services
+  description: API for querying in-situ data sources
+  version: 0.0.1
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://rda-data.ucar.edu:8890/ws/search
+  - url: http://doms.coaps.fsu.edu/ws/search
+  - url: https://doms.jpl.nasa.gov
+  - url: /
+    description: Current server
+
+paths:
+   '/{source}':
+    get:
+      summary: Query data source
+      tags:
+        - Query
+      parameters:
+        - in: path
+          name: source
+          required: true
+          description:  |
+            Currently avalible sources:
+              - rda-data.ucar.edu:8890 - icoads
+              - doms.coaps.fsu.edu - samos
+              - doms.jpl.nasa.gov - spurs, spurs2
+          example: icoads
+          schema:
+            type: string
+        - $ref: '#/components/parameters/startTimeParam'
+        - $ref: '#/components/parameters/endTimeParam'
+        - $ref: '#/components/parameters/bboxParam'
+        - $ref: '#/components/parameters/variableParam'
+        - $ref: '#/components/parameters/minDepthParam'
+        - $ref: '#/components/parameters/maxDepthParam'
+        - $ref: '#/components/parameters/platformParam'
+        - $ref: '#/components/parameters/startIndexParam'
+        - $ref: '#/components/parameters/itemsPerPageParam'
+        - $ref: '#/components/parameters/prettyParam'
+      responses:
+        '200':
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+        default:
+          description: 'Invalid query'
+
+components:
+  schemas:
+    QueryResponse:
+     type: object
+     properties:
+       last:
+         type: string
+         example: 'http://rda-data.ucar.edu:8890/ws/search/icoads?startIndex=928610&endTime=2013-10-31T23%3A59%3A59Z&bbox=-45%2C15%2C-30%2C30&startTime=2012-08-01T00%3A00%3A00Z'
+       next:
+         type: string
+         example: 'http://rda-data.ucar.edu:8890/ws/search/icoads?startIndex=10&endTime=2013-10-31T23%3A59%3A59Z&bbox=-45%2C15%2C-30%2C30&startTime=2012-08-01T00%3A00%3A00Z'
+       first:
+         type: string
+         example: 'http://rda-data.ucar.edu:8890/ws/search/icoads?startIndex=0&endTime=2013-10-31T23%3A59%3A59Z&bbox=-45%2C15%2C-30%2C30&startTime=2012-08-01T00%3A00%3A00Z'
+       results:
+         type: array
+         items:
+           $ref: '#/components/schemas/Result'
+       totalResults:
+         type: integer
+         example: 928618
+         minimum: 0
+       startIndex:
+         type: integer
+         example: 0
+         minimum: 0
+       itemsPerPage:
+         type: integer
+         example: 10
+         minimum: 0
+         
+    Result:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 'A1V2GP'
+        time:
+          type: string
+          format: date-time
+          example: '2012-09-01T07:00:00Z'
+        point:
+          type: string
+          pattern: 'Point\(-?\d{1,2}\.\d{1,2} -?\d{1,2}\.\d{1,2}\)'
+          example: 'Point(-35.90 25.70)'
+        sea_water_temperature:
+          type: number
+          example: 26.9
+        sea_water_temperature_depth:
+          type: number
+          nullable: true
+        sea_water_temperature_quality:
+          type: integer
+          example: 1
+        wind_speed:
+          type: number
+          example: 8.2
+        eastward_wind:
+          type: number
+          example: -7.1
+        northward_wind:
+          type: number
+          example: -4.1
+        wind_depth:
+          type: number
+          nullable: true
+        wind_speed_quality:
+          type: integer
+          example: 1
+        wind_component_quality:
+          type: integer
+          example: 1
+        sea_water_salinity:
+          type: number
+          nullable: true
+        sea_water_salinity_depth:
+          type: number
+          nullable: true
+        sea_water_salinity_quality:
+          type: integer
+          example: 9
+        mission:
+          type: integer
+          example: 2
+        platform:
+          type: integer
+          example: 1
+        device:
+          type: integer
+          nullable: true
+        metadata:
+          type: object
+          properties:
+            uid:
+              type: string
+              example: 'A1V2GP'
+            rn:
+              type: integer
+              example: 300
+            dck:
+              type: integer
+              example: 992
+            sid:
+              type: integer
+              example: 114
+            pt:
+              type: integer
+              example: 5
+            si:
+              type: integer
+              example: 3
+            wi:
+              type: integer
+              example: 4
+            di:
+              type: integer
+              example: 0
+            b10:
+              type: integer
+              example: 246
+            nd:
+              type: integer
+              example: 1
+            trms:
+              type: string
+              example: '111111'
+            nqcs:
+              type: string
+              example: '11AAA11A118AA1'
+
+  parameters:
+    startTimeParam:
+      in: query
+      name: startTime
+      description: 'Start time in the format of YYYY-MM-DDTHH:mm:ssZ'
+      example: 2012-08-01T00:00:00Z
+      schema:
+        type: string
+        format: date-time
+    endTimeParam:
+      in: query
+      name: endTime
+      description: 'End time in the format of YYYY-MM-DDTHH:mm:ssZ'
+      example: 2013-10-31T23:59:59Z
+      schema:
+        type: string
+        format: date-time
+    bboxParam:
+      in: query
+      name: bbox
+      description: 'Bounding box with coordinates specified in this order: west, south, east, north'
+      example: -45,15,-30,30
+      schema:
+        type: string
+        pattern: '-?\d{1,3},-?\d{1,2},-?\d{1,3},-?\d{1,2}'
+    variableParam:
+      in: query
+      name: variable
+      schema:
+        type: string
+        example: sss
+        enum:
+          - sss
+          - sst
+          - wind
+    minDepthParam:
+      in: query
+      name: minDepth
+      description: 'Minimum depth value in meters'
+      example: -5
+      schema:
+        type: integer
+    maxDepthParam:
+      in: query
+      name: maxDepth
+      description: 'Maximum depth value in meters'
+      example: 5
+      schema:
+        type: integer
+    platformParam:
+      in: query
+      name: platform
+      description: 'Platform ID'
+      example: 1
+      schema:
+        type: integer
+    startIndexParam:
+      in: query
+      name: startIndex
+      description: 'Start index of entries in the result; used for pagination'
+      example: 0
+      schema:
+        type: integer
+        default: 0
+    itemsPerPageParam:
+      in: query
+      name: itemsPerPage
+      description: 'Number of results per page'
+      example: 10
+      schema:
+        default: 10
+        type: integer
+    prettyParam:
+      in: query
+      name: pretty
+      description: 'Return formatted results if set to true'
+      example: true
+      schema:
+        type: boolean
