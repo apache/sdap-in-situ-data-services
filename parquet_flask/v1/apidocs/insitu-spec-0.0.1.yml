@@ -187,7 +187,7 @@ components:
       in: query
       name: startTime
       description: 'Start time in the format of YYYY-MM-DDTHH:mm:ssZ'
-      example: 2012-08-01T00:00:00Z
+      example: '2012-08-01T00:00:00Z'
       schema:
         type: string
         format: date-time
@@ -195,7 +195,7 @@ components:
       in: query
       name: endTime
       description: 'End time in the format of YYYY-MM-DDTHH:mm:ssZ'
-      example: 2013-10-31T23:59:59Z
+      example: '2013-10-31T23:59:59Z'
       schema:
         type: string
         format: date-time
