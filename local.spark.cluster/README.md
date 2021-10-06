@@ -5,9 +5,10 @@ docker-compose up
 
 
 - JupyterLab at localhost:8888;
-- Spark master at localhost:8080;
-- Spark worker I at localhost:8081;
-- Spark worker II at localhost:8082;
+- Spark master at http://localhost:8470/;
+- Spark worker I at http://localhost:8471/;
+- Spark worker II at http://localhost:8472/;
+- Spark worker III at http://localhost:8473/;
 
 
 ### S3 connection

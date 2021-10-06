@@ -32,6 +32,7 @@ setup(
     install_requires=install_requires,
     author=['Wai Phyo',],
     author_email=['wai.phyo@jpl.nasa.gov', 'Matt.D.Lenda@jpl.nasa.gov'],
+    python_requires="==3.7",
     license='NONE',
     include_package_data=True,
 )

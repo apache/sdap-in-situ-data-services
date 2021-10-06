@@ -12,9 +12,12 @@ services:
       - aws_access_key_id=${aws_access_key_id}
       - aws_secret_access_key=${aws_secret_access_key}
       - aws_session_token=${aws_session_token}
+      - parquet_file_name=s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet
       - parquet_file_name_s3=s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet
-      - parquet_file_name=/opt/workspace/CDMS_insitu.parquet
-      - master_spark_url=spark://spark-master:7077
+      - parquet_file_name_local=/opt/workspace/CDMS_insitu.parquet
+      - master_spark_url_local=spark://spark-master:7077
+      - master_spark_bitnami-spark=spark://bitnami-spark-master-svc:7077
+      - master_spark=spark://bitnami-spark-master-svc:7077
       - spark_app_name=pyspark-flask
       - log_level=DEBUG
     ports:
@@ -33,7 +36,9 @@ services:
     container_name: spark-master
     ports:
       - 8470:8080
-      - 7477:7077
+      - 4470:4040
+      - 7077:7077
+      - 18080:18080
     volumes:
       - *shared-workspace
   spark-worker-1:
@@ -72,3 +77,5 @@ services:
       - *shared-workspace
     depends_on:
       - spark-master
+networks:
+  internal:

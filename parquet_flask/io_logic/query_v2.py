@@ -384,6 +384,7 @@ class Query:
         LOGGER.debug(f'returning size : {total_result}')
         result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
         LOGGER.debug(f'total retrieval duration: {datetime.now() - query_time}')
+        spark.stop()
         return {
             'total': total_result,
             'results': [k.asDict() for k in result],
