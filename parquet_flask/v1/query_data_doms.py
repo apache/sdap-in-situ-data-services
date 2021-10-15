@@ -19,6 +19,8 @@ query_model = api.model('query_data_doms', {
     'startTime': fields.String(required=True, example='2020-01-01T00:00:00Z'),
     'endTime': fields.String(required=True, example='2020-01-31T00:00:00Z'),
     'platform': fields.Integer(required=True, example=0),
+    'provider': fields.Integer(required=True, example=0),
+    'project': fields.Integer(required=True, example=0),
     'columns': fields.List(fields.String, required=False, example=['latitudes', 'longitudes']),
     'bbox': fields.List(fields.Float, required=True, example=[-45, 175, -30, 180]),  # west, south, east, north
 })
@@ -108,4 +110,8 @@ class IngestParquet(Resource):
             query_json['max_lat_lon'] = [bounding_box[3], bounding_box[2]]
         if 'platform' in request.args:
             query_json['platform_code'] = request.args.get('platform')
+        if 'provider' in request.args:
+            query_json['provider'] = request.args.get('provider')
+        if 'project' in request.args:
+            query_json['project'] = request.args.get('project')
         return self.__execute_query(query_json)
