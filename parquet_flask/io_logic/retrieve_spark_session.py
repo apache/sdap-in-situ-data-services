@@ -24,7 +24,8 @@ spark.executor.extraJavaOptions         -Dcom.amazonaws.services.s3.enableV4=tru
 spark.driver.extraJavaOptions           -Dcom.amazonaws.services.s3.enableV4=true
         """
         conf.set('spark.executor.memory', ram)
-        # conf.set('spark.hadoop.fs.s3a.impl', 'org.apache.hadoop.fs.s3a.S3AFileSystem')
+        # conf.set('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.2.0')  # crosscheck the version.
+        conf.set('spark.hadoop.fs.s3a.impl', 'org.apache.hadoop.fs.s3a.S3AFileSystem')
         # conf.set('spark.driver.extraClassPath', '/opt/bitnami/spark/jars/hadoop-aws-3.2.0.jar:/opt/bitnami/spark/jars/aws-java-sdk-bundle-1.11.375.jar')
         # conf.set('spark.executor.extraClassPath', '/opt/bitnami/spark/jars/hadoop-aws-3.2.0.jar:/opt/bitnami/spark/jars/aws-java-sdk-bundle-1.11.375.jar')
         # conf.set('spark.executor.extraJavaOptions', '-Dcom.amazonaws.services.s3.enableV4=true')

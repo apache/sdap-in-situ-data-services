@@ -279,6 +279,8 @@ class Query:
 
     def __add_conditions(self):
         conditions = []
+        min_year = None
+        max_year = None
         if self.__props.platform_code is not None:
             LOGGER.debug(f'setting platform_code condition: {self.__props.platform_code}')
             conditions.append(f"{CDMSConstants.platform_code_col} == '{self.__props.platform_code}'")
@@ -290,12 +292,18 @@ class Query:
             conditions.append(f"{CDMSConstants.project_col} == '{self.__props.project}'")
         if self.__props.min_datetime is not None:
             LOGGER.debug(f'setting datetime min condition: {self.__props.min_datetime}')
-            conditions.append(f"{CDMSConstants.year_col} >= {TimeUtils.get_datetime_obj(self.__props.min_datetime).year}")
+            min_year = TimeUtils.get_datetime_obj(self.__props.min_datetime).year
+            conditions.append(f"{CDMSConstants.year_col} >= {min_year}")
             conditions.append(f"{CDMSConstants.time_obj_col} >= '{self.__props.min_datetime}'")
         if self.__props.max_datetime is not None:
             LOGGER.debug(f'setting datetime max condition: {self.__props.max_datetime}')
-            conditions.append(f"{CDMSConstants.year_col} <= {TimeUtils.get_datetime_obj(self.__props.max_datetime).year}")
+            max_year = TimeUtils.get_datetime_obj(self.__props.max_datetime).year
+            conditions.append(f"{CDMSConstants.year_col} <= {max_year}")
             conditions.append(f"{CDMSConstants.time_obj_col} <= '{self.__props.max_datetime}'")
+        if min_year is not None and max_year is not None and min_year == max_year:
+            LOGGER.debug(f'setting month duration condition: {self.__props.max_datetime}')
+            conditions.append(f"{CDMSConstants.month_col} >= {TimeUtils.get_datetime_obj(self.__props.min_datetime).month}")
+            conditions.append(f"{CDMSConstants.month_col} <= {TimeUtils.get_datetime_obj(self.__props.max_datetime).month}")
         if self.__props.min_lat_lon is not None:
             LOGGER.debug(f'setting Lat-Lon min condition: {self.__props.min_lat_lon}')
             conditions.append(f"{CDMSConstants.lat_col} >= {self.__props.min_lat_lon[0]}")

@@ -17,6 +17,26 @@ class AwsS3(AwsCred):
         self.__target_bucket = None
         self.__target_key = None
 
+    def __get_all_s3_files_under(self, bucket, prefix, with_versions=False):
+        list_method_name = 'list_object_versions' if with_versions is True else 'list_objects_v2'
+        page_key = 'Versions' if with_versions is True else 'Contents'
+        paginator = self.__s3_client.get_paginator(list_method_name)
+        operation_parameters = {
+            'Bucket': bucket,
+            'Prefix': prefix
+        }
+        page_iterator = paginator.paginate(**operation_parameters)
+        for eachPage in page_iterator:
+            if page_key not in eachPage:
+                continue
+            for fileObj in eachPage[page_key]:
+                yield fileObj
+
+    def get_child_s3_files(self, bucket, prefix, additional_checks=lambda x: True, with_versions=False):
+        for fileObj in self.__get_all_s3_files_under(bucket, prefix, with_versions=with_versions):
+            if additional_checks(fileObj):
+                yield fileObj['Key'], fileObj['Size']
+
     def set_s3_url(self, s3_url):
         LOGGER.debug(f'setting s3_url: {s3_url}')
         self.__target_bucket, self.__target_key = self.split_s3_url(s3_url)
