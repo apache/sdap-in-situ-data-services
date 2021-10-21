@@ -156,8 +156,8 @@ class IngestAwsJson:
             if self.__saved_file_name.lower().endswith('.gz'):
                 LOGGER.debug(f's3 file is in gzipped form. unzipping. {self.__saved_file_name}')
                 self.__saved_file_name = FileUtils.gunzip_file_os(self.__saved_file_name)
-            self.__compare_sha512(self.__get_s3_sha512())
             self.__file_sha512 = FileUtils.get_checksum(self.__saved_file_name)
+            self.__compare_sha512(self.__get_s3_sha512())
             LOGGER.debug(f'ingesting file: {self.__saved_file_name}')
             start_time = TimeUtils.get_current_time_unix()
             num_records = IngestNewJsonFile().ingest(self.__saved_file_name, self.__props.uuid)
