@@ -109,7 +109,7 @@ class IngestAwsJson:
         try:
             s3.get_s3_obj_size()
             sha512_content = s3.read_small_txt_file()
-            return sha512_content.replace(os.path.basename(self.__props.s3_url, '')).strip()
+            return sha512_content.replace(os.path.basename(self.__props.s3_url), '').strip()
         except:
             LOGGER.exception(f'cannot find s3_sha_url')
             return None
@@ -182,14 +182,15 @@ class IngestAwsJson:
             LOGGER.debug(f'deleting used file')
             FileUtils.del_file(self.__saved_file_name)
             # TODO make it background process?
-            LOGGER.debug(f'tagging s3')
-            s3.add_tags_to_obj({
-                'parquet_ingested': TimeUtils.get_time_str(self.__ingested_date),
-                'job_id': self.__props.uuid,
-            })
+            LOGGER.warning('Disabled tagging S3 due to IAM issues')
+            # LOGGER.debug(f'tagging s3')
+            # s3.add_tags_to_obj({
+            #     'parquet_ingested': TimeUtils.get_time_str(self.__ingested_date),
+            #     'job_id': self.__props.uuid,
+            # })
             if self.__sha512_result is True:
-                return {'message': 'ingested'}, 201
-            return {'message': 'ingested, different sha512', 'cause': self.__sha512_cause}, 203
+                return {'message': 'ingested', 'job_id': self.__props.uuid}, 201
+            return {'message': 'ingested, different sha512', 'cause': self.__sha512_cause, 'job_id': self.__props.uuid}, 203
         except Exception as e:
             LOGGER.debug(f'deleting error file')
             FileUtils.del_file(self.__saved_file_name)
