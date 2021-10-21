@@ -1,4 +1,5 @@
 import logging
+import os
 import uuid
 
 from parquet_flask.aws.aws_s3 import AwsS3
@@ -14,9 +15,23 @@ LOGGER = logging.getLogger(__name__)
 class IngestAwsJsonProps:
     def __init__(self):
         self.__s3_url = None
+        self.__s3_sha_url = None
         self.__uuid = str(uuid.uuid4())
         self.__working_dir = f'/tmp/{str(uuid.uuid4())}'
         self.__is_replacing = False
+
+    @property
+    def s3_sha_url(self):
+        return self.__s3_sha_url
+
+    @s3_sha_url.setter
+    def s3_sha_url(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__s3_sha_url = val
+        return
 
     @property
     def is_replacing(self):
@@ -76,7 +91,41 @@ class IngestAwsJson:
         self.__props = props
         self.__saved_file_name = None
         self.__ingested_date = TimeUtils.get_current_time_unix()
+        self.__file_sha512 = None
+        self.__sha512_result = None
+        self.__sha512_cause = None
         self.__db_io = MetadataTblIO()
+
+    def __get_s3_sha512(self):
+        """
+        sha512 file is in this format
+        <sha-512><space or tab><s3 json filename>
+        :return:
+        """
+        if self.__props.s3_sha_url is None:
+            LOGGER.warning(f's3_sha_url is None. using s3_url to generate one')
+            self.__props.s3_sha_url = f'{self.__props.s3_url}.sha512'
+        s3 = AwsS3().set_s3_url(self.__props.s3_sha_url)
+        try:
+            s3.get_s3_obj_size()
+            sha512_content = s3.read_small_txt_file()
+            return sha512_content.replace(os.path.basename(self.__props.s3_url, '')).strip()
+        except:
+            LOGGER.exception(f'cannot find s3_sha_url')
+            return None
+
+    def __compare_sha512(self, s3_sha512):
+        if s3_sha512 is None:
+            self.__sha512_result = False
+            self.__sha512_cause = 'missing S3 sha512'
+            return
+        if s3_sha512 == self.__file_sha512:
+            self.__sha512_result = True
+            self.__sha512_cause = ''
+            return
+        self.__sha512_result = False
+        self.__sha512_cause = 'mismatched sha512'
+        return
 
     def ingest(self):
         """
@@ -107,6 +156,8 @@ class IngestAwsJson:
             if self.__saved_file_name.lower().endswith('.gz'):
                 LOGGER.debug(f's3 file is in gzipped form. unzipping. {self.__saved_file_name}')
                 self.__saved_file_name = FileUtils.gunzip_file_os(self.__saved_file_name)
+            self.__compare_sha512(self.__get_s3_sha512())
+            self.__file_sha512 = FileUtils.get_checksum(self.__saved_file_name)
             LOGGER.debug(f'ingesting file: {self.__saved_file_name}')
             start_time = TimeUtils.get_current_time_unix()
             num_records = IngestNewJsonFile().ingest(self.__saved_file_name, self.__props.uuid)
@@ -117,7 +168,9 @@ class IngestAwsJson:
                 CDMSConstants.uuid_key: self.__props.uuid,
                 CDMSConstants.ingested_date_key: self.__ingested_date,
                 CDMSConstants.file_size_key: FileUtils.get_size(self.__saved_file_name),
-                CDMSConstants.checksum_key: FileUtils.get_checksum(self.__saved_file_name),
+                CDMSConstants.checksum_key: self.__file_sha512,
+                CDMSConstants.checksum_validation: self.__sha512_result,
+                CDMSConstants.checksum_cause: self.__sha512_cause,
                 CDMSConstants.job_start_key: start_time,
                 CDMSConstants.job_end_key: end_time,
                 CDMSConstants.records_count_key: num_records,
@@ -134,7 +187,9 @@ class IngestAwsJson:
                 'parquet_ingested': TimeUtils.get_time_str(self.__ingested_date),
                 'job_id': self.__props.uuid,
             })
-            return {'message': 'ingested'}, 201
+            if self.__sha512_result is True:
+                return {'message': 'ingested'}, 201
+            return {'message': 'ingested, different sha512', 'cause': self.__sha512_cause}, 203
         except Exception as e:
             LOGGER.debug(f'deleting error file')
             FileUtils.del_file(self.__saved_file_name)
