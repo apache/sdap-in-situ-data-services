@@ -124,7 +124,7 @@ class IngestAwsJson:
             self.__sha512_cause = ''
             return
         self.__sha512_result = False
-        self.__sha512_cause = 'mismatched sha512'
+        self.__sha512_cause = f'mismatched sha512: {s3_sha512} vs {self.__file_sha512}'
         return
 
     def ingest(self):
