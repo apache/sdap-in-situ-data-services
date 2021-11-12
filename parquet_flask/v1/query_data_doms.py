@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import logging
 from copy import deepcopy
 
@@ -120,7 +119,7 @@ class IngestParquet(Resource):
         if 'maxDepth' in request.args:
             query_json['max_depth'] = float(request.args.get('maxDepth'))
         if 'bbox' in request.args:
-            bounding_box = json.loads(request.args.get('bbox'))
+            bounding_box = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('bbox'), 4)
             query_json['min_lat_lon'] = [bounding_box[1], bounding_box[0]]
             query_json['max_lat_lon'] = [bounding_box[3], bounding_box[2]]
         if 'platform' in request.args:

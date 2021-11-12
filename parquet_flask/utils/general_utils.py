@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from math import isnan
 
 import fastjsonschema
 
@@ -30,3 +31,23 @@ class GeneralUtils:
         """Yield successive n-sized chunks from l."""
         for i in range(0, len(input_list), chunked_size):
             yield input_list[i:i + chunked_size]
+
+    @staticmethod
+    def is_float(input_val: str, accept_nan: bool = False):
+        try:
+            value = float(input_val)
+            if isnan(value) is True and accept_nan is False:
+                return False
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def gen_float_list_from_comma_sep_str(input_val: str, expected_count: int):
+        split_bbox_str = input_val.strip().split(',')
+        if len(split_bbox_str) != expected_count:
+            raise ValueError(f'incorrect length for bbox: {input_val}. expected_count: {expected_count}')
+        split_is_float = [GeneralUtils.is_float(k) for k in split_bbox_str]
+        if not all(split_is_float):
+            raise ValueError(f'one or more is not float for bbox: {input_val}')
+        return [float(k) for k in split_bbox_str]
