@@ -9,9 +9,10 @@ class RetrieveSparkSession(metaclass=Singleton):
     def __init__(self):
         self.__sparks = {}
 
-    def retrieve_spark_session(self, app_name, master_spark, ram='3072m'):
+    def retrieve_spark_session(self, app_name, master_spark, ram='1024m') -> SparkSession:
         session_key = '{}__{}'.format(app_name, master_spark)
-        # if session_key not in self.__sparks:
+        if session_key in self.__sparks:
+            return self.__sparks[session_key]
         conf = SparkConf()
         """
         spark.executor.memory                   3072m
@@ -22,9 +23,20 @@ spark.driver.extraClassPath             /usr/bin/spark-3.0.0-bin-hadoop3.2/jars/
 spark.executor.extraClassPath           /usr/bin/spark-3.0.0-bin-hadoop3.2/jars/hadoop-aws-3.2.0.jar:/usr/bin/spark-3.0.0-bin-hadoop3.2/jars/aws-java-sdk-bundle-1.11.563.jar
 spark.executor.extraJavaOptions         -Dcom.amazonaws.services.s3.enableV4=true
 spark.driver.extraJavaOptions           -Dcom.amazonaws.services.s3.enableV4=true
+
+spark.eventLog.enabled              true
+spark.eventLog.dir                  /tmp/spark-events
+spark.eventLog.rolling.enabled      true
+spark.eventLog.rolling.maxFileSize  128m
         """
-        conf.set('spark.executor.memory', ram)
-        # conf.set('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.2.0')  # crosscheck the version.
+
+        # conf.set('spark.eventLog.enabled', 'true')
+        # conf.set('spark.eventLog.dir', '/tmp/spark-events')
+        # conf.set('spark.eventLog.rolling.enabled', 'true')
+        # conf.set('spark.eventLog.rolling.maxFileSize', '128m')
+        conf.set('spark.executor.memory', ram)  # something
+        conf.set('spark.executor.cores', '1')
+        conf.set('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.2.0')  # crosscheck the version.
         conf.set('spark.hadoop.fs.s3a.impl', 'org.apache.hadoop.fs.s3a.S3AFileSystem')
         # conf.set('spark.driver.extraClassPath', '/opt/bitnami/spark/jars/hadoop-aws-3.2.0.jar:/opt/bitnami/spark/jars/aws-java-sdk-bundle-1.11.375.jar')
         # conf.set('spark.executor.extraClassPath', '/opt/bitnami/spark/jars/hadoop-aws-3.2.0.jar:/opt/bitnami/spark/jars/aws-java-sdk-bundle-1.11.375.jar')
@@ -36,9 +48,8 @@ spark.driver.extraJavaOptions           -Dcom.amazonaws.services.s3.enableV4=tru
         conf.set('spark.hadoop.fs.s3a.connection.ssl.enabled', 'true')
         # conf.set('spark.default.parallelism', '10')
         # conf.set('spark.hadoop.fs.s3a.endpoint', 's3.us-gov-west-1.amazonaws.com')
-        return SparkSession.builder.appName(app_name).config(conf=conf).master(master_spark).getOrCreate()
-        # self.__sparks[session_key] = SparkSession.builder.appName(app_name).config(conf=conf).master(master_spark).getOrCreate()
-        # return self.__sparks[session_key]
+        self.__sparks[session_key] = SparkSession.builder.appName(app_name).config(conf=conf).master(master_spark).getOrCreate()
+        return self.__sparks[session_key]
 
     def stop_spark_session(self, app_name, master_spark):
         session_key = '{}__{}'.format(app_name, master_spark)

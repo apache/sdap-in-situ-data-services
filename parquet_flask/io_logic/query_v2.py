@@ -374,7 +374,7 @@ class Query:
         query_time = datetime.now()
         LOGGER.debug(f'parquet read filtered at {query_time}. duration: {query_time - read_df_time}')
         LOGGER.debug(f'total duration: {query_time - query_begin_time}')
-        total_result = int(query_result.coalesce(3).count())
+        total_result = int(query_result.coalesce(1).count())
         # total_result = 1000  # faking this for now. TODO revert it.
         LOGGER.debug(f'total calc count duration: {datetime.now() - query_time}')
         if self.__props.size < 1:
@@ -391,8 +391,9 @@ class Query:
             result = query_result.select(self.__props.columns)
         LOGGER.debug(f'returning size : {total_result}')
         result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
+        query_result.unpersist()
         LOGGER.debug(f'total retrieval duration: {datetime.now() - query_time}')
-        spark.stop()
+        # spark.stop()
         return {
             'total': total_result,
             'results': [k.asDict() for k in result],
