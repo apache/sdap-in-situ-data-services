@@ -35,8 +35,8 @@ query_model = api.model('query_data', {
     'min_time': fields.String(required=True, example='2020-01-01T00:00:00Z'),
     'max_time': fields.String(required=True, example='2020-01-31T00:00:00Z'),
     'columns': fields.List(fields.String, required=False, example=['latitudes', 'longitudes']),
-    'min_lat_lon': fields.List(fields.Float, required=True, example=[-45, 175]),
-    'max_lat_lon': fields.List(fields.Float, required=True, example=[-42.11, 175.16439819335938]),
+    'min_lat_lon': fields.String(required=True, example='-45, 175'),
+    'max_lat_lon': fields.String(required=True, example='-42.11, 175.16439819335938'),
 })
 
 
@@ -74,9 +74,9 @@ class IngestParquet(Resource):
         if 'max_depth' in request.args:
             query_json['max_depth'] = float(request.args.get('max_depth'))
         if 'min_lat_lon' in request.args:
-            query_json['min_lat_lon'] = json.loads(request.args.get('min_lat_lon'))
+            query_json['min_lat_lon'] = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('min_lat_lon'), 2)
         if 'max_lat_lon' in request.args:
-            query_json['max_lat_lon'] = json.loads(request.args.get('max_lat_lon'))
+            query_json['max_lat_lon'] = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('max_lat_lon'), 2)
         return self.__execute_query(query_json)
 
     @api.expect()

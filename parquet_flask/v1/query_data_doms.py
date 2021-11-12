@@ -36,7 +36,7 @@ query_model = api.model('query_data_doms', {
     'provider': fields.Integer(required=True, example=0),
     'project': fields.Integer(required=True, example=0),
     'columns': fields.List(fields.String, required=False, example=['latitudes', 'longitudes']),
-    'bbox': fields.List(fields.Float, required=True, example=[-45, 175, -30, 180]),  # west, south, east, north
+    'bbox': fields.String(required=True, example='-45, 175, -30, 180'),  # west, south, east, north
 })
 
 
