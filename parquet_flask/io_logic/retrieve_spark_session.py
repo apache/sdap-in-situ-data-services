@@ -51,8 +51,11 @@ spark.eventLog.rolling.maxFileSize  128m
         # conf.set('spark.eventLog.rolling.maxFileSize', '128m')
         conf.set('spark.executor.memory', ram)  # something
         conf.set('spark.executor.cores', '1')
+        # conf.set('spark.driver.bindAddress', '127.0.0.1')
         conf.set('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.2.0')  # crosscheck the version.
         conf.set('spark.hadoop.fs.s3a.impl', 'org.apache.hadoop.fs.s3a.S3AFileSystem')
+        conf.set('spark.hadoop.fs.s3a.aws.credentials.provider', 'org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider')
+        conf.set('spark.hadoop.fs.s3a.connection.ssl.enabled', 'true')
         # conf.set('spark.driver.extraClassPath', '/opt/bitnami/spark/jars/hadoop-aws-3.2.0.jar:/opt/bitnami/spark/jars/aws-java-sdk-bundle-1.11.375.jar')
         # conf.set('spark.executor.extraClassPath', '/opt/bitnami/spark/jars/hadoop-aws-3.2.0.jar:/opt/bitnami/spark/jars/aws-java-sdk-bundle-1.11.375.jar')
         # conf.set('spark.executor.extraJavaOptions', '-Dcom.amazonaws.services.s3.enableV4=true')
@@ -60,7 +63,6 @@ spark.eventLog.rolling.maxFileSize  128m
         conf.set('spark.hadoop.fs.s3a.access.key', Config().get_value('aws_access_key_id'))
         conf.set('spark.hadoop.fs.s3a.secret.key', Config().get_value('aws_secret_access_key'))
         conf.set('spark.hadoop.fs.s3a.session.token', Config().get_value('aws_session_token'))
-        conf.set('spark.hadoop.fs.s3a.connection.ssl.enabled', 'true')
         # conf.set('spark.default.parallelism', '10')
         # conf.set('spark.hadoop.fs.s3a.endpoint', 's3.us-gov-west-1.amazonaws.com')
         self.__sparks[session_key] = SparkSession.builder.appName(app_name).config(conf=conf).master(master_spark).getOrCreate()
