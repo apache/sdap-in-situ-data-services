@@ -45,3 +45,22 @@
 1. To check the logs, use this and update accordingly:
 
         kubectl logs pod/custom-spark-master-0 -n bitnami-spark --since=15m
+1. Build it for k8s
+
+        docker build -f parquet.spark.r70.Dockerfile -t parquet.spark.flask:t1 ..
+1. create secrets for aws credentials
+
+        echo -n "pleasechangeme" | base64
+1. Deploy to kube
+        kubectl create -f . -n bitnami-spark
+        kubectl apply -f secret.yml -n bitnami-spark
+        kubectl create -f flask-deployment.yml -n bitnami-spark
+        kubectl create -f flask-service.yml -n bitnami-spark
+1. Remove from kube
+
+        kubectl delete -f . -n bitnami-spark
+        kubectl delete -f flask-service.yml -n bitnami-spark
+        kubectl delete -f flask-deployment.yml -n bitnami-spark
+        kubectl delete -f secret.yml -n bitnami-spark
+        kubectl delete -f configmap.yml -n bitnami-spark
+

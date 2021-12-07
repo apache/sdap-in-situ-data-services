@@ -10,5 +10,5 @@ scratch*
 CDMS_insitu.parquet
 __pycache__
 .DS_Store
-
+secret.yml
 local.spark.cluster/aws-java-sdk-bundle*.jar
