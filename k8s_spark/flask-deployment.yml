@@ -51,7 +51,7 @@ spec:
             configMapKeyRef:
               name: parquet-flask-env
               key: log_level
-        image: parquet.spark.flask:t1
+        image: waiphyojpl/cdms.parquet.flask:t1
         imagePullPolicy: IfNotPresent
         name: parquet-flask
         resources: {}
