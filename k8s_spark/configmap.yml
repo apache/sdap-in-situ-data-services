@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: parquet-flask-env
 data:
-  parquet_file_name: "s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet.demo"
+  parquet_file_name: "s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet"
   master_spark_url: "spark://10.1.0.72:7077"
   spark_app_name: "parquet_flask_demo"
   log_level: "DEBUG"
