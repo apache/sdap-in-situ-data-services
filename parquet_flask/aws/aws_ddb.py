@@ -108,8 +108,8 @@ class AwsDdb(AwsCred):
     def __init__(self, props=AwsDdbProps()):
         super().__init__()
         self.__props = props
-        self._ddb_client = boto3.Session(**self.boto3_session).client('dynamodb')
-        self._ddb_resource = boto3.Session(**self.boto3_session).resource('dynamodb')
+        self._ddb_client = self.get_client('dynamodb')
+        self._ddb_resource = self.get_resource('dynamodb')
 
     def has_table(self):
         if self.__props.tbl_name is None:

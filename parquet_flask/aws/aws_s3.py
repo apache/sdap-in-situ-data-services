@@ -17,8 +17,6 @@ import logging
 import os
 from io import BytesIO
 
-import boto3
-
 from parquet_flask.aws.aws_cred import AwsCred
 from parquet_flask.utils.file_utils import FileUtils
 
@@ -29,7 +27,7 @@ class AwsS3(AwsCred):
     def __init__(self):
         super().__init__()
         self.__valid_s3_schemas = ['s3://', 's3a://', 's3s://']
-        self.__s3_client = boto3.Session(**self.boto3_session).client('s3')
+        self.__s3_client = self.get_client('s3')
         self.__target_bucket = None
         self.__target_key = None
 
