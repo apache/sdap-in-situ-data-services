@@ -35,7 +35,9 @@ class GeneralUtils:
     @staticmethod
     def is_int(input_val: str, accept_nan: bool = False):
         try:
-            value = float(input_val)
+            if input_val is None:
+                return False
+            value = int(input_val)
             if isnan(value) is True and accept_nan is False:
                 return False
             return True
@@ -45,6 +47,8 @@ class GeneralUtils:
     @staticmethod
     def is_float(input_val: str, accept_nan: bool = False):
         try:
+            if input_val is None:
+                return False
             value = float(input_val)
             if isnan(value) is True and accept_nan is False:
                 return False
