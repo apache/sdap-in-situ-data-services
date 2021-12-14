@@ -54,6 +54,11 @@ spec:
             configMapKeyRef:
               name: parquet-flask-env
               key: log_level
+        - name: spark_config_dict
+          valueFrom:
+            configMapKeyRef:
+              name: parquet-flask-env
+              key: spark_config_dict
         image: waiphyojpl/cdms.parquet.flask:t1
         imagePullPolicy: IfNotPresent
         name: parquet-flask

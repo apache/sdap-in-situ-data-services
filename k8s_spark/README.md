@@ -48,7 +48,7 @@
 1. Build it for k8s (choose respective spark version)
 
         docker build -f parquet.spark.3.1.2.r70.Dockerfile -t parquet.spark.flask:t1 ..
-        docker build -f parquet.spark.3.2.0.r44.Dockerfile -t waiphyojpl/cdms.parquet.flask:t2 ..
+        docker build -f parquet.spark.3.2.0.r44.Dockerfile -t waiphyojpl/cdms.parquet.flask:t3 ..
         
 1. create secrets for aws credentials
 
@@ -65,4 +65,8 @@
         kubectl delete -f flask-deployment.yml -n bitnami-spark
         kubectl delete -f secret.yml -n bitnami-spark
         kubectl delete -f configmap.yml -n bitnami-spark
+    
+1. possible s3 auth providers
 
+        org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider
+        org.apache.hadoop.fs.s3a.auth.IAMInstanceCredentialsProvider
