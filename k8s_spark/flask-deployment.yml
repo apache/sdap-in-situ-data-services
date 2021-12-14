@@ -30,7 +30,10 @@ spec:
               name: aws-credentials
               key: awssecret
         - name: aws_session_token
-          value: ""
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: awstoken
         - name: parquet_file_name
           valueFrom:
             configMapKeyRef:
