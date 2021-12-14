@@ -33,6 +33,16 @@ class GeneralUtils:
             yield input_list[i:i + chunked_size]
 
     @staticmethod
+    def is_int(input_val: str, accept_nan: bool = False):
+        try:
+            value = float(input_val)
+            if isnan(value) is True and accept_nan is False:
+                return False
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
     def is_float(input_val: str, accept_nan: bool = False):
         try:
             value = float(input_val)

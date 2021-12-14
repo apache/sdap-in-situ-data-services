@@ -21,6 +21,7 @@ from pyspark.sql.dataframe import DataFrame
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.utils.config import Config
+from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.utils.time_utils import TimeUtils
 
 LOGGER = logging.getLogger(__name__)
@@ -291,6 +292,14 @@ class Query:
         self.__app_name = config.get_value('spark_app_name')
         self.__master_spark = config.get_value('master_spark_url')
         self.__parquet_name = config.get_value('parquet_file_name')
+        self.__missing_depth_value = CDMSConstants.missing_depth_value
+        self.__set_missing_depth_val()
+
+    def __set_missing_depth_val(self):
+        possible_missing_depth = Config().get_value(Config.missing_depth_value)
+        if GeneralUtils.is_int(possible_missing_depth):
+            self.__missing_depth_value = int(possible_missing_depth)
+        return
 
     def __add_conditions(self):
         conditions = []
@@ -333,6 +342,10 @@ class Query:
         if self.__props.max_depth is not None:
             LOGGER.debug(f'setting depth max condition: {self.__props.max_depth}')
             conditions.append(f"{CDMSConstants.depth_col} <= {self.__props.max_depth}")
+        if self.__props.min_depth is not None or self.__props.max_depth is not None:
+            LOGGER.debug(f'has depth condition. adding missing depth conditon')
+            conditions.append(f"{CDMSConstants.depth_col} == {self.__missing_depth_value}")
+
         if self.__props.variable is not None:
             LOGGER.debug(f'setting not null variable: {self.__props.variable}')
             conditions.append(f"{self.__props.variable} <= NULL")

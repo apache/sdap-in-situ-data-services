@@ -29,6 +29,7 @@ class Config(metaclass=Singleton):
     aws_session_token = 'aws_session_token'
     in_situ_schema = 'in_situ_schema'
     spark_ram_size = 'spark_ram_size'
+    missing_depth_value = 'missing_depth_value'
 
     def __init__(self):
         self.__keys = [
