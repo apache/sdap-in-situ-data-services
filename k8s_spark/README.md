@@ -12,7 +12,7 @@
         kubectl create namespace bitnami-spark
 1. Install the spark 
         
-        helm install custom-spark bitnami/spark  -n bitnami-spark --dependency-update -f values.yaml
+        helm install custom-spark bitnami/spark  -n bitnami-spark --dependency-update -f k8s_spark/values.yaml
 1. After it is installed:
 
         kubectl get all -n bitnami-spark
