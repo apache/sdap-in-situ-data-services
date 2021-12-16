@@ -19,6 +19,7 @@ from socket import gethostbyname, gethostname
 from pyspark import SparkConf
 from pyspark.sql import SparkSession
 
+from parquet_flask.io_logic.spark_constants import SparkConstants
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.singleton import Singleton
 
@@ -26,6 +27,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class RetrieveSparkSession(metaclass=Singleton):
+
     def __init__(self):
         self.__sparks = {}
         self.__spark_config = {
@@ -33,7 +35,7 @@ class RetrieveSparkSession(metaclass=Singleton):
             'spark.driver.port': '50243',  # a random port.
             'spark.jars.packages': 'org.apache.hadoop:hadoop-aws:3.2.0',  # crosscheck the version.
             'spark.hadoop.fs.s3a.impl': 'org.apache.hadoop.fs.s3a.S3AFileSystem',
-            'spark.hadoop.fs.s3a.aws.credentials.provider': 'org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider',  # should be overridden
+            SparkConstants.CRED_PROVIDER_KEY: SparkConstants.SIMPLE_CRED,  # should be overridden
             'spark.hadoop.fs.s3a.connection.ssl.enabled': 'true',
 
             # old configs. no longer needs to be used
@@ -59,6 +61,21 @@ class RetrieveSparkSession(metaclass=Singleton):
             LOGGER.exception(f'Not loading extra config. unable to convert to JSON object. {possible_extra_spark_config}.')
         return self
 
+    def __add_aws_cred(self, conf: SparkConf):
+        if SparkConstants.CRED_PROVIDER_KEY not in self.__spark_config:  # assume simple
+            raise EnvironmentError(f'missing {SparkConstants.CRED_PROVIDER_KEY} in spark_config. This should not happen')
+        if self.__spark_config[SparkConstants.CRED_PROVIDER_KEY] == SparkConstants.SIMPLE_CRED:
+            conf.set('spark.hadoop.fs.s3a.access.key', Config().get_value(Config.aws_access_key_id, ''))
+            conf.set('spark.hadoop.fs.s3a.secret.key', Config().get_value(Config.aws_secret_access_key, ''))
+            return
+        if self.__spark_config[SparkConstants.CRED_PROVIDER_KEY] == SparkConstants.TEMP_CRED:
+            conf.set('spark.hadoop.fs.s3a.access.key', Config().get_value(Config.aws_access_key_id, ''))
+            conf.set('spark.hadoop.fs.s3a.secret.key', Config().get_value(Config.aws_secret_access_key, ''))
+            conf.set('spark.hadoop.fs.s3a.session.token', Config().get_value(Config.aws_session_token, ''))
+            return
+        LOGGER.info(f'not setting aws cred ENV values as {SparkConstants.CRED_PROVIDER_KEY} = {self.__spark_config[SparkConstants.CRED_PROVIDER_KEY]}')
+        return
+
     def retrieve_spark_session(self, app_name, master_spark, ram='1024m') -> SparkSession:
         session_key = '{}__{}'.format(app_name, master_spark)
         if session_key in self.__sparks:
@@ -77,9 +94,7 @@ spark.hadoop.fs.s3n.impl                org.apache.hadoop.fs.s3native.NativeS3Fi
         local_ip = gethostbyname(gethostname())
         LOGGER.debug(f'using IP: {local_ip} for spark.driver.host')
         conf.set('spark.driver.host', local_ip)
-        conf.set('spark.hadoop.fs.s3a.access.key', Config().get_value(Config.aws_access_key_id))
-        conf.set('spark.hadoop.fs.s3a.secret.key', Config().get_value(Config.aws_secret_access_key))
-        conf.set('spark.hadoop.fs.s3a.session.token', Config().get_value(Config.aws_session_token))
+        self.__add_aws_cred(conf)
         # conf.set('spark.default.parallelism', '10')
         # conf.set('spark.hadoop.fs.s3a.endpoint', 's3.us-gov-west-1.amazonaws.com')
         self.__sparks[session_key] = SparkSession.builder.appName(app_name).config(conf=conf).master(master_spark).getOrCreate()

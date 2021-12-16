@@ -59,7 +59,7 @@ spec:
             configMapKeyRef:
               name: parquet-flask-env
               key: spark_config_dict
-        image: waiphyojpl/cdms.parquet.flask:t1
+        image: waiphyojpl/cdms.parquet.flask:t5
         imagePullPolicy: IfNotPresent
         name: parquet-flask
         resources: {}
