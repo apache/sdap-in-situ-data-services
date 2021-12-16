@@ -58,7 +58,8 @@ diagnosticMode:
 image:
   registry: docker.io
   repository: bitnami/spark
-  tag: 3.1.2-debian-10-r70
+  tag: 3.2.0-debian-10-r44
+  # tag: 3.1.2-debian-10-r70
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -526,8 +527,8 @@ service:
   ## @param service.nodePorts.web Kubernetes web node port
   ##
   nodePorts:
-    cluster: ""
-    web: ""
+    cluster: "32131"
+    web: "31140"
   ## @param service.loadBalancerIP Load balancer IP if spark service type is `LoadBalancer`
   ## Set the LoadBalancer service type to internal only
   ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer

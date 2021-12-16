@@ -70,3 +70,6 @@
 
         org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider
         org.apache.hadoop.fs.s3a.auth.IAMInstanceCredentialsProvider
+1. port forward the spark for local test
+
+        kubectl port-forward service/parquet-flask -n bitnami-spark 9801:9801 &
