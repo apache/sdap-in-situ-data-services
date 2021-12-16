@@ -17,6 +17,8 @@ import logging
 from datetime import datetime
 
 # from pyspark import F
+from typing import Union
+
 from pyspark.sql.dataframe import DataFrame
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
@@ -301,6 +303,19 @@ class Query:
             self.__missing_depth_value = int(possible_missing_depth)
         return
 
+    def __add_depth_conditions(self) -> Union[None, str]:
+        if self.__props.min_depth is None and self.__props.max_depth is None:
+            return None
+        conditions = []
+        if self.__props.min_depth is not None:
+            LOGGER.debug(f'setting depth min condition: {self.__props.min_depth}')
+            conditions.append(f"{CDMSConstants.depth_col} >= {self.__props.min_depth}")
+            if self.__props.max_depth is not None:
+                LOGGER.debug(f'setting depth max condition: {self.__props.max_depth}')
+                conditions.append(f"{CDMSConstants.depth_col} <= {self.__props.max_depth}")
+        LOGGER.debug(f'has depth condition. adding missing depth conditon')
+        return f"(({' AND '.join(conditions) }) OR {CDMSConstants.depth_col} == {self.__missing_depth_value})"
+
     def __add_conditions(self):
         conditions = []
         min_year = None
@@ -336,16 +351,10 @@ class Query:
             LOGGER.debug(f'setting Lat-Lon max condition: {self.__props.max_lat_lon}')
             conditions.append(f"{CDMSConstants.lat_col} <= {self.__props.max_lat_lon[0]}")
             conditions.append(f"{CDMSConstants.lon_col} <= {self.__props.max_lat_lon[1]}")
-        if self.__props.min_depth is not None:
-            LOGGER.debug(f'setting depth min condition: {self.__props.min_depth}')
-            conditions.append(f"{CDMSConstants.depth_col} >= {self.__props.min_depth}")
-        if self.__props.max_depth is not None:
-            LOGGER.debug(f'setting depth max condition: {self.__props.max_depth}')
-            conditions.append(f"{CDMSConstants.depth_col} <= {self.__props.max_depth}")
-        if self.__props.min_depth is not None or self.__props.max_depth is not None:
-            LOGGER.debug(f'has depth condition. adding missing depth conditon')
-            conditions.append(f"{CDMSConstants.depth_col} == {self.__missing_depth_value}")
-
+        depth_condition = self.__add_depth_conditions()
+        if depth_condition is not None:
+            LOGGER.debug(f"setting depth condition as it is not NULL")
+            conditions.append(depth_condition)
         if self.__props.variable is not None:
             LOGGER.debug(f'setting not null variable: {self.__props.variable}')
             conditions.append(f"{self.__props.variable} <= NULL")
