@@ -38,27 +38,27 @@ spec:
               containerPort: 80
               protocol: TCP
           env:
-            - name: aws_access_key_id
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-auth
-                  key: awskey
-            - name: aws_secret_access_key
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-auth
-                  key: awssecret
-            - name: aws_session_token
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-auth
-                  key: awstoken
 #            - name: aws_access_key_id
-#              value: {{ .Values.aws_creds.awskey }}
+#              valueFrom:
+#                secretKeyRef:
+#                  name: {{ .Release.Name }}-auth
+#                  key: awskey
 #            - name: aws_secret_access_key
-#              value: {{ .Values.aws_creds.awssecret }}
-#            - name: aws_secret_access_key
-#              value: {{ .Values.aws_creds.awstoken }}
+#              valueFrom:
+#                secretKeyRef:
+#                  name: {{ .Release.Name }}-auth
+#                  key: awssecret
+#            - name: aws_session_token
+#              valueFrom:
+#                secretKeyRef:
+#                  name: {{ .Release.Name }}-auth
+#                  key: awstoken
+            - name: aws_access_key_id
+              value: {{ .Values.aws_creds.awskey }}
+            - name: aws_secret_access_key
+              value: {{ .Values.aws_creds.awssecret }}
+            - name: aws_secret_access_key
+              value: {{ .Values.aws_creds.awstoken }}
             - name: parquet_file_name
               value: {{ .Values.flask_env.parquet_file_name }}
             - name: master_spark_url
@@ -68,7 +68,7 @@ spec:
             - name: log_level
               value: {{ .Values.flask_env.log_level }}
             - name: spark_config_dict
-              value: {{ .Values.flask_env.spark_config_dict }}
+              value: {{ .Values.flask_env.spark_config_dict | toJson | quote  }}
           livenessProbe:
             httpGet:
               path: /
