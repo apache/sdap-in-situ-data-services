@@ -69,14 +69,16 @@ spec:
               value: {{ .Values.flask_env.log_level }}
             - name: spark_config_dict
               value: {{ .Values.flask_env.spark_config_dict | toJson | quote  }}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+#          livenessProbe:
+#            httpGet:
+#              path: '/1.0/doc/'
+#              port: 9801
+#            initialDelaySeconds: 5
+#          readinessProbe:
+#            httpGet:
+#              path: '/1.0/doc/'
+#              port: 9801
+#            initialDelaySeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
