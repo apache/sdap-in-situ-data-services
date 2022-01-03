@@ -14,7 +14,7 @@ flask_env:
 aws_creds:
   awskey: 'xxx'
   awssecret: 'yyy'
-  awstoken: 'zz'
+  awstoken: ' '
 image:
   repository: "waiphyojpl/cdms.parquet.flask"
   pullPolicy: IfNotPresent
