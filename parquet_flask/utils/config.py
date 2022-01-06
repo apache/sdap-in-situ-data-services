@@ -30,6 +30,8 @@ class Config(metaclass=Singleton):
     in_situ_schema = 'in_situ_schema'
     spark_ram_size = 'spark_ram_size'
     missing_depth_value = 'missing_depth_value'
+    authentication_type = 'authentication_type'
+    authentication_key = 'authentication_key'
 
     def __init__(self):
         self.__keys = [
@@ -41,6 +43,8 @@ class Config(metaclass=Singleton):
             Config.aws_secret_access_key,
             Config.aws_session_token,
             Config.in_situ_schema,
+            Config.authentication_type,
+            Config.authentication_key,
         ]
         self.__optional_keys = [
             Config.spark_ram_size,

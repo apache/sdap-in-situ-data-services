@@ -19,6 +19,7 @@ from flask_restx import Resource, Namespace, fields
 from flask import request
 
 from parquet_flask.utils.general_utils import GeneralUtils
+from parquet_flask.v1.authenticator_decorator import authenticator_decorator
 from parquet_flask.v1.ingest_aws_json import IngestAwsJsonProps, IngestAwsJson
 
 api = Namespace('ingest_json_s3', description="Ingesting JSON files")
@@ -43,6 +44,7 @@ class IngestParquet(Resource):
         super().__init__(api, args, kwargs)
 
     @api.expect(fields=query_model)
+    @authenticator_decorator
     def put(self):
         """
         s3://ecsv-h5-data-v1/INDEX/GALILEO/filenames.txt.gz
