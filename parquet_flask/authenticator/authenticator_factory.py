@@ -1,6 +1,6 @@
-from parquet_flask.io_logic.authenticator_aws_secret_manager import AuthenticatorAwsSecretManager
-from parquet_flask.io_logic.authenticator_filebased import AuthenticatorFileBased
-from parquet_flask.io_logic.authenticator_pass_through import AuthenticatorPassThrough
+from parquet_flask.authenticator.authenticator_aws_secret_manager import AuthenticatorAwsSecretManager
+from parquet_flask.authenticator.authenticator_filebased import AuthenticatorFileBased
+from parquet_flask.authenticator.authenticator_pass_through import AuthenticatorPassThrough
 
 
 class AuthenticatorFactory:

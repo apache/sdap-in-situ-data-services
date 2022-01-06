@@ -1,6 +1,6 @@
 from typing import Union
 
-from parquet_flask.io_logic.authenticator_abstract import AuthenticatorAbstract
+from parquet_flask.authenticator.authenticator_abstract import AuthenticatorAbstract
 
 
 class AuthenticatorPassThrough(AuthenticatorAbstract):

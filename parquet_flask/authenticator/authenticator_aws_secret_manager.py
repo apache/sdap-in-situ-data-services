@@ -3,7 +3,7 @@ import json
 from typing import Union
 
 from parquet_flask.aws.aws_secret_manager import AwsSecretManager
-from parquet_flask.io_logic.authenticator_abstract import AuthenticatorAbstract
+from parquet_flask.authenticator.authenticator_abstract import AuthenticatorAbstract
 
 
 class AuthenticatorAwsSecretManager(AuthenticatorAbstract):

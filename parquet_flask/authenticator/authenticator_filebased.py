@@ -1,7 +1,7 @@
 import base64
 from typing import Union
 
-from parquet_flask.io_logic.authenticator_abstract import AuthenticatorAbstract
+from parquet_flask.authenticator.authenticator_abstract import AuthenticatorAbstract
 from parquet_flask.utils.file_utils import FileUtils
 
 
