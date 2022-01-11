@@ -297,6 +297,7 @@ class Query:
         self.__master_spark = config.get_value('master_spark_url')
         self.__parquet_name = config.get_value('parquet_file_name')
         self.__missing_depth_value = CDMSConstants.missing_depth_value
+        self.__default_columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col, CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_col]
         self.__set_missing_depth_val()
 
     def __set_missing_depth_val(self):
@@ -325,10 +326,6 @@ class Query:
         for each in self.__props.variable:
             LOGGER.debug(f'setting not null variable: {each}')
             variables_filter.append(f"{each} IS NOT NULL")
-            self.__props.columns.append(each)
-            if self.__props.quality_flag is True:
-                LOGGER.debug(f'adding quality flag for : {each}')
-                self.__props.columns.append(f'{each}_quality')
         return f"({' OR '.join(variables_filter)})"
 
     def __add_conditions(self):
@@ -407,6 +404,18 @@ class Query:
         LOGGER.debug(f'query_2 result duration: {time_end - time_start}')
         return {'result': result}
 
+    def __get_selected_columns(self):
+        if len(self.__props.columns) < 1:
+            return []
+        variable_columns = []
+        for each in self.__props.variable:
+            variable_columns.append(each)
+            if self.__props.quality_flag is True:
+                LOGGER.debug(f'adding quality flag for : {each}')
+                variable_columns.append(f'{each}_quality')
+        all_columns = self.__props.columns + variable_columns + self.__default_columns
+        return list(set(all_columns))
+
     def search(self, spark_session=None):
         # LOGGER.debug(f'self.__sql_query(spark_session): {self.__sql_query(spark_session)}')
         conditions = self.__add_conditions()
@@ -436,8 +445,9 @@ class Query:
         # result = query_result.withColumn('_id', F.monotonically_increasing_id())
         removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
         # result = result.where(F.col('_id').between(self.__props.start_at, self.__props.start_at + self.__props.size)).drop(*removing_cols)
-        if len(self.__props.columns) > 0:
-            result = query_result.select(self.__props.columns)
+        selected_columns = self.__get_selected_columns()
+        if len(selected_columns) > 0:
+            query_result = query_result.select(selected_columns)
         LOGGER.debug(f'returning size : {total_result}')
         result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
         query_result.unpersist()
