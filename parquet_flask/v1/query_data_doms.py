@@ -35,7 +35,8 @@ query_model = api.model('query_data_doms', {
     'platform': fields.Integer(required=True, example=0),
     'provider': fields.Integer(required=True, example=0),
     'project': fields.Integer(required=True, example=0),
-    'columns': fields.List(fields.String, required=False, example=['latitudes', 'longitudes']),
+    'columns': fields.String(required=False, example='latitudes, longitudes'),
+    'variable': fields.String(required=False, example='air_pressure, relative_humidity'),
     'bbox': fields.String(required=True, example='-45, 175, -30, 180'),  # west, south, east, north
 })
 
@@ -128,4 +129,8 @@ class IngestParquet(Resource):
             query_json['provider'] = request.args.get('provider')
         if 'project' in request.args:
             query_json['project'] = request.args.get('project')
+        if 'columns' in request.args:
+            query_json['columns'] = [k.strip() for k in request.args.get('columns').split(',')]
+        if 'variable' in request.args:
+            query_json['variable'] = [k.strip() for k in request.args.get('variable').split(',')]
         return self.__execute_query(query_json)

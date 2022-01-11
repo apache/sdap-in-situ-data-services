@@ -54,7 +54,7 @@ QUERY_PROPS_SCHEMA = {
 
 class QueryProps:
     def __init__(self):
-        self.__variable = None
+        self.__variable: list = []
         self.__quality_flag = False
         self.__platform_code = None
         self.__project = None
@@ -71,13 +71,13 @@ class QueryProps:
         self.__columns = []
 
     @property
-    def variable(self):
+    def variable(self) -> list:
         return self.__variable
 
     @variable.setter
-    def variable(self, val):
+    def variable(self, val: list):
         """
-        :param val:
+        :param val: list
         :return: None
         """
         self.__variable = val
@@ -128,6 +128,8 @@ class QueryProps:
             self.platform_code = input_json['platform_code']
         if 'columns' in input_json:
             self.columns = input_json['columns']
+        if 'variable' in input_json:
+            self.variable = input_json['variable']
         return self
 
     @property
@@ -316,6 +318,19 @@ class Query:
         LOGGER.debug(f'has depth condition. adding missing depth conditon')
         return f"(({' AND '.join(conditions) }) OR {CDMSConstants.depth_col} == {self.__missing_depth_value})"
 
+    def __add_variables_filter(self):
+        if len(self.__props.variable) < 1:
+            return None
+        variables_filter = []
+        for each in self.__props.variable:
+            LOGGER.debug(f'setting not null variable: {each}')
+            variables_filter.append(f"{each} IS NOT NULL")
+            self.__props.columns.append(each)
+            if self.__props.quality_flag is True:
+                LOGGER.debug(f'adding quality flag for : {each}')
+                self.__props.columns.append(f'{each}_quality')
+        return f"({' OR '.join(variables_filter)})"
+
     def __add_conditions(self):
         conditions = []
         min_year = None
@@ -355,13 +370,10 @@ class Query:
         if depth_condition is not None:
             LOGGER.debug(f"setting depth condition as it is not NULL")
             conditions.append(depth_condition)
-        if self.__props.variable is not None:
-            LOGGER.debug(f'setting not null variable: {self.__props.variable}')
-            conditions.append(f"{self.__props.variable} <= NULL")
-            self.__props.columns.append(self.__props.variable)
-            if self.__props.quality_flag is True:
-                LOGGER.debug(f'adding quality flag for : {self.__props.variable}')
-                self.__props.columns.append(f'{self.__props.variable}_quality')
+        variables_condition = self.__add_variables_filter()
+        if variables_condition is not None:
+            LOGGER.debug(f"setting variable condition as it is not NULL")
+            conditions.append(variables_condition)
         LOGGER.debug(f'conditions list: {conditions}')
         return ' AND '.join(conditions)
 
