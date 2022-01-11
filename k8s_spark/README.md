@@ -49,6 +49,7 @@
 
         docker build -f parquet.spark.3.1.2.r70.Dockerfile -t parquet.spark.flask:t1 ..
         docker build -f parquet.spark.3.2.0.r44.Dockerfile -t waiphyojpl/cdms.parquet.flask:t6 ..
+        docker build -f parquet.spark.3.2.0.r44.Dockerfile -t waiphyojpl/cdms.parquet.flask:t7 ..
         
 1. create secrets for aws credentials
 
