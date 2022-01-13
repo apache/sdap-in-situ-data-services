@@ -20,6 +20,7 @@ from parquet_flask.utils.singleton import Singleton
 
 class Config(metaclass=Singleton):
     master_spark_url = 'master_spark_url'
+    parquet_metadata_tbl = 'parquet_metadata_tbl'
     spark_app_name = 'spark_app_name'
     spark_config_dict = 'spark_config_dict'
     parquet_file_name = 'parquet_file_name'
@@ -45,6 +46,7 @@ class Config(metaclass=Singleton):
             Config.in_situ_schema,
             Config.authentication_type,
             Config.authentication_key,
+            Config.parquet_metadata_tbl,
         ]
         self.__optional_keys = [
             Config.spark_ram_size,

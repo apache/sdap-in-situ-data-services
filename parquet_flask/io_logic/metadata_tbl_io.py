@@ -16,6 +16,7 @@
 from parquet_flask.aws.aws_ddb import AwsDdb, AwsDdbProps
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.metadata_tbl_interface import MetadataTblInterface
+from parquet_flask.utils.config import Config
 
 
 class MetadataTblIO(MetadataTblInterface):
@@ -35,7 +36,7 @@ class MetadataTblIO(MetadataTblInterface):
     def __init__(self):
         ddb_props = AwsDdbProps()
         ddb_props.hash_key = CDMSConstants.s3_url_key
-        ddb_props.tbl_name = 'cdms_parquet_meta_dev_v1'  # TODO come from config
+        ddb_props.tbl_name = Config().get_value(Config.parquet_metadata_tbl)
         self.__uuid_index = 'uuid-index'
         self.__ddb = AwsDdb(ddb_props)
 

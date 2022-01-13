@@ -12,6 +12,7 @@ services:
       - aws_access_key_id=${aws_access_key_id}
       - aws_secret_access_key=${aws_secret_access_key}
       - aws_session_token=${aws_session_token}
+      - parquet_metadata_tbl=cdms_parquet_meta_dev_v1
       - parquet_file_name=s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet
       - parquet_file_name_s3=s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet
       - parquet_file_name_local=/opt/workspace/CDMS_insitu.parquet
