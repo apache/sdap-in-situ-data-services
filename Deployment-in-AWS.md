@@ -54,7 +54,7 @@
 - build it using this [Dockerfile](k8s_spark/parquet.spark.3.2.0.r44.Dockerfile)
 - Note that the image name and tag needs to be updated. 
 
-        docker build -f parquet.spark.3.2.0.r44.Dockerfile -t waiphyojpl/cdms.parquet.flask:t7 ..
+        docker build -f ../docker/parquet.spark.3.2.0.r44.Dockerfile -t waiphyojpl/cdms.parquet.flask:t7 ..
         
 ### Deploy Parquet Flask container to kubernetes namespace: `bitnami-spark`
 - Helm charts are created to deploy the flask container to the same namespace. 
