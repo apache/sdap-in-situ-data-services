@@ -46,6 +46,19 @@ class BenchMark:
 
         return json.loads(response.text)
 
+    def pagination_bench_mark(self):
+        """
+        time: 2017-01-01T00:00:00Z - 2017-12-30T00:00:00Z -- start_index: 0 -- total: 2072146 -- duration: 1078.875818
+        time: 2017-01-01T00:00:00Z - 2017-12-30T00:00:00Z -- start_index: 2072000 -- total: 2072146 -- duration: 1957.478031
+        :return:
+        """
+        self.__start_time = '2017-01-01T00:00:00Z'
+        self.__end_time = '2017-12-30T00:00:00Z'
+        self.__start_index = 2072000
+        response = self.__execute_query()
+        print(f'time: {self.__start_time} - {self.__end_time} -- start_index: {self.__start_index} -- total: {response[0]["total"]} -- duration: {response[1]}')
+        return
+
     def time_bench_mark(self):
         self.__start_time = '2017-01-01T00:00:00Z'
         self.__end_time = '2017-01-02T00:00:00Z'
@@ -71,4 +84,4 @@ class BenchMark:
 
 
 if __name__ == '__main__':
-    BenchMark().time_bench_mark()
+    BenchMark().pagination_bench_mark()
