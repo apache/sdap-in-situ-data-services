@@ -29,7 +29,7 @@ class IngestS3ToCdms:
         logging.basicConfig(level=int(os.environ.get(LambdaFuncEnv.LOG_LEVEL, logging.INFO)),
                             format="%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s")
 
-        s3_url = 's3://<bucket>/<key>'  # TODO get from event
+        s3_url = event['s3_url']  # TODO how event has s3_url. This is for manual process.
         put_body = {'s3_url': s3_url}
         ddb_record = self.__ddb.get_one_item(s3_url)
         header = {'Authorization': f'Bearer {os.environ.get(LambdaFuncEnv.CDMS_BEARER_TOKEN)}'}  # TODO this comes from Secret manager. not directly from env variable
