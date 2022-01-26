@@ -32,7 +32,9 @@ class IngestS3ToCdms:
         s3_url = event['s3_url']  # TODO how event has s3_url. This is for manual process.
         put_body = {'s3_url': s3_url}
         ddb_record = self.__ddb.get_one_item(s3_url)
-        header = {'Authorization': f'Bearer {os.environ.get(LambdaFuncEnv.CDMS_BEARER_TOKEN)}'}  # TODO this comes from Secret manager. not directly from env variable
+        header = {'Authorization': f'{os.environ.get(LambdaFuncEnv.CDMS_BEARER_TOKEN)}',  # TODO this comes from Secret manager. not directly from env variable
+                  'Content-Type': 'application/json'
+                  }
         if ddb_record is None:
             put_url = f'{self.__cdms_domain}/1.0/ingest_json_s3'
         else:
