@@ -16,6 +16,7 @@
 import logging
 import os
 import uuid
+from multiprocessing.context import Process
 
 from parquet_flask.aws.aws_s3 import AwsS3
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
@@ -34,6 +35,34 @@ class IngestAwsJsonProps:
         self.__uuid = str(uuid.uuid4())
         self.__working_dir = f'/tmp/{str(uuid.uuid4())}'
         self.__is_replacing = False
+        self.__is_sanitizing = True
+        self.__wait_till_complete = True
+
+    @property
+    def wait_till_complete(self):
+        return self.__wait_till_complete
+
+    @wait_till_complete.setter
+    def wait_till_complete(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__wait_till_complete = val
+        return
+
+    @property
+    def is_sanitizing(self):
+        return self.__is_sanitizing
+
+    @is_sanitizing.setter
+    def is_sanitizing(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__is_sanitizing = val
+        return
 
     @property
     def s3_sha_url(self):
@@ -142,6 +171,49 @@ class IngestAwsJson:
         self.__sha512_cause = f'mismatched sha512: {s3_sha512} vs {self.__file_sha512}'
         return
 
+    def __execute_ingest_data(self):
+        try:
+            LOGGER.debug(f'ingesting file: {self.__saved_file_name}')
+            start_time = TimeUtils.get_current_time_unix()
+            ingest_new_file = IngestNewJsonFile()
+            ingest_new_file.sanitize_record = self.__props.is_sanitizing
+            num_records = ingest_new_file.ingest(self.__saved_file_name, self.__props.uuid)
+            end_time = TimeUtils.get_current_time_unix()
+            LOGGER.debug(f'uploading to metadata table')
+            new_record = {
+                CDMSConstants.s3_url_key: self.__props.s3_url,
+                CDMSConstants.uuid_key: self.__props.uuid,
+                CDMSConstants.ingested_date_key: self.__ingested_date,
+                CDMSConstants.file_size_key: FileUtils.get_size(self.__saved_file_name),
+                CDMSConstants.checksum_key: self.__file_sha512,
+                CDMSConstants.checksum_validation: self.__sha512_result,
+                CDMSConstants.checksum_cause: self.__sha512_cause,
+                CDMSConstants.job_start_key: start_time,
+                CDMSConstants.job_end_key: end_time,
+                CDMSConstants.records_count_key: num_records,
+            }
+            if self.__props.is_replacing:
+                self.__db_io.replace_record(new_record)
+            else:
+                self.__db_io.insert_record(new_record)
+            LOGGER.debug(f'deleting used file')
+            FileUtils.del_file(self.__saved_file_name)
+            # TODO make it background process?
+            LOGGER.warning('Disabled tagging S3 due to IAM issues')
+            # LOGGER.debug(f'tagging s3')
+            # s3.add_tags_to_obj({
+            #     'parquet_ingested': TimeUtils.get_time_str(self.__ingested_date),
+            #     'job_id': self.__props.uuid,
+            # })
+        except Exception as e:
+            LOGGER.debug(f'deleting error file')
+            FileUtils.del_file(self.__saved_file_name)
+            return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500
+        if self.__sha512_result is True:
+            return {'message': 'ingested', 'job_id': self.__props.uuid}, 201
+        return {'message': 'ingested, different sha512', 'cause': self.__sha512_cause,
+                'job_id': self.__props.uuid}, 203
+
     def ingest(self):
         """
         - download s3 file
@@ -173,39 +245,13 @@ class IngestAwsJson:
                 self.__saved_file_name = FileUtils.gunzip_file_os(self.__saved_file_name)
             self.__file_sha512 = FileUtils.get_checksum(self.__saved_file_name)
             self.__compare_sha512(self.__get_s3_sha512())
-            LOGGER.debug(f'ingesting file: {self.__saved_file_name}')
-            start_time = TimeUtils.get_current_time_unix()
-            num_records = IngestNewJsonFile().ingest(self.__saved_file_name, self.__props.uuid)
-            end_time = TimeUtils.get_current_time_unix()
-            LOGGER.debug(f'uploading to metadata table')
-            new_record = {
-                CDMSConstants.s3_url_key: self.__props.s3_url,
-                CDMSConstants.uuid_key: self.__props.uuid,
-                CDMSConstants.ingested_date_key: self.__ingested_date,
-                CDMSConstants.file_size_key: FileUtils.get_size(self.__saved_file_name),
-                CDMSConstants.checksum_key: self.__file_sha512,
-                CDMSConstants.checksum_validation: self.__sha512_result,
-                CDMSConstants.checksum_cause: self.__sha512_cause,
-                CDMSConstants.job_start_key: start_time,
-                CDMSConstants.job_end_key: end_time,
-                CDMSConstants.records_count_key: num_records,
-            }
-            if self.__props.is_replacing:
-                self.__db_io.replace_record(new_record)
+            if self.__props.wait_till_complete is True:
+                return self.__execute_ingest_data()
             else:
-                self.__db_io.insert_record(new_record)
-            LOGGER.debug(f'deleting used file')
-            FileUtils.del_file(self.__saved_file_name)
-            # TODO make it background process?
-            LOGGER.warning('Disabled tagging S3 due to IAM issues')
-            # LOGGER.debug(f'tagging s3')
-            # s3.add_tags_to_obj({
-            #     'parquet_ingested': TimeUtils.get_time_str(self.__ingested_date),
-            #     'job_id': self.__props.uuid,
-            # })
-            if self.__sha512_result is True:
-                return {'message': 'ingested', 'job_id': self.__props.uuid}, 201
-            return {'message': 'ingested, different sha512', 'cause': self.__sha512_cause, 'job_id': self.__props.uuid}, 203
+                bg_process = Process(target=self.__execute_ingest_data, args=())
+                bg_process.daemon = True
+                bg_process.start()
+                return {'message': 'ingesting. Not waiting.', 'job_id': self.__props.uuid}, 204
         except Exception as e:
             LOGGER.debug(f'deleting error file')
             FileUtils.del_file(self.__saved_file_name)

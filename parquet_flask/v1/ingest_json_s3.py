@@ -27,12 +27,16 @@ LOGGER = logging.getLogger(__name__)
 
 query_model = api.model('ingest_json_s3', {
     's3_url': fields.String(required=True, example='s3://<bucket>/<key>'),
+    'sanitize_record': fields.Boolean(required=False, example='True', default=True),
+    'wait_till_finish': fields.Boolean(required=False, example='True', default=True),
 })
 
 _QUERY_SCHEMA = {
     'type': 'object',
     'properties': {
         's3_url': {'type': 'string'},
+        'sanitize_record': {'type': 'boolean'},
+        'wait_till_finish': {'type': 'boolean'},
     },
     'required': ['s3_url'],
 }
@@ -57,4 +61,6 @@ class IngestParquet(Resource):
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         props = IngestAwsJsonProps()
         props.s3_url = payload["s3_url"]
+        props.is_sanitizing = payload['sanitize_record']
+        props.wait_till_complete = payload['wait_till_finish']
         return IngestAwsJson(props).ingest()

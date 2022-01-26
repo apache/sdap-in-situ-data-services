@@ -28,6 +28,8 @@ LOGGER = logging.getLogger(__name__)
 query_model = api.model('replace_json_s3', {
     's3_url': fields.String(required=True, example='s3://<bucket>/<key>'),
     'job_id': fields.String(required=True, example='sample-uuid'),
+    'sanitize_record': fields.Boolean(required=False, example='True', default=True),
+    'wait_till_finish': fields.Boolean(required=False, example='True', default=True),
 })
 
 _QUERY_SCHEMA = {
@@ -35,6 +37,8 @@ _QUERY_SCHEMA = {
     'properties': {
         's3_url': {'type': 'string'},
         'job_id': {'type': 'string'},
+        'sanitize_record': {'type': 'boolean'},
+        'wait_till_finish': {'type': 'boolean'},
     },
     'required': ['s3_url', 'job_id'],
 }
@@ -61,4 +65,6 @@ class IngestParquet(Resource):
         props.s3_url = payload['s3_url']
         props.uuid = payload['job_id']
         props.is_replacing = True
+        props.is_sanitizing = payload['sanitize_record']
+        props.wait_till_complete = payload['wait_till_finish']
         return IngestAwsJson(props).ingest()

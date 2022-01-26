@@ -34,6 +34,20 @@ class IngestNewJsonFile:
         self.__master_spark = config.get_value('master_spark_url')
         self.__mode = 'append'
         self.__parquet_name = config.get_value('parquet_file_name')
+        self.__sanitize_record = True
+
+    @property
+    def sanitize_record(self):
+        return self.__sanitize_record
+
+    @sanitize_record.setter
+    def sanitize_record(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__sanitize_record = val
+        return
 
     @staticmethod
     def create_df(spark_session, data_list, job_id, provider, project):
@@ -69,8 +83,13 @@ class IngestNewJsonFile:
         """
         if not FileUtils.file_exist(abs_file_path):
             raise ValueError('missing file to ingest it. path: {}'.format(abs_file_path))
-        LOGGER.debug(f'sanitizing the files')
-        input_json = SanitizeRecord(Config().get_value('in_situ_schema')).start(abs_file_path)
+        LOGGER.debug(f'sanitizing the files ? : {self.__sanitize_record}')
+        if self.sanitize_record is True:
+            input_json = SanitizeRecord(Config().get_value('in_situ_schema')).start(abs_file_path)
+        else:
+            if not FileUtils.file_exist(abs_file_path):
+                raise ValueError('json file does not exist: {}'.format(abs_file_path))
+            input_json = FileUtils.read_json(abs_file_path)
         df_writer = self.create_df(self.__sss.retrieve_spark_session(self.__app_name, self.__master_spark),
                                    input_json[CDMSConstants.observations_key],
                                    job_id,
