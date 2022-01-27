@@ -240,10 +240,10 @@ class IngestAwsJson:
             LOGGER.debug(f'downloading s3 file: {self.__props.uuid}')
             FileUtils.mk_dir_p(self.__props.working_dir)
             self.__saved_file_name = s3.download(self.__props.working_dir)
+            self.__file_sha512 = FileUtils.get_checksum(self.__saved_file_name)
             if self.__saved_file_name.lower().endswith('.gz'):
                 LOGGER.debug(f's3 file is in gzipped form. unzipping. {self.__saved_file_name}')
                 self.__saved_file_name = FileUtils.gunzip_file_os(self.__saved_file_name)
-            self.__file_sha512 = FileUtils.get_checksum(self.__saved_file_name)
             self.__compare_sha512(self.__get_s3_sha512())
             if self.__props.wait_till_complete is True:
                 return self.__execute_ingest_data()

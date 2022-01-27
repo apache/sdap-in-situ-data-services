@@ -20,7 +20,7 @@ image:
   repository: "waiphyojpl/cdms.parquet.flask"
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "t7"
+  tag: "t9"
 
 imagePullSecrets: []
 nameOverride: ""

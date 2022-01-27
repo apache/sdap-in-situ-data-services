@@ -36,6 +36,7 @@ install_requires = [
     'werkzeug===2.0.1',
     'jsonschema',  # to verify json objects
     'fastjsonschema===2.15.1',
+    'requests===2.26.0',
     'boto3', 'botocore',
 ]
 

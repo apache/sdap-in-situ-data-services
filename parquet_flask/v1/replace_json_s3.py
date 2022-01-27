@@ -65,6 +65,6 @@ class IngestParquet(Resource):
         props.s3_url = payload['s3_url']
         props.uuid = payload['job_id']
         props.is_replacing = True
-        props.is_sanitizing = payload['sanitize_record']
-        props.wait_till_complete = payload['wait_till_finish']
+        props.is_sanitizing = payload['sanitize_record'] if 'sanitize_record' in payload else True
+        props.wait_till_complete = payload['wait_till_finish'] if 'wait_till_finish' in payload else True
         return IngestAwsJson(props).ingest()
