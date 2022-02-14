@@ -15,6 +15,8 @@
 
 import logging
 
+from pyspark.sql.dataframe import DataFrame
+
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.retrieve_spark_session import RetrieveSparkSession
 from parquet_flask.io_logic.sanitize_record import SanitizeRecord
@@ -27,12 +29,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 class IngestNewJsonFile:
-    def __init__(self):
+    def __init__(self, is_overwriting=False):
         self.__sss = RetrieveSparkSession()
         config = Config()
         self.__app_name = config.get_value('spark_app_name')
         self.__master_spark = config.get_value('master_spark_url')
-        self.__mode = 'append'
+        self.__mode = 'overwrite' if is_overwriting else 'append'
         self.__parquet_name = config.get_value('parquet_file_name')
         self.__sanitize_record = True
 
@@ -54,18 +56,20 @@ class IngestNewJsonFile:
         LOGGER.debug(f'creating data frame with length {len(data_list)}')
         df = spark_session.createDataFrame(data_list)
         LOGGER.debug(f'adding columns')
-        df = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))\
+        df: DataFrame = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))\
             .withColumn(CDMSConstants.year_col, year(CDMSConstants.time_col))\
             .withColumn(CDMSConstants.month_col, month(CDMSConstants.time_col))\
             .withColumn(CDMSConstants.platform_code_col, df[CDMSConstants.platform_col][CDMSConstants.code_col])\
             .withColumn(CDMSConstants.job_id_col, lit(job_id))\
             .withColumn(CDMSConstants.provider_col, lit(provider))\
-            .withColumn(CDMSConstants.project_col, lit(project))
+            .withColumn(CDMSConstants.project_col, lit(project))\
+            .repartition(1)  # combine to 1 data frame to increase size
             # .withColumn('ingested_date', lit(TimeUtils.get_current_time_str()))
         LOGGER.debug(f'create writer')
-        df_writer = df.write
         all_partitions = [CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_code_col,
                           CDMSConstants.year_col, CDMSConstants.month_col, CDMSConstants.job_id_col]
+        df = df.repartition(1)
+        df_writer = df.write
         LOGGER.debug(f'create partitions')
         df_writer = df_writer.partitionBy(all_partitions)
         LOGGER.debug(f'created partitions')

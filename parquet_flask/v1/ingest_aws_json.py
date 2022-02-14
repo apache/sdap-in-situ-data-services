@@ -175,7 +175,7 @@ class IngestAwsJson:
         try:
             LOGGER.debug(f'ingesting file: {self.__saved_file_name}')
             start_time = TimeUtils.get_current_time_unix()
-            ingest_new_file = IngestNewJsonFile()
+            ingest_new_file = IngestNewJsonFile(self.__props.is_replacing)
             ingest_new_file.sanitize_record = self.__props.is_sanitizing
             num_records = ingest_new_file.ingest(self.__saved_file_name, self.__props.uuid)
             end_time = TimeUtils.get_current_time_unix()
