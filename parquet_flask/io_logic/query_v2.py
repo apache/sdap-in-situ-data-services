@@ -16,7 +16,6 @@
 import logging
 from datetime import datetime
 
-# from pyspark import F
 from typing import Union
 
 from pyspark.sql.dataframe import DataFrame
@@ -328,33 +327,56 @@ class Query:
             variables_filter.append(f"{each} IS NOT NULL")
         return f"({' OR '.join(variables_filter)})"
 
+    def __add_time_filter(self) -> Union[None, list]:
+        if self.__props.min_datetime is None and self.__props.max_datetime is None:
+            return None
+        conditions = []
+        min_year = max_year = None
+        if self.__props.min_datetime is not None:
+            LOGGER.debug(f'setting datetime min condition: {self.__props.min_datetime}')
+            min_year = TimeUtils.get_datetime_obj(self.__props.min_datetime).year
+            # conditions.append(f"{CDMSConstants.year_col} >= {min_year}")
+            conditions.append(f"{CDMSConstants.time_obj_col} >= '{self.__props.min_datetime}'")
+        if self.__props.max_datetime is not None:
+            LOGGER.debug(f'setting datetime max condition: {self.__props.max_datetime}')
+            max_year = TimeUtils.get_datetime_obj(self.__props.max_datetime).year
+            # conditions.append(f"{CDMSConstants.year_col} <= {max_year}")
+            conditions.append(f"{CDMSConstants.time_obj_col} <= '{self.__props.max_datetime}'")
+
+        if min_year is None:
+            return [f"{CDMSConstants.year_col} <= {max_year}"] + conditions
+        if max_year is None:
+            return [f"{CDMSConstants.year_col} >= {min_year}"] + conditions
+        partition_conditions = []
+        if min_year == max_year:
+            partition_conditions.append(f"{CDMSConstants.year_col} == {max_year}")
+            min_month = TimeUtils.get_datetime_obj(self.__props.min_datetime).month
+            max_month = TimeUtils.get_datetime_obj(self.__props.max_datetime).month
+            LOGGER.debug(f'setting month duration condition: {min_month} - {max_month}')
+            if min_month == max_month:
+                partition_conditions.append(f"{CDMSConstants.month_col} == {min_month}")
+            else:
+                months = [f"{k}" for k in range(min_month, max_month + 1)]
+                partition_conditions.append(f"{CDMSConstants.month_col} in ({','.join(months)})")
+        else:
+            years = [f"{k}" for k in range(min_year, max_year + 1)]
+            partition_conditions.append(f"{CDMSConstants.year_col} in ({','.join(years)})")
+        return partition_conditions + conditions
+
     def __add_conditions(self):
         conditions = []
-        min_year = None
-        max_year = None
-        if self.__props.platform_code is not None:
-            LOGGER.debug(f'setting platform_code condition: {self.__props.platform_code}')
-            conditions.append(f"{CDMSConstants.platform_code_col} == '{self.__props.platform_code}'")
         if self.__props.provider is not None:
             LOGGER.debug(f'setting provider condition: {self.__props.provider}')
             conditions.append(f"{CDMSConstants.provider_col} == '{self.__props.provider}'")
         if self.__props.project is not None:
             LOGGER.debug(f'setting project condition: {self.__props.project}')
             conditions.append(f"{CDMSConstants.project_col} == '{self.__props.project}'")
-        if self.__props.min_datetime is not None:
-            LOGGER.debug(f'setting datetime min condition: {self.__props.min_datetime}')
-            min_year = TimeUtils.get_datetime_obj(self.__props.min_datetime).year
-            conditions.append(f"{CDMSConstants.year_col} >= {min_year}")
-            conditions.append(f"{CDMSConstants.time_obj_col} >= '{self.__props.min_datetime}'")
-        if self.__props.max_datetime is not None:
-            LOGGER.debug(f'setting datetime max condition: {self.__props.max_datetime}')
-            max_year = TimeUtils.get_datetime_obj(self.__props.max_datetime).year
-            conditions.append(f"{CDMSConstants.year_col} <= {max_year}")
-            conditions.append(f"{CDMSConstants.time_obj_col} <= '{self.__props.max_datetime}'")
-        if min_year is not None and max_year is not None and min_year == max_year:
-            LOGGER.debug(f'setting month duration condition: {self.__props.max_datetime}')
-            conditions.append(f"{CDMSConstants.month_col} >= {TimeUtils.get_datetime_obj(self.__props.min_datetime).month}")
-            conditions.append(f"{CDMSConstants.month_col} <= {TimeUtils.get_datetime_obj(self.__props.max_datetime).month}")
+        if self.__props.platform_code is not None:
+            LOGGER.debug(f'setting platform_code condition: {self.__props.platform_code}')
+            conditions.append(f"{CDMSConstants.platform_code_col} == '{self.__props.platform_code}'")
+        time_conditions = self.__add_time_filter()
+        if time_conditions is not None:
+            conditions.extend(time_conditions)
         if self.__props.min_lat_lon is not None:
             LOGGER.debug(f'setting Lat-Lon min condition: {self.__props.min_lat_lon}')
             conditions.append(f"{CDMSConstants.lat_col} >= {self.__props.min_lat_lon[0]}")
@@ -428,11 +450,11 @@ class Query:
         read_df_time = datetime.now()
         LOGGER.debug(f'parquet read created at {read_df_time}. duration: {read_df_time - created_spark_session_time}')
         query_result = read_df.where(conditions)
-        query_result = query_result.coalesce(1)
+        # query_result = query_result
         query_time = datetime.now()
         LOGGER.debug(f'parquet read filtered at {query_time}. duration: {query_time - read_df_time}')
         LOGGER.debug(f'total duration: {query_time - query_begin_time}')
-        total_result = int(query_result.coalesce(1).count())
+        total_result = int(query_result.count())
         # total_result = 1000  # faking this for now. TODO revert it.
         LOGGER.debug(f'total calc count duration: {datetime.now() - query_time}')
         if self.__props.size < 1:
