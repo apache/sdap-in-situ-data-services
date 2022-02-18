@@ -20,6 +20,7 @@ from flask_restx import Resource, Namespace, fields
 from flask import request
 
 from parquet_flask.io_logic.query_v2 import QueryProps, Query, QUERY_PROPS_SCHEMA
+from parquet_flask.io_logic.query_v3 import QueryV3
 from parquet_flask.utils.general_utils import GeneralUtils
 
 api = Namespace('query_data_doms', description="Querying data")
@@ -90,7 +91,7 @@ class IngestParquet(Resource):
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         try:
-            query = Query(QueryProps().from_json(payload))
+            query = QueryV3(QueryProps().from_json(payload))
             result_set = query.search()
             LOGGER.debug(f'search params: {payload}. result: {result_set}')
             page_info = self.__calculate_4_ranges(result_set['total'])

@@ -99,6 +99,6 @@ class IngestNewJsonFile:
                                    job_id,
                                    input_json[CDMSConstants.provider_col],
                                    input_json[CDMSConstants.project_col])
-        df_writer.mode(self.__mode).parquet(self.__parquet_name, compression='GZIP')
+        df_writer.mode(self.__mode).parquet(self.__parquet_name, compression='GZIP')  # snappy GZIP
         LOGGER.debug(f'finished writing parquet')
         return len(input_json[CDMSConstants.observations_key])
