@@ -7,7 +7,7 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 
 class BenchMark:
     def __init__(self):
-        self.__cdms_domain = 'http://localhost:30801'
+        self.__cdms_domain = 'http://localhost:9801'
         # self.__cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.__size = 100
         self.__start_index = 0
@@ -70,6 +70,15 @@ time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count:
 time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 36.511349 -- first_item: {'air_temperature': 6.0, 'relative_humidity': 77.1, 'time': '2017-01-05T23:00:00Z', 'depth': -99999.0, 'latitude': 56.4, 'longitude': 2.1}
 time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 39.386719 -- first_item: {'air_temperature': 17.4, 'relative_humidity': 55.1, 'time': '2017-01-27T03:00:00Z', 'depth': -99999.0, 'latitude': 26.2, 'longitude': -97.1}
 time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 40.542413 -- first_item: {'air_temperature': 27.1, 'relative_humidity': 74.6, 'time': '2017-01-05T04:10:12Z', 'depth': -99999.0, 'latitude': 11.3, 'longitude': -60.5}
+
+from EKS
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- start_index: 0 -- total: 113561 -- current_count: 20000 -- duration: 23.322453 -- first_item: {'air_temperature': 6.4, 'relative_humidity': 81.1, 'time': '2017-01-11T12:00:00Z', 'depth': -99999.0, 'latitude': 40.9, 'longitude': -73.7}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- start_index: 20000 -- total: 113561 -- current_count: 20000 -- duration: 9.129667 -- first_item: {'air_temperature': 24.0, 'relative_humidity': 64.1, 'time': '2017-01-17T11:00:00Z', 'depth': -99999.0, 'latitude': 23.5, 'longitude': -71.9}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- start_index: 40000 -- total: 113561 -- current_count: 20000 -- duration: 10.186722 -- first_item: {'air_temperature': 23.0, 'relative_humidity': 65.9, 'time': '2017-01-20T00:00:00Z', 'depth': -99999.0, 'latitude': 18.4, 'longitude': -69.6}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- start_index: 60000 -- total: 113561 -- current_count: 20000 -- duration: 11.604984 -- first_item: {'air_temperature': 26.5, 'relative_humidity': 71.4, 'time': '2017-01-01T17:10:12Z', 'depth': -99999.0, 'latitude': 21.1, 'longitude': -64.9}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- start_index: 80000 -- total: 113561 -- current_count: 20000 -- duration: 12.949413 -- first_item: {'air_temperature': 9.6, 'relative_humidity': 70.5, 'time': '2017-01-20T00:00:00Z', 'depth': -99999.0, 'latitude': 57.8, 'longitude': -0.9}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- start_index: 100000 -- total: 113561 -- current_count: 13561 -- duration: 16.5869 -- first_item: {'air_temperature': 24.7, 'relative_humidity': 62.2, 'time': '2017-01-15T16:00:00Z', 'depth': -99999.0, 'latitude': 21.6, 'longitude': -58.6}
+
 
         :return:
         """
