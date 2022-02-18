@@ -91,7 +91,9 @@ class QueryV3:
         else:
             query_result = query_result.drop(*removing_cols)
         LOGGER.debug(f'returning size : {total_result}')
-        result = query_result.limit(self.__props.start_at + self.__props.size).tail(self.__props.size)
+        remaining_size = total_result - self.__props.start_at
+        current_page_size = remaining_size if remaining_size < self.__props.size else self.__props.size
+        result = query_result.limit(self.__props.start_at + current_page_size).tail(current_page_size)
         query_result.unpersist()
         LOGGER.debug(f'total retrieval duration: {datetime.now() - query_time}')
         # spark.stop()

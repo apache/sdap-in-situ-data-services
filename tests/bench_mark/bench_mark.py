@@ -49,15 +49,41 @@ class BenchMark:
 
     def pagination_bench_mark(self):
         """
-        time: 2017-01-01T00:00:00Z - 2017-12-30T00:00:00Z -- start_index: 0 -- total: 2072146 -- duration: 1078.875818
-        time: 2017-01-01T00:00:00Z - 2017-12-30T00:00:00Z -- start_index: 2072000 -- total: 2072146 -- duration: 1957.478031
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- start_index: 0 -- total: 113561 -- duration: 16.313075
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 11.699316 -- first_item: {'air_temperature': 7.9, 'relative_humidity': 56.2, 'time': '2017-01-28T11:30:00Z', 'depth': -99999.0, 'latitude': 33.4, 'longitude': -77.7}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 13.780819 -- first_item: {'air_temperature': 24.0, 'relative_humidity': 70.0, 'time': '2017-01-16T23:30:00Z', 'depth': -99999.0, 'latitude': 23.5, 'longitude': -71.8}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 14.555451 -- first_item: {'air_temperature': 5.9, 'relative_humidity': 74.9, 'time': '2017-01-06T19:00:00Z', 'depth': -99999.0, 'latitude': 53.1, 'longitude': 2.8}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 15.820533 -- first_item: {'air_temperature': 24.2, 'relative_humidity': 70.1, 'time': '2017-01-23T05:49:48Z', 'depth': -99999.0, 'latitude': 21.6, 'longitude': -58.6}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 18.046887 -- first_item: {'air_temperature': 26.1, 'relative_humidity': 74.9, 'time': '2017-01-18T17:40:12Z', 'depth': -99999.0, 'latitude': 11.3, 'longitude': -60.5}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 19.41441 -- first_item: {'air_temperature': 9.8, 'relative_humidity': 94.8, 'time': '2017-01-18T15:00:00Z', 'depth': -99999.0, 'latitude': 61.2, 'longitude': 0.9}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 20.412385 -- first_item: {'air_temperature': 6.4, 'relative_humidity': 81.1, 'time': '2017-01-28T21:00:00Z', 'depth': -99999.0, 'latitude': 53.4, 'longitude': 1.7}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 21.88728 -- first_item: {'air_temperature': 24.3, 'relative_humidity': 62.5, 'time': '2017-01-24T22:40:12Z', 'depth': -99999.0, 'latitude': 23.6, 'longitude': -72.1}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 23.670248 -- first_item: {'air_temperature': 27.6, 'relative_humidity': 69.0, 'time': '2017-01-01T18:30:00Z', 'depth': -99999.0, 'latitude': 18.4, 'longitude': -69.6}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 25.683189 -- first_item: {'air_temperature': 25.7, 'relative_humidity': 65.3, 'time': '2017-01-23T02:49:48Z', 'depth': -99999.0, 'latitude': 15.3, 'longitude': -67.5}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 26.184124 -- first_item: {'air_temperature': 20.6, 'relative_humidity': 81.9, 'time': '2017-01-18T19:19:48Z', 'depth': -99999.0, 'latitude': 33.4, 'longitude': -77.7}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 10000 -- duration: 25.682943 -- first_item: {'air_temperature': 9.0, 'relative_humidity': 85.5, 'time': '2017-01-25T11:00:00Z', 'depth': -99999.0, 'latitude': 58.0, 'longitude': -0.3}
+
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- start_index: 0 -- total: 113561 -- duration: 14.74615
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 15.640875 -- first_item: {'air_temperature': 27.0, 'relative_humidity': 82.2, 'time': '2017-01-24T21:30:00Z', 'depth': -99999.0, 'latitude': 15.3, 'longitude': -67.5}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 22.962723 -- first_item: {'air_temperature': 10.2, 'relative_humidity': 72.1, 'time': '2017-01-07T18:49:48Z', 'depth': -99999.0, 'latitude': 28.7, 'longitude': -86.0}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 29.17014 -- first_item: {'air_temperature': 26.9, 'relative_humidity': 67.2, 'time': '2017-01-27T22:10:12Z', 'depth': -99999.0, 'latitude': 11.3, 'longitude': -60.5}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 36.511349 -- first_item: {'air_temperature': 6.0, 'relative_humidity': 77.1, 'time': '2017-01-05T23:00:00Z', 'depth': -99999.0, 'latitude': 56.4, 'longitude': 2.1}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 39.386719 -- first_item: {'air_temperature': 17.4, 'relative_humidity': 55.1, 'time': '2017-01-27T03:00:00Z', 'depth': -99999.0, 'latitude': 26.2, 'longitude': -97.1}
+time: 2017-01-01T00:00:00Z - 2017-01-30T00:00:00Z -- total: -1 -- current_count: 20000 -- duration: 40.542413 -- first_item: {'air_temperature': 27.1, 'relative_humidity': 74.6, 'time': '2017-01-05T04:10:12Z', 'depth': -99999.0, 'latitude': 11.3, 'longitude': -60.5}
+
         :return:
         """
         self.__start_time = '2017-01-01T00:00:00Z'
-        self.__end_time = '2017-12-30T00:00:00Z'
-        self.__start_index = 2072000
+        self.__end_time = '2017-01-30T00:00:00Z'
+        self.__start_index = 0
+        self.__size = 20000
         response = self.__execute_query()
-        print(f'time: {self.__start_time} - {self.__end_time} -- start_index: {self.__start_index} -- total: {response[0]["total"]} -- duration: {response[1]}')
+        print(f'time: {self.__start_time} - {self.__end_time} -- start_index: {self.__start_index} -- total: {response[0]["total"]} -- current_count: {len(response[0]["results"])} -- duration: {response[1]} -- first_item: {response[0]["results"][0]}')
+        total = response[0]['total']
+        while self.__start_index < total:
+            self.__start_index += self.__size
+            response = self.__execute_query()
+            print(f'time: {self.__start_time} - {self.__end_time} -- start_index: {self.__start_index} -- total: {response[0]["total"]} -- current_count: {len(response[0]["results"])} -- duration: {response[1]} -- first_item: {response[0]["results"][0]}')
         return
 
     def time_bench_mark(self):
@@ -78,6 +104,7 @@ time: 2017-01-01T00:00:00Z - 2017-06-30T00:00:00Z -- total: 979690 -- duration: 
         self.__provider = 'Florida State University, COAPS'
         self.__project = 'SAMOS'
         self.__platform_code = '30'
+        self.__start_index = 10
 
 
         # self.__start_time = '2017-01-01T00:00:00Z'
@@ -88,7 +115,7 @@ time: 2017-01-01T00:00:00Z - 2017-06-30T00:00:00Z -- total: 979690 -- duration: 
         self.__end_time = '2017-12-16T00:00:00Z'
         response = self.__execute_query()
         print(
-            f'time: {self.__start_time} - {self.__end_time} -- total: {response[0]["total"]} -- duration: {response[1]}')
+            f'time: {self.__start_time} - {self.__end_time} -- total: {response[0]["total"]} -- current_count: {len(response[0]["results"])} -- duration: {response[1]} -- first_item: {response[0]["results"][0]}')
         # raise ValueError('not yet')
         self.__start_time = '2017-02-01T00:00:00Z'
         self.__end_time = '2017-02-28T00:00:00Z'
@@ -146,4 +173,4 @@ platform_code=30/
 
 
 if __name__ == '__main__':
-    BenchMark().time_bench_mark()
+    BenchMark().pagination_bench_mark()
