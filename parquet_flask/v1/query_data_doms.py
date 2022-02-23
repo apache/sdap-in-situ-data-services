@@ -93,7 +93,7 @@ class IngestParquet(Resource):
         try:
             query = QueryV3(QueryProps().from_json(payload))
             result_set = query.search()
-            LOGGER.debug(f'search params: {payload}. result: {result_set}')
+            LOGGER.debug(f'search params: {payload}b')
             page_info = self.__calculate_4_ranges(result_set['total'])
             result_set['last'] = f'{request.base_url}?{self.__replace_start_from(page_info["last"])}'
             result_set['first'] = f'{request.base_url}?{self.__replace_start_from(page_info["first"])}'

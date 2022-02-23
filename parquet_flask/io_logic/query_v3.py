@@ -15,6 +15,9 @@
 
 import logging
 from datetime import datetime
+from operator import add
+
+from pyspark.rdd import RDD
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
 from parquet_flask.io_logic.query_v2 import QueryProps
