@@ -43,6 +43,7 @@ query_model = api.model('query_data', {
 
 
 @api.route('', methods=["get", "post"])
+@api.route('/', methods=["get", "post"])
 class IngestParquet(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
