@@ -15,7 +15,7 @@
 
 from flask import Blueprint
 from flask_restx import Api
-from .apidocs import api as apidocs
+from .insitu_query_swagger import api as apidocs
 from .ingest_json_s3 import api as ingest_parquet_json_s3
 from .replace_json_s3 import api as replace_parquet_json_s3
 from .query_data import api as query_data

@@ -12,21 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 from pathlib import Path
 
-from flask_restx import Resource, Namespace
 from flask import Blueprint, redirect, request, send_from_directory
 
-apidocs_path = Path(__file__).parent.joinpath('apidocs').resolve()
+apidocs_path = Path(__file__).parent.joinpath('insitu_query_swagger').resolve()
+api = Blueprint('insitu_query_swagger', import_name=__name__, static_folder=apidocs_path, static_url_path='', url_prefix='/insitu_query_swagger')
+LOGGER = logging.getLogger(__name__)
 
-api = Blueprint('apidocs', __name__, apidocs_path, '', url_prefix='/apidocs')
-
-@api.get('')
+@api.route('', methods=["get", "post"])
 def get_redirect():
     # Appends a / to the requested path
     return redirect(f'{request.path}/', 301)
 
-@api.get('/')
+
+@api.route('/', methods=["get", "post"], strict_slashes=False)
 def get_index():
     return send_from_directory(apidocs_path, 'index.html')
