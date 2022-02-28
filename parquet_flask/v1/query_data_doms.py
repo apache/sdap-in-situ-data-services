@@ -42,8 +42,8 @@ query_model = api.model('query_data_doms', {
 })
 
 
-@api.route('', methods=["get", "post"])
-@api.route('/', methods=["get", "post"])
+@api.route('', methods=["get", "post"], strict_slashes=False)
+@api.route('/', methods=["get", "post"], strict_slashes=False)
 class IngestParquet(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)

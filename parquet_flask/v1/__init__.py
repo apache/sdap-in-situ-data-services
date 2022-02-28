@@ -24,7 +24,6 @@ _version = "1.0"
 
 blueprint = Blueprint('parquet_flask', __name__, url_prefix='/{}'.format(_version))
 blueprint.register_blueprint(apidocs)
-
 api = Api(blueprint,
           title='Parquet ingestion & query',
           version=_version,
