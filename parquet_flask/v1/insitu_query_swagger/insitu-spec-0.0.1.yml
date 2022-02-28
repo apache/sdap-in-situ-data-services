@@ -184,8 +184,10 @@ components:
       schema:
         type: string
         enum:
-          - 'Florida State University, COAPS'
           - 'NCAR'
+          - '__'
+          - 'Florida State University, COAPS'
+          - '__'
           - 'Saildrone'
     projectParam:
       in: query
@@ -197,10 +199,15 @@ components:
         type: string
         enum:
           - 'ICOADS Release 3.0'
-          - '1021_atlantic'
+          - '__'
           - 'SAMOS'
+          - '__'
+          - '1021_atlantic'
+          - '___'
           - 'antarctic_circumnavigation_2019'
+          - '___'
           - 'atlantic_to_med_2019_to_2020'
+          - '___'
           - 'shark-2018'
     platformParam:
       in: query
@@ -210,6 +217,23 @@ components:
       example: '41'
       schema:
         type: string
+        enum:
+          - '0'
+          - '16'
+          - '17'
+          - '30'
+          - '41'
+          - '42'
+          - '__'
+          - '30'
+          - '__'
+          - '3B'
+          - '___'
+          - '3B'
+          - '___'
+          - '3B'
+          - '___'
+          - '3B'
     startIndexParam:
       in: query
       required: true
