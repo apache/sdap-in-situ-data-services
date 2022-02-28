@@ -8,12 +8,12 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 
 servers:
-  - url: http://rda-data.ucar.edu:8890/ws/search
-  - url: http://doms.coaps.fsu.edu/ws/search
+#  - url: http://rda-data.ucar.edu:8890/ws/search
+#  - url: http://doms.coaps.fsu.edu/ws/search
   - url: https://doms.jpl.nasa.gov/insitu/1.0
-  - url: https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0
-  - url: /1.0
-    description: Current server
+#  - url: https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0
+#  - url: /1.0
+    description: 'proxied doms.jpl.nasa.gov insitu'
 
 paths:
    '/query_data_doms':
@@ -183,6 +183,10 @@ components:
       example: NCAR
       schema:
         type: string
+        enum:
+          - 'Florida State University, COAPS'
+          - 'NCAR'
+          - 'Saildrone'
     projectParam:
       in: query
       required: true
@@ -191,6 +195,13 @@ components:
       example: 'ICOADS Release 3.0'
       schema:
         type: string
+        enum:
+          - 'ICOADS Release 3.0'
+          - '1021_atlantic'
+          - 'SAMOS'
+          - 'antarctic_circumnavigation_2019'
+          - 'atlantic_to_med_2019_to_2020'
+          - 'shark-2018'
     platformParam:
       in: query
       required: true
