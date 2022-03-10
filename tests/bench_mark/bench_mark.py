@@ -7,8 +7,8 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 
 class BenchMark:
     def __init__(self):
-        self.__cdms_domain = 'http://localhost:30801'
-        # self.__cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
+        # self.__cdms_domain = 'http://localhost:30801'
+        self.__cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.__size = 100
         self.__start_index = 0
 
@@ -162,10 +162,188 @@ time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 180000 -- tota
 
 Process finished with exit code 0
 
+
+Connected to pydev debugger (build 201.7223.92)
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=0&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 0 -- total: 168250 -- current_count: 20000 -- duration: 24.769869
+first_item: {'air_temperature': 7.8, 'relative_humidity': 91.5, 'time': '2017-04-01T09:00:00Z', 'depth': -99999.0, 'latitude': 61.6, 'longitude': 1.3}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=20000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 20000 -- total: 168250 -- current_count: 20000 -- duration: 10.757908
+first_item: {'air_temperature': 23.2, 'relative_humidity': 64.3, 'time': '2017-04-16T19:19:48Z', 'depth': -99999.0, 'latitude': 23.8, 'longitude': -68.4}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=40000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 40000 -- total: 168250 -- current_count: 20000 -- duration: 11.468385
+first_item: {'air_temperature': 24.0, 'relative_humidity': 98.2, 'time': '2017-04-05T21:49:48Z', 'depth': -99999.0, 'latitude': 28.8, 'longitude': -86.0}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=60000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 60000 -- total: 168250 -- current_count: 20000 -- duration: 12.194898
+first_item: {'air_temperature': 20.4, 'relative_humidity': 82.4, 'time': '2017-04-22T03:10:12Z', 'depth': -99999.0, 'latitude': 31.9, 'longitude': -69.6}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=80000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 80000 -- total: 168250 -- current_count: 20000 -- duration: 13.594509
+first_item: {'air_temperature': 4.2, 'relative_humidity': 70.4, 'time': '2017-04-22T13:00:00Z', 'depth': -99999.0, 'latitude': 60.6, 'longitude': 1.6}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=100000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 100000 -- total: 168250 -- current_count: 20000 -- duration: 16.949609
+first_item: {'air_temperature': 5.2, 'relative_humidity': 58.4, 'time': '2017-04-16T03:00:00Z', 'depth': -99999.0, 'latitude': 61.1, 'longitude': 1.0}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=120000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- total: 168250 -- current_count: 20000 -- duration: 45.506358
+first_item: {'air_temperature': 26.6, 'relative_humidity': 61.9, 'time': '2017-04-19T15:19:48Z', 'depth': -99999.0, 'latitude': 19.8, 'longitude': -70.7}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=140000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 140000 -- total: 168250 -- current_count: 20000 -- duration: 57.124638
+first_item: {'air_temperature': 14.8, 'relative_humidity': 65.5, 'time': '2017-04-25T01:49:48Z', 'depth': -99999.0, 'latitude': 41.6, 'longitude': -81.8}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=160000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 160000 -- total: 168250 -- current_count: 8250 -- duration: 22.821795
+first_item: {'air_temperature': 27.8, 'relative_humidity': 76.5, 'time': '2017-04-15T02:40:12Z', 'depth': -99999.0, 'latitude': 11.3, 'longitude': -60.5}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=180000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-04-01T00:00:00Z&endTime=2017-04-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-04-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 180000 -- total: 168250 -- current_count: 0 -- duration: 3.48374
+
+Process finished with exit code 0
+
+Connected to pydev debugger (build 201.7223.92)
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=0&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 0 -- total: 227787 -- current_count: 20000 -- duration: 11.207761
+first_item: {'air_temperature': 14.1, 'relative_humidity': 61.9, 'time': '2017-06-21T12:00:00Z', 'depth': -99999.0, 'latitude': 61.6, 'longitude': 1.3}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=20000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 20000 -- total: 227787 -- current_count: 20000 -- duration: 11.799825
+first_item: {'air_temperature': 26.0, 'relative_humidity': 90.9, 'time': '2017-06-16T23:19:48Z', 'depth': -99999.0, 'latitude': 31.9, 'longitude': -69.6}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=40000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 40000 -- total: 227787 -- current_count: 20000 -- duration: 14.555546
+first_item: {'air_temperature': 11.3, 'relative_humidity': 97.4, 'time': '2017-06-30T01:00:00Z', 'depth': -99999.0, 'latitude': 46.8, 'longitude': -91.8}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=60000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 60000 -- total: 227787 -- current_count: 20000 -- duration: 18.231606
+first_item: {'air_temperature': 28.4, 'relative_humidity': 89.5, 'time': '2017-06-24T09:49:48Z', 'depth': -99999.0, 'latitude': 27.9, 'longitude': -95.4}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=80000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 80000 -- total: 227787 -- current_count: 20000 -- duration: 15.588901
+first_item: {'air_temperature': 10.5, 'relative_humidity': 85.1, 'time': '2017-06-07T03:49:48Z', 'depth': -99999.0, 'latitude': 47.3, 'longitude': -88.6}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=100000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 100000 -- total: 227787 -- current_count: 20000 -- duration: 40.102472
+first_item: {'air_temperature': 27.3, 'relative_humidity': 76.9, 'time': '2017-06-04T06:49:48Z', 'depth': -99999.0, 'latitude': 14.5, 'longitude': -53.0}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=120000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 120000 -- total: 227787 -- current_count: 20000 -- duration: 54.26978
+first_item: {'air_temperature': 28.1, 'relative_humidity': 82.3, 'time': '2017-06-17T01:19:48Z', 'depth': -99999.0, 'latitude': 16.4, 'longitude': -63.2}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=140000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 140000 -- total: 227787 -- current_count: 20000 -- duration: 41.277232
+first_item: {'air_temperature': 16.1, 'relative_humidity': 82.9, 'time': '2017-06-07T22:49:48Z', 'depth': -99999.0, 'latitude': 36.6, 'longitude': -74.8}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=160000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 160000 -- total: 227787 -- current_count: 20000 -- duration: 51.041598
+first_item: {'air_temperature': 15.4, 'relative_humidity': 76.0, 'time': '2017-06-04T14:00:00Z', 'depth': -99999.0, 'latitude': 45.2, 'longitude': -5.0}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=180000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-06-01T00:00:00Z - 2017-09-30T00:00:00Z -- start_index: 180000 -- total: 227787 -- current_count: 20000 -- duration: 43.003454
+first_item: {'air_temperature': 15.4, 'relative_humidity': 96.8, 'time': '2017-06-23T17:49:48Z', 'depth': -99999.0, 'latitude': 43.5, 'longitude': -70.1}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=200000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-06-01T00:00:00Z&endTime=2017-09-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+Traceback (most recent call last):
+  File "/Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/pydevd.py", line 1438, in _exec
+    pydev_imports.execfile(file, globals, locals)  # execute the script
+  File "/Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/_pydev_imps/_pydev_execfile.py", line 18, in execfile
+    exec(compile(contents+"\n", file, 'exec'), glob, loc)
+  File "/Users/wphyo/Projects/access/parquet_test_1/tests/bench_mark/bench_mark.py", line 326, in <module>
+    BenchMark().pagination_bench_mark()
+  File "/Users/wphyo/Projects/access/parquet_test_1/tests/bench_mark/bench_mark.py", line 233, in pagination_bench_mark
+    response = self.__execute_query()
+  File "/Users/wphyo/Projects/access/parquet_test_1/tests/bench_mark/func_exec_time_decorator.py", line 12, in decorated_function
+    func_result = f(*args, **kwargs)
+  File "/Users/wphyo/Projects/access/parquet_test_1/tests/bench_mark/bench_mark.py", line 56, in __execute_query
+    raise ValueError(f'wrong status code: {response.status_code}. details: {response.text}')
+ValueError: wrong status code: 504. details:
+
+
+
+Connected to pydev debugger (build 201.7223.92)
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=0&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 0 -- total: 178348 -- current_count: 20000 -- duration: 7.309901
+first_item: {'air_temperature': 5.8, 'relative_humidity': 59.4, 'time': '2017-10-29T09:00:00Z', 'depth': -99999.0, 'latitude': 61.6, 'longitude': 1.3}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=20000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 20000 -- total: 178348 -- current_count: 20000 -- duration: 14.485547
+first_item: {'air_temperature': 14.1, 'relative_humidity': 88.9, 'time': '2017-10-08T08:00:00Z', 'depth': -99999.0, 'latitude': 46.8, 'longitude': -91.8}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=40000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 40000 -- total: 178348 -- current_count: 20000 -- duration: 21.060409
+first_item: {'air_temperature': 28.2, 'relative_humidity': 85.3, 'time': '2017-10-10T18:49:48Z', 'depth': -99999.0, 'latitude': 29.2, 'longitude': -88.2}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=60000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 60000 -- total: 178348 -- current_count: 20000 -- duration: 18.033041
+first_item: {'air_temperature': 13.3, 'relative_humidity': 78.8, 'time': '2017-10-14T16:00:00Z', 'depth': -99999.0, 'latitude': 57.0, 'longitude': 1.9}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=80000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 80000 -- total: 178348 -- current_count: 20000 -- duration: 35.704179
+first_item: {'air_temperature': 10.7, 'relative_humidity': 86.3, 'time': '2017-10-25T19:00:00Z', 'depth': -99999.0, 'latitude': 59.7, 'longitude': 1.6}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=100000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 100000 -- total: 178348 -- current_count: 20000 -- duration: 44.254885
+first_item: {'air_temperature': 11.3, 'relative_humidity': 70.8, 'time': '2017-10-19T13:00:00Z', 'depth': -99999.0, 'latitude': 61.3, 'longitude': 1.5}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=120000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 120000 -- total: 178348 -- current_count: 20000 -- duration: 46.126414
+first_item: {'air_temperature': 4.3, 'relative_humidity': 71.0, 'time': '2017-10-29T05:30:00Z', 'depth': -99999.0, 'latitude': 42.1, 'longitude': -87.7}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=140000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 140000 -- total: 178348 -- current_count: 20000 -- duration: 55.652159
+first_item: {'air_temperature': 15.5, 'relative_humidity': 96.8, 'time': '2017-10-15T00:00:00Z', 'depth': -99999.0, 'latitude': 54.1, 'longitude': 14.2}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=160000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 160000 -- total: 178348 -- current_count: 18348 -- duration: 59.856939
+first_item: {'air_temperature': 27.9, 'relative_humidity': 83.8, 'time': '2017-10-26T08:10:12Z', 'depth': -99999.0, 'latitude': 16.9, 'longitude': -81.4}
+https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0/query_data_doms?startIndex=180000&itemsPerPage=20000&provider=NCAR&project=ICOADS Release 3.0&platform=41&variable=relative_humidity&columns=air_temperature&minDepth=-99&maxDepth=0&startTime=2017-10-01T00:00:00Z&endTime=2017-10-30T00:00:00Z&bbox=-111,11,111,99
+/Users/wphyo/anaconda3/envs/cdms_parquet_3.6/lib/python3.6/site-packages/urllib3-1.26.7-py3.6.egg/urllib3/connectionpool.py:1020: InsecureRequestWarning: Unverified HTTPS request is being made to host 'a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+time: 2017-10-01T00:00:00Z - 2017-10-30T00:00:00Z -- start_index: 180000 -- total: 178348 -- current_count: 0 -- duration: 3.206068
+
+Process finished with exit code 0
+
         :return:
         """
-        self.__start_time = '2017-04-01T00:00:00Z'
-        self.__end_time = '2017-04-30T00:00:00Z'
+        self.__start_time = '2017-10-01T00:00:00Z'
+        self.__end_time = '2017-10-30T00:00:00Z'
         self.__start_index = 0
         self.__size = 20000
         response = self.__execute_query()
