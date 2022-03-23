@@ -71,7 +71,7 @@ class QueryV4:
             read_df_list.append(temp_df)
         main_read_df: DataFrame = read_df_list[0]
         for each in read_df_list[1:]:
-            main_read_df.union(each)
+            main_read_df = main_read_df.union(each)
         return main_read_df
 
     def __get_paged_result(self, result_df: DataFrame, total_result: int):
@@ -99,6 +99,7 @@ class QueryV4:
         LOGGER.debug(f'spark session created at {created_spark_session_time}. duration: {created_spark_session_time - query_begin_time}')
         LOGGER.debug(f'__parquet_name: {condition_manager.parquet_name}')
         read_df: DataFrame = self.get_unioned_read_df(condition_manager, spark)
+        # read_df: DataFrame = read_df.orderBy([CDMSConstants.time_obj_col, CDMSConstants.platform_code_col])
         read_df_time = datetime.now()
         LOGGER.debug(f'parquet read created at {read_df_time}. duration: {read_df_time - created_spark_session_time}')
         query_result = read_df.where(conditions)

@@ -8,6 +8,7 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 class BenchMark:
     def __init__(self):
         self.__cdms_domain = 'http://localhost:30801'
+        # self.__cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
         # self.__cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.__size = 100
         self.__start_index = 0
@@ -414,8 +415,12 @@ time: 2017-03-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- tota
 
         :return:
         """
-        self.__start_time = '2017-03-01T00:00:00Z'
-        self.__end_time = '2017-04-30T00:00:00Z'
+        self.__start_time = '2017-05-01T00:00:00Z'
+        self.__end_time = '2017-07-30T00:00:00Z'
+        self.__platform_code = '41'
+        self.__variable = None
+        self.__columns = None
+
         self.__start_index = 0
         self.__size = 20000
         self.__columns = None
