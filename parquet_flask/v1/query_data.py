@@ -19,10 +19,6 @@ import logging
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
-from parquet_flask.io_logic.query_v2 import QueryProps, Query, QUERY_PROPS_SCHEMA
-from parquet_flask.io_logic.query_v3 import QueryV3
-from parquet_flask.utils.general_utils import GeneralUtils
-
 api = Namespace('query_data', description="Querying data")
 LOGGER = logging.getLogger(__name__)
 
@@ -49,42 +45,9 @@ class IngestParquet(Resource):
         super().__init__(api, args, kwargs)
         self.__saved_dir = '/tmp'  # TODO update this
 
-    def __execute_query(self, payload):
-        is_valid, json_error = GeneralUtils.is_json_valid(payload, QUERY_PROPS_SCHEMA)
-        if not is_valid:
-            return {'message': 'invalid request body', 'details': str(json_error)}, 400
-        try:
-            query = QueryV3(QueryProps().from_json(payload))
-            result_set = query.search()
-            LOGGER.debug(f'search params: {payload}. result: {result_set}')
-            return {'result_set': result_set}, 200
-        except Exception as e:
-            LOGGER.exception(f'failed to query parquet. cause: {str(e)}')
-            return {'message': 'failed to query parquet', 'details': str(e)}, 500
-
     @api.expect()
     def get(self):
-        query_json = {
-            'start_from': request.args.get('start_from', '0'),
-            'size': request.args.get('size', '10'),
-        }
-        if 'min_time' in request.args:
-            query_json['min_time'] = request.args.get('min_time')
-        if 'max_time' in request.args:
-            query_json['max_time'] = request.args.get('max_time')
-        if 'min_depth' in request.args:
-            query_json['min_depth'] = float(request.args.get('min_depth'))
-        if 'max_depth' in request.args:
-            query_json['max_depth'] = float(request.args.get('max_depth'))
-        if 'columns' in request.args:
-            query_json['columns'] = [k.strip() for k in request.args.get('columns').split(',')]
-        if 'variable' in request.args:
-            query_json['variable'] = [k.strip() for k in request.args.get('variable').split(',')]
-        if 'min_lat_lon' in request.args:
-            query_json['min_lat_lon'] = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('min_lat_lon'), 2)
-        if 'max_lat_lon' in request.args:
-            query_json['max_lat_lon'] = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('max_lat_lon'), 2)
-        return self.__execute_query(query_json)
+        return {'message': 'no longer available. Pls use query_data_doms'}, 410
 
     @api.expect()
     def post(self):
@@ -93,4 +56,4 @@ class IngestParquet(Resource):
 
         :return:
         """
-        return self.__execute_query(request.get_json())
+        return {'message': 'no longer available. Pls use query_data_doms'}, 410

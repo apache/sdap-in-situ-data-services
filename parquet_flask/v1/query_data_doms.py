@@ -19,8 +19,7 @@ from copy import deepcopy
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
-from parquet_flask.io_logic.query_v2 import QueryProps, Query, QUERY_PROPS_SCHEMA
-from parquet_flask.io_logic.query_v3 import QueryV3
+from parquet_flask.io_logic.query_v2 import QueryProps, QUERY_PROPS_SCHEMA
 from parquet_flask.io_logic.query_v4 import QueryV4
 from parquet_flask.utils.general_utils import GeneralUtils
 
@@ -34,7 +33,7 @@ query_model = api.model('query_data_doms', {
     'maxDepth': fields.Float(required=True, example=-65.34),
     'startTime': fields.String(required=True, example='2020-01-01T00:00:00Z'),
     'endTime': fields.String(required=True, example='2020-01-31T00:00:00Z'),
-    'platform': fields.Integer(required=True, example=0),
+    'platform': fields.String(required=True, example='30,3B'),
     'provider': fields.Integer(required=True, example=0),
     'project': fields.Integer(required=True, example=0),
     'columns': fields.String(required=False, example='latitudes, longitudes'),
@@ -127,7 +126,7 @@ class IngestParquet(Resource):
             query_json['min_lat_lon'] = [bounding_box[1], bounding_box[0]]
             query_json['max_lat_lon'] = [bounding_box[3], bounding_box[2]]
         if 'platform' in request.args:
-            query_json['platform_code'] = request.args.get('platform')
+            query_json['platform_code'] = [k.strip() for k in request.args.get('platform').strip().split(',')]
         if 'provider' in request.args:
             query_json['provider'] = request.args.get('provider')
         if 'project' in request.args:

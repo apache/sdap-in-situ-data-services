@@ -1,5 +1,6 @@
 import logging
 
+from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
 from parquet_flask.utils.time_utils import TimeUtils
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.query_v2 import QueryProps
@@ -7,7 +8,7 @@ from parquet_flask.io_logic.query_v2 import QueryProps
 LOGGER = logging.getLogger(__name__)
 
 
-class ParquetQueryConditionManagementV2:
+class ParquetQueryConditionManagementV3:
     def __init__(self, parquet_name, missing_depth_value, props=QueryProps()):
         self.__conditions = []
         self.__parquet_name = parquet_name if not parquet_name.endswith('/') else parquet_name[:-1]
@@ -15,7 +16,10 @@ class ParquetQueryConditionManagementV2:
         self.__is_extending_base = True
         self.__query_props = props
         self.__missing_depth_value = missing_depth_value
-        self.__parquet_names = []
+        self.__parquet_names: [PartitionedParquetPath] = []
+
+    def stringify_parquet_names(self):
+        return [k.generate_path() for k in self.__parquet_names]
 
     @property
     def parquet_names(self):
@@ -75,7 +79,7 @@ class ParquetQueryConditionManagementV2:
             self.__columns.append(CDMSConstants.provider_col)
             return
         LOGGER.debug(f'setting provider condition: {self.__query_props.provider}')
-        self.__parquet_name = f'{self.__parquet_name}/{CDMSConstants.provider_col}={self.__query_props.provider}'
+        self.parquet_names = [PartitionedParquetPath(self.__parquet_name).set_provider(self.__query_props.provider)]
         return
 
     def __check_project(self):
@@ -89,7 +93,8 @@ class ParquetQueryConditionManagementV2:
             self.__conditions.append(f"{CDMSConstants.project_col} == '{self.__query_props.project}'")
             return
         LOGGER.debug(f'setting project condition as path: {self.__query_props.project}')
-        self.__parquet_name = f'{self.__parquet_name}/{CDMSConstants.project_col}={self.__query_props.project}'
+        new_parquet_names = [k.duplicate().set_project(self.__query_props.project) for k in self.parquet_names]
+        self.parquet_names = new_parquet_names
         return
 
     def __check_platform(self):
@@ -100,30 +105,38 @@ class ParquetQueryConditionManagementV2:
         if not self.__is_extending_base:
             LOGGER.debug(f'setting platform_code condition as sql: {self.__query_props.platform_code}')
             # self.__columns.append(CDMSConstants.platform_code_col)
-            self.__conditions.append(f"{CDMSConstants.platform_code_col} == '{self.__query_props.platform_code}'")
+            comma_sep_platforms = ','.join([f"'{k}'" for k in self.__query_props.platform_code])
+            self.__conditions.append(f"{CDMSConstants.platform_code_col} in ({comma_sep_platforms})")
             return
         LOGGER.debug(f'setting platform_code condition as path: {self.__query_props.platform_code}')
-        self.__parquet_name = f'{self.__parquet_name}/{CDMSConstants.platform_code_col}={self.__query_props.platform_code}'
+        new_parquet_names = []
+        for each in self.__query_props.platform_code:
+            new_parquet_names.extend([k.duplicate().set_platform(each) for k in self.parquet_names])
+        self.parquet_names = new_parquet_names
         return
 
     def __generate_time_partition_list(self, min_time, max_time):
         if min_time.year == max_time.year: # same year
+            new_parquet_names = []
             for each_month in range(min_time.month, max_time.month + 1):
-                self.parquet_names.append(f'{self.__parquet_name}/{CDMSConstants.year_col}={min_time.year}/{CDMSConstants.month_col}={each_month}')
+                new_parquet_names.extend([k.duplicate().set_year(min_time.year).set_month(each_month) for k in self.parquet_names])
+            self.parquet_names = new_parquet_names
             return
         # different year
+        new_parquet_names = []
         for each_whole_year in range(min_time.year + 1, max_time.year):  # for whole years
-            self.parquet_names.append(f'{self.__parquet_name}/{CDMSConstants.year_col}={each_whole_year}')
+            new_parquet_names.extend([k.duplicate().set_year(each_whole_year) for k in self.parquet_names])
         if min_time.month == 1:
-            self.parquet_names.append(f'{self.__parquet_name}/{CDMSConstants.year_col}={min_time.year}')
+            new_parquet_names.extend([k.duplicate().set_year(min_time.year) for k in self.parquet_names])
         else:
             for each_month in range(min_time.month, 13):  # months for beginning year
-                self.parquet_names.append(f'{self.__parquet_name}/{CDMSConstants.year_col}={min_time.year}/{CDMSConstants.month_col}={each_month}')
+                new_parquet_names.extend([k.duplicate().set_year(min_time.year).set_month(each_month) for k in self.parquet_names])
         if max_time.month == 12:
-            self.parquet_names.append(f'{self.__parquet_name}/{CDMSConstants.year_col}={max_time.year}')
+            new_parquet_names.extend([k.duplicate().set_year(max_time.year) for k in self.parquet_names])
         else:
             for each_month in range(1, max_time.month + 1):  # months for ending year
-                self.parquet_names.append(f'{self.__parquet_name}/{CDMSConstants.year_col}={max_time.year}/{CDMSConstants.month_col}={each_month}')
+                new_parquet_names.extend([k.duplicate().set_year(max_time.year).set_month(each_month) for k in self.parquet_names])
+        self.parquet_names = new_parquet_names
         return
 
     def __check_time_range(self):

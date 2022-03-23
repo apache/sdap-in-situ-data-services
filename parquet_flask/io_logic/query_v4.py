@@ -18,12 +18,13 @@ from datetime import datetime
 
 import pyspark.sql.functions as F
 from pyspark.sql.session import SparkSession
+from pyspark.sql.dataframe import DataFrame
+from pyspark.sql.functions import lit
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
-from parquet_flask.io_logic.parquet_query_condition_management_v2 import ParquetQueryConditionManagementV2
+from parquet_flask.io_logic.parquet_query_condition_management_v3 import ParquetQueryConditionManagementV3
+from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
 from parquet_flask.io_logic.query_v2 import QueryProps
-from pyspark.sql.dataframe import DataFrame
-
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.general_utils import GeneralUtils
@@ -43,7 +44,7 @@ class QueryV4:
         self.__conditions = []
         self.__min_year = None
         self.__max_year = None
-        self.__default_columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col]   # , CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_col]
+        self.__default_columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col, CDMSConstants.platform_code_col, CDMSConstants.provider_col, CDMSConstants.project_col]   # , CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_col]
         self.__set_missing_depth_val()
 
     def __set_missing_depth_val(self):
@@ -57,11 +58,17 @@ class QueryV4:
         spark = RetrieveSparkSession().retrieve_spark_session(self.__app_name, self.__master_spark)
         return spark
 
-    def get_unioned_read_df(self, condition_manager:ParquetQueryConditionManagementV2, spark: SparkSession) -> DataFrame:
+    def get_unioned_read_df(self, condition_manager:ParquetQueryConditionManagementV3, spark: SparkSession) -> DataFrame:
         if len(condition_manager.parquet_names) < 1:
             read_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(condition_manager.parquet_name)
             return read_df
-        read_df_list = [spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(k) for k in condition_manager.parquet_names]
+        read_df_list = []
+        for each in condition_manager.parquet_names:
+            each: PartitionedParquetPath = each
+            temp_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(each.generate_path())
+            for k, v in each.get_df_columns().items():
+                temp_df: DataFrame = temp_df.withColumn(k, lit(v))
+            read_df_list.append(temp_df)
         main_read_df: DataFrame = read_df_list[0]
         for each in read_df_list[1:]:
             main_read_df.union(each)
@@ -81,7 +88,7 @@ class QueryV4:
         return df.collect()
 
     def search(self, spark_session=None):
-        condition_manager = ParquetQueryConditionManagementV2(self.__parquet_name, self.__missing_depth_value, self.__props)
+        condition_manager = ParquetQueryConditionManagementV3(self.__parquet_name, self.__missing_depth_value, self.__props)
         condition_manager.manage_query_props()
 
         conditions = ' AND '.join(condition_manager.conditions)
