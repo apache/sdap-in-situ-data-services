@@ -15,8 +15,7 @@
 
 import logging
 import os
-
-import boto3
+from io import BytesIO
 
 from parquet_flask.aws.aws_cred import AwsCred
 from parquet_flask.utils.file_utils import FileUtils
@@ -28,9 +27,35 @@ class AwsS3(AwsCred):
     def __init__(self):
         super().__init__()
         self.__valid_s3_schemas = ['s3://', 's3a://', 's3s://']
-        self.__s3_client = boto3.Session(**self.boto3_session).client('s3')
+        self.__s3_client = self.get_client('s3')
         self.__target_bucket = None
         self.__target_key = None
+
+    def get_s3_stream(self):
+        return self.__s3_client.get_object(Bucket=self.__target_bucket, Key=self.__target_key)['Body']
+
+    def read_small_txt_file(self):
+        """
+        convenient method to read small text files stored in S3
+
+        :param bucket: bucket name
+        :param key: S3 key
+        :return: text file contents
+        """
+        bytestream = BytesIO(self.get_s3_stream().read())  # get the bytes stream of zipped file
+        return bytestream.read().decode('UTF-8')
+
+    def get_s3_obj_size(self):
+        # get head of the s3 file
+        s3_obj_head = self.__s3_client.head_object(
+            Bucket=self.__target_bucket,
+            Key=self.__target_key,
+        )
+        # get the object size
+        s3_obj_size = int(s3_obj_head['ResponseMetadata']['HTTPHeaders']['content-length'])
+        if s3_obj_size is None:  # no object size found. something went wrong.
+            return -1
+        return s3_obj_size
 
     def __get_all_s3_files_under(self, bucket, prefix, with_versions=False):
         list_method_name = 'list_object_versions' if with_versions is True else 'list_objects_v2'

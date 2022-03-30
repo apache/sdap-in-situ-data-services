@@ -1,0 +1,1 @@
+Download aws-java-sdk-bundle-1.11.563.jar from maven

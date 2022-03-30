@@ -19,6 +19,7 @@ from flask_restx import Resource, Namespace, fields
 from flask import request
 
 from parquet_flask.utils.general_utils import GeneralUtils
+from parquet_flask.v1.authenticator_decorator import authenticator_decorator
 from parquet_flask.v1.ingest_aws_json import IngestAwsJsonProps, IngestAwsJson
 
 api = Namespace('ingest_json_s3', description="Ingesting JSON files")
@@ -26,12 +27,16 @@ LOGGER = logging.getLogger(__name__)
 
 query_model = api.model('ingest_json_s3', {
     's3_url': fields.String(required=True, example='s3://<bucket>/<key>'),
+    'sanitize_record': fields.Boolean(required=False, example='True', default=True),
+    'wait_till_finish': fields.Boolean(required=False, example='True', default=True),
 })
 
 _QUERY_SCHEMA = {
     'type': 'object',
     'properties': {
         's3_url': {'type': 'string'},
+        'sanitize_record': {'type': 'boolean'},
+        'wait_till_finish': {'type': 'boolean'},
     },
     'required': ['s3_url'],
 }
@@ -43,6 +48,7 @@ class IngestParquet(Resource):
         super().__init__(api, args, kwargs)
 
     @api.expect(fields=query_model)
+    @authenticator_decorator
     def put(self):
         """
         s3://ecsv-h5-data-v1/INDEX/GALILEO/filenames.txt.gz
@@ -55,4 +61,6 @@ class IngestParquet(Resource):
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         props = IngestAwsJsonProps()
         props.s3_url = payload["s3_url"]
+        props.is_sanitizing = payload['sanitize_record'] if 'sanitize_record' in payload else True
+        props.wait_till_complete = payload['wait_till_finish'] if 'wait_till_finish' in payload else True
         return IngestAwsJson(props).ingest()

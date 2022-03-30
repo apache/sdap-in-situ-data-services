@@ -10,3 +10,9 @@ scratch*
 CDMS_insitu.parquet
 __pycache__
 .DS_Store
+secret.yml
+local.spark.cluster/aws-java-sdk-bundle*.jar
+.ipynb_checkpoints
+*.ipynb
+
+parquet.spark.helm.values.yaml

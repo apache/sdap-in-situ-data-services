@@ -16,11 +16,13 @@
 import logging
 from datetime import datetime
 
-# from pyspark import F
+from typing import Union
+
 from pyspark.sql.dataframe import DataFrame
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.utils.config import Config
+from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.utils.time_utils import TimeUtils
 
 LOGGER = logging.getLogger(__name__)
@@ -35,7 +37,7 @@ QUERY_PROPS_SCHEMA = {
             'items': {'type': 'string'},
             'minItems': 0,
         },
-        'platform_code': {'type': 'string'},
+        'platform_code': {'type': 'array', 'items': {'type': 'string'}, 'minItems': 1},
         'provider': {'type': 'string'},
         'project': {'type': 'string'},
         'min_depth': {'type': 'number'},
@@ -51,7 +53,7 @@ QUERY_PROPS_SCHEMA = {
 
 class QueryProps:
     def __init__(self):
-        self.__variable = None
+        self.__variable: list = []
         self.__quality_flag = False
         self.__platform_code = None
         self.__project = None
@@ -68,13 +70,13 @@ class QueryProps:
         self.__columns = []
 
     @property
-    def variable(self):
+    def variable(self) -> list:
         return self.__variable
 
     @variable.setter
-    def variable(self, val):
+    def variable(self, val: list):
         """
-        :param val:
+        :param val: list
         :return: None
         """
         self.__variable = val
@@ -125,6 +127,8 @@ class QueryProps:
             self.platform_code = input_json['platform_code']
         if 'columns' in input_json:
             self.columns = input_json['columns']
+        if 'variable' in input_json:
+            self.variable = input_json['variable']
         return self
 
     @property
@@ -282,133 +286,3 @@ class QueryProps:
         """
         self.__columns = val
         return
-
-
-class Query:
-    def __init__(self, props=QueryProps()):
-        self.__props = props
-        config = Config()
-        self.__app_name = config.get_value('spark_app_name')
-        self.__master_spark = config.get_value('master_spark_url')
-        self.__parquet_name = config.get_value('parquet_file_name')
-
-    def __add_conditions(self):
-        conditions = []
-        min_year = None
-        max_year = None
-        if self.__props.platform_code is not None:
-            LOGGER.debug(f'setting platform_code condition: {self.__props.platform_code}')
-            conditions.append(f"{CDMSConstants.platform_code_col} == '{self.__props.platform_code}'")
-        if self.__props.provider is not None:
-            LOGGER.debug(f'setting provider condition: {self.__props.provider}')
-            conditions.append(f"{CDMSConstants.provider_col} == '{self.__props.provider}'")
-        if self.__props.project is not None:
-            LOGGER.debug(f'setting project condition: {self.__props.project}')
-            conditions.append(f"{CDMSConstants.project_col} == '{self.__props.project}'")
-        if self.__props.min_datetime is not None:
-            LOGGER.debug(f'setting datetime min condition: {self.__props.min_datetime}')
-            min_year = TimeUtils.get_datetime_obj(self.__props.min_datetime).year
-            conditions.append(f"{CDMSConstants.year_col} >= {min_year}")
-            conditions.append(f"{CDMSConstants.time_obj_col} >= '{self.__props.min_datetime}'")
-        if self.__props.max_datetime is not None:
-            LOGGER.debug(f'setting datetime max condition: {self.__props.max_datetime}')
-            max_year = TimeUtils.get_datetime_obj(self.__props.max_datetime).year
-            conditions.append(f"{CDMSConstants.year_col} <= {max_year}")
-            conditions.append(f"{CDMSConstants.time_obj_col} <= '{self.__props.max_datetime}'")
-        if min_year is not None and max_year is not None and min_year == max_year:
-            LOGGER.debug(f'setting month duration condition: {self.__props.max_datetime}')
-            conditions.append(f"{CDMSConstants.month_col} >= {TimeUtils.get_datetime_obj(self.__props.min_datetime).month}")
-            conditions.append(f"{CDMSConstants.month_col} <= {TimeUtils.get_datetime_obj(self.__props.max_datetime).month}")
-        if self.__props.min_lat_lon is not None:
-            LOGGER.debug(f'setting Lat-Lon min condition: {self.__props.min_lat_lon}')
-            conditions.append(f"{CDMSConstants.lat_col} >= {self.__props.min_lat_lon[0]}")
-            conditions.append(f"{CDMSConstants.lon_col} >= {self.__props.min_lat_lon[1]}")
-        if self.__props.max_lat_lon is not None:
-            LOGGER.debug(f'setting Lat-Lon max condition: {self.__props.max_lat_lon}')
-            conditions.append(f"{CDMSConstants.lat_col} <= {self.__props.max_lat_lon[0]}")
-            conditions.append(f"{CDMSConstants.lon_col} <= {self.__props.max_lat_lon[1]}")
-        if self.__props.min_depth is not None:
-            LOGGER.debug(f'setting depth min condition: {self.__props.min_depth}')
-            conditions.append(f"{CDMSConstants.depth_col} >= {self.__props.min_depth}")
-        if self.__props.max_depth is not None:
-            LOGGER.debug(f'setting depth max condition: {self.__props.max_depth}')
-            conditions.append(f"{CDMSConstants.depth_col} <= {self.__props.max_depth}")
-        if self.__props.variable is not None:
-            LOGGER.debug(f'setting not null variable: {self.__props.variable}')
-            conditions.append(f"{self.__props.variable} <= NULL")
-            self.__props.columns.append(self.__props.variable)
-            if self.__props.quality_flag is True:
-                LOGGER.debug(f'adding quality flag for : {self.__props.variable}')
-                self.__props.columns.append(f'{self.__props.variable}_quality')
-        LOGGER.debug(f'conditions list: {conditions}')
-        return ' AND '.join(conditions)
-
-    def __retrieve_spark(self):
-        from parquet_flask.io_logic.retrieve_spark_session import RetrieveSparkSession
-        spark = RetrieveSparkSession().retrieve_spark_session(self.__app_name, self.__master_spark)
-        return spark
-
-    def __sql_query(self, spark_session=None):
-        conditions = self.__add_conditions()
-        sql_stmt = 'select count(*) from ParquetTable '
-        if len(conditions) > 0:
-            sql_stmt = f'{sql_stmt} where {conditions} ; '
-        LOGGER.debug(f'query statement: {sql_stmt}')
-        time_start = datetime.now()
-        spark = self.__retrieve_spark() if spark_session is None else spark_session
-        spark.read.parquet(self.__parquet_name).createOrReplaceTempView("parquetTable")
-        read_df_time = datetime.now()
-        LOGGER.debug(f'query_2 parquet read created at {read_df_time}. took: {read_df_time - time_start}')
-        result_count = spark.sql(sql_stmt).collect()
-        time_end = datetime.now()
-        LOGGER.debug(f'query_2 count duration: {time_end - time_start}')
-
-        sql_stmt = 'select * from ParquetTable '
-        if len(conditions) > 0:
-            sql_stmt = f'{sql_stmt} where {conditions} ; '  #  limit {self.__props.start_at + self.__props.size},{self.__props.size}
-        LOGGER.debug(f'query statement: {sql_stmt}')
-        removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
-        result = spark.sql(sql_stmt).coalesce(1).limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
-        time_end = datetime.now()
-        LOGGER.debug(f'query_2 result duration: {time_end - time_start}')
-        return {'result': result}
-
-    def search(self, spark_session=None):
-        # LOGGER.debug(f'self.__sql_query(spark_session): {self.__sql_query(spark_session)}')
-        conditions = self.__add_conditions()
-        query_begin_time = datetime.now()
-        LOGGER.debug(f'query begins at {query_begin_time}')
-        spark = self.__retrieve_spark() if spark_session is None else spark_session
-        created_spark_session_time = datetime.now()
-        LOGGER.debug(f'spark session created at {created_spark_session_time}. duration: {created_spark_session_time - query_begin_time}')
-        read_df: DataFrame = spark.read.parquet(self.__parquet_name)
-        read_df_time = datetime.now()
-        LOGGER.debug(f'parquet read created at {read_df_time}. duration: {read_df_time - created_spark_session_time}')
-        query_result = read_df.where(conditions)
-        query_result = query_result.coalesce(1)
-        query_time = datetime.now()
-        LOGGER.debug(f'parquet read filtered at {query_time}. duration: {query_time - read_df_time}')
-        LOGGER.debug(f'total duration: {query_time - query_begin_time}')
-        total_result = int(query_result.coalesce(3).count())
-        # total_result = 1000  # faking this for now. TODO revert it.
-        LOGGER.debug(f'total calc count duration: {datetime.now() - query_time}')
-        if self.__props.size < 1:
-            LOGGER.debug(f'returning only the size: {total_result}')
-            return {
-                'total': total_result,
-                'results': [],
-            }
-        query_time = datetime.now()
-        # result = query_result.withColumn('_id', F.monotonically_increasing_id())
-        removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
-        # result = result.where(F.col('_id').between(self.__props.start_at, self.__props.start_at + self.__props.size)).drop(*removing_cols)
-        if len(self.__props.columns) > 0:
-            result = query_result.select(self.__props.columns)
-        LOGGER.debug(f'returning size : {total_result}')
-        result = query_result.limit(self.__props.start_at + self.__props.size).drop(*removing_cols).tail(self.__props.size)
-        LOGGER.debug(f'total retrieval duration: {datetime.now() - query_time}')
-        spark.stop()
-        return {
-            'total': total_result,
-            'results': [k.asDict() for k in result],
-        }

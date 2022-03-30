@@ -37,3 +37,7 @@ class CDMSConstants:
     records_count_key = 'records_count'
     job_start_key = 'job_start_time'
     job_end_key = 'job_end_time'
+    checksum_validation = 'checksum_validation'
+    checksum_cause = 'checksum_cause'
+
+    missing_depth_value = -99999
