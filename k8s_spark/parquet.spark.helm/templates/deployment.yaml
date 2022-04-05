@@ -59,6 +59,8 @@ spec:
 #              value: {{ .Values.aws_creds.awssecret }}
 #            - name: aws_secret_access_key
 #              value: {{ .Values.aws_creds.awstoken }}
+            - name: flask_prefix
+              value: {{ .Values.flask_env.flask_prefix }}
             - name: parquet_file_name
               value: {{ .Values.flask_env.parquet_file_name }}
             - name: master_spark_url

@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
+from hashlib import sha256
 from math import isnan
 
 import fastjsonschema
@@ -65,3 +67,7 @@ class GeneralUtils:
         if not all(split_is_float):
             raise ValueError(f'one or more is not float for bbox: {input_val}')
         return [float(k) for k in split_bbox_str]
+
+    @staticmethod
+    def gen_sha_256_json_obj(input_json_obj: dict) -> str:
+        return sha256(json.dumps(input_json_obj, sort_keys=True).encode()).hexdigest()

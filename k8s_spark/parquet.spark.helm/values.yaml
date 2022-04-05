@@ -9,6 +9,7 @@ flask_env:
   master_spark_url: "spark://custom-spark-master-0.custom-spark-headless.bitnami-spark.svc.cluster.local:7077"
   spark_app_name: "parquet_flask_demo"
   log_level: "DEBUG"
+  flask_prefix: "insitu"
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"
   spark_config_dict: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
 

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
 from datetime import datetime
 
@@ -20,6 +19,7 @@ import pyspark.sql.functions as F
 from pyspark.sql.session import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import lit
+from pyspark.sql.types import Row
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
 from parquet_flask.io_logic.parquet_query_condition_management_v3 import ParquetQueryConditionManagementV3
@@ -42,6 +42,7 @@ class QueryV4:
         self.__parquet_name = self.__parquet_name if not self.__parquet_name.endswith('/') else self.__parquet_name[:-1]
         self.__missing_depth_value = CDMSConstants.missing_depth_value
         self.__conditions = []
+        self.__sorting_columns = [CDMSConstants.time_col, CDMSConstants.platform_code_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col]
         self.__min_year = None
         self.__max_year = None
         self.__default_columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col, CDMSConstants.platform_code_col, CDMSConstants.provider_col, CDMSConstants.project_col]   # , CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_col]
@@ -58,7 +59,7 @@ class QueryV4:
         spark = RetrieveSparkSession().retrieve_spark_session(self.__app_name, self.__master_spark)
         return spark
 
-    def get_unioned_read_df(self, condition_manager:ParquetQueryConditionManagementV3, spark: SparkSession) -> DataFrame:
+    def get_unioned_read_df(self, condition_manager: ParquetQueryConditionManagementV3, spark: SparkSession) -> DataFrame:
         if len(condition_manager.parquet_names) < 1:
             read_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(condition_manager.parquet_name)
             return read_df
@@ -87,6 +88,44 @@ class QueryV4:
         df = df.where(F.col('_id').between(offset, offset + limit))
         return df.collect()
 
+    def __is_in_old_page(self, current_item: dict) -> bool:
+        return current_item[CDMSConstants.time_col] == self.__props.min_datetime and current_item[CDMSConstants.platform_col]['code'] <= self.__props.marker_platform_code
+
+    def __get_sorting_params(self, query_result: DataFrame):
+        return [query_result[k].asc() for k in self.__sorting_columns]
+
+    def __get_nth_first_page(self, query_result: DataFrame):
+        result_head = query_result.where(f"{CDMSConstants.time_col} = '{self.__props.min_datetime}'").sort(self.__get_sorting_params(query_result)).collect()
+        new_index = -1
+        for i, each_row in enumerate(result_head):
+            each_row: Row = each_row
+            each_sha_256 = GeneralUtils.gen_sha_256_json_obj(each_row.asDict())
+            if each_sha_256 == self.__props.marker_platform_code:
+                new_index = i
+                break
+        if new_index < 0:
+            raise ValueError(f'cannot find existing row. It should not happen.')
+        result_page = query_result.take(self.__props.size + new_index + 1)
+        result_tail = result_page[new_index + 1:]
+        return result_tail
+
+    def __get_page(self, query_result: DataFrame, total_result: int):
+        if self.__props.size == 0:
+            return []
+        if self.__props.marker_platform_code is not None:  # pagination new logic
+            return self.__get_nth_first_page(query_result)
+        if total_result < 0:
+            raise ValueError('total_result is not calculated for old pagination logic. This should not happen. Something has horribly gone wrong')
+        # result = self.__get_paged_result_v2(query_result)
+        return self.__get_paged_result(query_result, total_result)
+
+    def __get_total_count(self, query_result: DataFrame):
+        if self.__props.marker_platform_code is not None:
+            LOGGER.debug(f'not counting total since this is an Nth page')
+            return -1
+        LOGGER.debug(f'counting total')
+        return int(query_result.count())
+
     def search(self, spark_session=None):
         condition_manager = ParquetQueryConditionManagementV3(self.__parquet_name, self.__missing_depth_value, self.__props)
         condition_manager.manage_query_props()
@@ -99,17 +138,15 @@ class QueryV4:
         LOGGER.debug(f'spark session created at {created_spark_session_time}. duration: {created_spark_session_time - query_begin_time}')
         LOGGER.debug(f'__parquet_name: {condition_manager.parquet_name}')
         read_df: DataFrame = self.get_unioned_read_df(condition_manager, spark)
-        # read_df: DataFrame = read_df.orderBy([CDMSConstants.time_obj_col, CDMSConstants.platform_code_col])
         read_df_time = datetime.now()
         LOGGER.debug(f'parquet read created at {read_df_time}. duration: {read_df_time - created_spark_session_time}')
         query_result = read_df.where(conditions)
-        query_result = query_result
+        query_result = query_result.sort(self.__get_sorting_params(query_result))
         query_time = datetime.now()
         LOGGER.debug(f'parquet read filtered at {query_time}. duration: {query_time - read_df_time}')
         LOGGER.debug(f'total duration: {query_time - query_begin_time}')
-        total_result = int(query_result.count())
-        # total_result = 1000  # faking this for now. TODO revert it.
         LOGGER.debug(f'total calc count duration: {datetime.now() - query_time}')
+        total_result = self.__get_total_count(query_result)
         if self.__props.size < 1:
             LOGGER.debug(f'returning only the size: {total_result}')
             return {
@@ -125,8 +162,7 @@ class QueryV4:
         else:
             query_result = query_result.drop(*removing_cols)
         LOGGER.debug(f'returning size : {total_result}')
-        result = self.__get_paged_result(query_result, total_result)
-        # result = self.__get_paged_result_v2(query_result)
+        result = self.__get_page(query_result, total_result)
         query_result.unpersist()
         LOGGER.debug(f'total retrieval duration: {datetime.now() - query_time}')
         # spark.stop()
