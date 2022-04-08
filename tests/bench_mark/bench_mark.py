@@ -7,7 +7,7 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 
 class BenchMark:
     def __init__(self):
-        self.__cdms_domain = 'http://localhost:30801/insitu/shshsh'
+        self.__cdms_domain = 'http://localhost:30801/insitu'
         # self.__cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
         # self.__cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.__size = 100
@@ -76,7 +76,7 @@ class BenchMark:
                     f'{"" if self.__columns is None else f"&columns={self.__columns}"}' \
                     f'&minDepth={self.__min_depth}&maxDepth={self.__max_depth}' \
                     f'&startTime={self.__start_time}&endTime={self.__end_time}' \
-                    f'&bbox={self.__min_lat_lon[0]},{self.__min_lat_lon[1]},{self.__max_lat_lon[0]},{self.__max_lat_lon[1]}'
+                    f'&bbox={self.__min_lat_lon[1]},{self.__min_lat_lon[0]},{self.__max_lat_lon[1]},{self.__max_lat_lon[0]}'
         # rest_keyword = 'query_data_doms'
         print(get_url)
         response = requests.get(url=get_url, verify=False)
@@ -502,9 +502,29 @@ time: 2017-03-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- tota
         return
 
     def custom_pagination_bench_mark(self):
-        self.__start_time = '2017-05-01T00:00:00Z'
-        self.__end_time = '2017-05-02T13:00:00Z'
-        self.__platform_code = '42,41,30,16,17'
+        self.__start_time = '2018-08-30T00:00:00Z'
+        self.__end_time = '2018-08-31T00:00:00Z'
+        # self.__platform_code = '42,41,30,16,17'
+        self.__platform_code = '42'
+        self.__min_lat_lon = (-25.2, 168.8)
+        self.__max_lat_lon = (-25.1, 169.0)
+
+        # self.__min_depth = -99
+        # self.__max_depth = 0
+        # self.__min_lat_lon = (-111, 11)
+        # self.__max_lat_lon = (111, 99)
+        # self.__provider = 'Florida State University, COAPS'
+        # self.__project = 'SAMOS'
+        # self.__platform_code = '30'
+
+        # self.__provider = 'Saildrone'
+        # self.__project = '1021_atlantic'
+        # self.__platform_code = '3B'
+        # self.__start_time = '2019-10-01T00:00:00Z'
+        # self.__end_time = '2019-10-16T00:00:00Z'
+        #
+
+
         self.__variable = None
         self.__columns = None
 
@@ -542,6 +562,7 @@ time: 2017-01-01T00:00:00Z - 2017-06-30T00:00:00Z -- total: 979690 -- duration: 
         self.__project = 'SAMOS'
         self.__platform_code = '30'
         self.__start_index = 10
+
 
 
         # self.__start_time = '2017-01-01T00:00:00Z'
