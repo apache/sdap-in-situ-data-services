@@ -1,0 +1,6 @@
+dependencies:
+- name: spark
+  repository: https://charts.bitnami.com/bitnami
+  version: 5.9.11
+digest: sha256:babec239bfd4ecb4145587901bb06910d36cc3ea57f04abe2b8fd520a3315e81
+generated: "2022-04-27T11:06:28.747468-07:00"

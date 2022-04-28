@@ -1,11 +1,17 @@
 {{- if .Values.ingress.enabled -}}
+
 {{- $fullName := include "parquet.spark.helm.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
+
+{{- $apiVersion := "networking.k8s.io/v1" }}
+
+{{- if semverCompare ">=1.14-0 < 1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+  {{- $apiVersion = "networking.k8s.io/v1beta1" }}
+{{- else if semverCompare "<1.14.0-0" .Capabilities.KubeVersion.GitVersion -}}
+  {{- $apiVersion = "extensions/v1beta1" }}
 {{- end }}
+
+apiVersion: {{ $apiVersion }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
@@ -28,6 +34,7 @@ spec:
   {{- end }}
   rules:
     {{- range .Values.ingress.hosts }}
+      {{- if not (eq $apiVersion "networking.k8s.io/v1") }}
     - host: {{ .host | quote }}
       http:
         paths:
@@ -37,5 +44,23 @@ spec:
               serviceName: {{ $fullName }}
               servicePort: {{ $svcPort }}
           {{- end }}
+      {{- else }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  {{- if typeIs "string" $svcPort }}
+                  name: {{ $svcPort }}
+                  {{- else }}
+                  number: {{$svcPort }}
+                  {{- end }}
+          {{- end }}
+      {{- end }}
     {{- end }}
   {{- end }}

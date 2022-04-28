@@ -25,39 +25,18 @@
 
         kubectl create namespace bitnami-spark
 
-### Deploy Spark Cluster
-- We are using the bitnami spark deployment in Kubernetes
-- We can use the custom values in [k8s_spark/k8s_spark/values.yaml](k8s_spark/k8s_spark/values.yaml)
-- By default values, Spark master can be accessed inside the `VPC` as they `NodePort` is being used.
-- AWS Loadbalancer setting was not used as it would open up Spark APIs to the Internet. 
-
-        helm install custom-spark bitnami/spark  -n bitnami-spark --dependency-update -f k8s_spark/values.yaml
-- After installation, we can view it by running this command: `kubectl get all -n bitnami-spark`
-
-            NAME                        READY   STATUS    RESTARTS   AGE
-            pod/custom-spark-master-0   1/1     Running   0          43h
-            pod/custom-spark-worker-0   1/1     Running   0          43h
-            pod/custom-spark-worker-1   1/1     Running   0          43h
-            pod/custom-spark-worker-2   1/1     Running   0          43h
-            pod/custom-spark-worker-3   1/1     Running   0          43h
-            
-            NAME                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                       AGE
-            service/custom-spark-headless     ClusterIP   None             <none>        <none>                        43h
-            service/custom-spark-master-svc   NodePort    10.108.174.225   <none>        7077:30901/TCP,80:31151/TCP   43h
-            
-            NAME                                   READY   AGE
-            statefulset.apps/custom-spark-master   1/1     43h
-            statefulset.apps/custom-spark-worker   4/4     43h
-
 
 ### Build Parquet Flask container
 - build it using this [Dockerfile](k8s_spark/parquet.spark.3.2.0.r44.Dockerfile)
 - Note that the image name and tag needs to be updated. 
 
         docker build -f ../docker/parquet.spark.3.2.0.r44.Dockerfile -t waiphyojpl/cdms.parquet.flask:t7 ..
-        
-### Deploy Parquet Flask container to kubernetes namespace: `bitnami-spark`
-- Helm charts are created to deploy the flask container to the same namespace. 
+
+### Deploy Parquet Flask container and Spark Cluster to kubernetes namespace: `bitnami-spark`
+- We are nesting the bitnami spark helm chart as a dependency within our parquet-spark-helm helm chart.
+- Spark custom values are maintained in `values.yaml` within the `bitnami-spark` YAML block.
+- With the default values, Spark master can be accessed inside the `VPC` as the `NodePort` is being used.
+- Spark AWS Loadbalancer setting should only be used if internal load-balancers are used on private subnets, which would allow intra-VPC access only and block public access.
 - [values.yaml](k8s_spark/parquet.spark.helm/values.yaml) should be copied to another location so that default values can be updated.
 - This is the sample values.yaml with explanations
 
@@ -69,33 +48,41 @@
           parquet_metadata_tbl: "DynamoDB table name: cdms_parquet_meta_dev_v1"
           spark_config_dict: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"} Change to a `org.apache.hadoop.fs.s3a.auth.IAMInstanceCredentialsProvider` if IAM based credentials are used. But it is not tested at this moment.
         
-        aws_creds:
+        aws_creds: 'Will create a secret and related env vars on the deployment. Unnecessary if AWS IRSA is being used.
           awskey: 'long term aws Key. leave an empty string if using IAM'
           awssecret: 'long term aws secret. leave an empty string if using IAM'
           awstoken: 'aws session if using locally for a short lived aws credentials. leave an empty string if using IAM'
+
+        serviceAccount:
+          create: true
+          annotations: {} 'Can be used for [AWS IRSA](https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-enable-IAM.html)'.  Uncomment the line below and specify an IAM Role to enable.
+            # eks.amazonaws.com/role-arn: 'arn:aws:iam::xxxxxxxxxxxxxx:role/parquet-spark'
+
         image:
           repository: "the name value from `Build Parquet Flask container` step. example: waiphyojpl/cdms.parquet.flask"
           pullPolicy: IfNotPresent
           # Overrides the image tag whose default is the chart appVersion.
           tag: "the tag value from `Build Parquet Flask container` step. example: t7"
 
-- from the [helm folder](k8s_spark/parquet.spark.helm), run this command
+        bitnami-spark: 'Default values for the Bitnami Spark helm chart.'
 
-        helm install parquet-t1 . -n bitnami-spark -f <custom path to values.yaml>
-- after deploying this: this is what kuberntes look like: `kubectl get all -n bitnami-spark`
+- From the [helm folder](k8s_spark/parquet.spark.helm), run this command
+
+        helm install parquet-t1 . -n bitnami-spark --dependency-update -f <custom path to values.yaml>
+- After deploying, this is what kubernetes should look like: `kubectl get all -n bitnami-spark`
 
         NAME                                                 READY   STATUS    RESTARTS   AGE
-        pod/custom-spark-master-0                            1/1     Running   0          29d
-        pod/custom-spark-worker-0                            1/1     Running   0          29d
-        pod/custom-spark-worker-1                            1/1     Running   0          29d
-        pod/custom-spark-worker-2                            1/1     Running   0          29d
-        pod/custom-spark-worker-3                            1/1     Running   0          29d
+        pod/parquet-t1-bitnami-spark-master-0                1/1     Running   0          29d
+        pod/parquet-t1-bitnami-spark-worker-0                1/1     Running   0          29d
+        pod/parquet-t1-bitnami-spark-worker-1                1/1     Running   0          29d
+        pod/parquet-t1-bitnami-spark-worker-2                1/1     Running   0          29d
+        pod/parquet-t1-bitnami-spark-worker-3                1/1     Running   0          29d
         pod/parquet-t1-parquet-spark-helm-57dc976bff-ctgqw   1/1     Running   0          8d
         
-        NAME                                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                       AGE
-        service/custom-spark-headless           ClusterIP   None             <none>        <none>                        29d
-        service/custom-spark-master-svc         NodePort    10.100.241.197   <none>        7077:32131/TCP,80:31140/TCP   29d
-        service/parquet-t1-parquet-spark-helm   NodePort    10.100.25.165    <none>        9801:30801/TCP                8d
+        NAME                                          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                       AGE
+        service/parquet-t1-bitnami-spark-headless     ClusterIP   None             <none>        <none>                        29d
+        service/parquet-t1-bitnami-spark-master-svc   NodePort    10.100.241.197   <none>        7077:32131/TCP,80:31140/TCP   29d
+        service/parquet-t1-parquet-spark-helm         NodePort    10.100.25.165    <none>        9801:30801/TCP                8d
         
         NAME                                            READY   UP-TO-DATE   AVAILABLE   AGE
         deployment.apps/parquet-t1-parquet-spark-helm   1/1     1            1           8d
@@ -103,9 +90,9 @@
         NAME                                                       DESIRED   CURRENT   READY   AGE
         replicaset.apps/parquet-t1-parquet-spark-helm-57dc976bff   1         1         1       8d
         
-        NAME                                   READY   AGE
-        statefulset.apps/custom-spark-master   1/1     29d
-        statefulset.apps/custom-spark-worker   4/4     29d
+        NAME                                               READY   AGE
+        statefulset.apps/parquet-t1-bitnami-spark-master   1/1     29d
+        statefulset.apps/parquet-t1-bitnami-spark-worker   4/4     29d
 - The parquet port can be forwarded if needed. There are plans to use `ingress` or `AWS Loadbalancer`, but they are still in development as SA hasn't approved it yet.
 
         kubectl port-forward service/parquet-t1-parquet-spark-helm -n bitnami-spark 9801:9801
@@ -115,3 +102,6 @@
         
         time curl 'http://localhost:30801/1.0/query_data_doms?startIndex=3&itemsPerPage=20&minDepth=-99&variable=wind_speed&columns=air_pressure&maxDepth=-1&startTime=2019-02-14T00:00:00Z&endTime=2021-02-16T00:00:00Z&platform=3B&bbox=-111,11,111,99'
 
+### Documentation and Sources
+- [Bitnami Spark Helm Chart](https://github.com/bitnami/charts/tree/master/bitnami/spark)
+- [AWS IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/setting-up-enable-IAM.html)
