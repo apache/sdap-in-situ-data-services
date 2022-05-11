@@ -38,27 +38,23 @@ spec:
               containerPort: 80
               protocol: TCP
           env:
+            {{- with .Values.aws_creds }}
             - name: aws_access_key_id
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-auth
+                  name: {{ $.Release.Name }}-auth
                   key: awskey
             - name: aws_secret_access_key
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-auth
+                  name: {{ $.Release.Name }}-auth
                   key: awssecret
             - name: aws_session_token
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-auth
+                  name: {{ $.Release.Name }}-auth
                   key: awstoken
-#            - name: aws_access_key_id
-#              value: {{ .Values.aws_creds.awskey }}
-#            - name: aws_secret_access_key
-#              value: {{ .Values.aws_creds.awssecret }}
-#            - name: aws_secret_access_key
-#              value: {{ .Values.aws_creds.awstoken }}
+            {{- end }}
             - name: flask_prefix
               value: {{ .Values.flask_env.flask_prefix }}
             - name: parquet_file_name
@@ -73,16 +69,14 @@ spec:
               value: {{ .Values.flask_env.log_level }}
             - name: spark_config_dict
               value: {{ .Values.flask_env.spark_config_dict | toJson | quote  }}
-#          livenessProbe:
-#            httpGet:
-#              path: '/1.0/doc/'
-#              port: 9801
-#            initialDelaySeconds: 5
-#          readinessProbe:
-#            httpGet:
-#              path: '/1.0/doc/'
-#              port: 9801
-#            initialDelaySeconds: 5
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

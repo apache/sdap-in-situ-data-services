@@ -41,9 +41,6 @@ class Config(metaclass=Singleton):
             Config.spark_app_name,
             # Config.spark_config_dict,
             Config.parquet_file_name,
-            Config.aws_access_key_id,
-            Config.aws_secret_access_key,
-            Config.aws_session_token,
             Config.in_situ_schema,
             Config.authentication_type,
             Config.authentication_key,
@@ -51,6 +48,9 @@ class Config(metaclass=Singleton):
         ]
         self.__optional_keys = [
             Config.spark_ram_size,
+            Config.aws_access_key_id,
+            Config.aws_secret_access_key,
+            Config.aws_session_token,
         ]
         self.__validate()
 

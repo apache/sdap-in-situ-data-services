@@ -13,10 +13,12 @@ flask_env:
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"
   spark_config_dict: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
 
+# AWS EKS IRSA is favored over AWS IAM User credentials when possible
 aws_creds:
-  awskey: 'xxx'
-  awssecret: 'yyy'
-  awstoken: ''
+  awskey: "xxxxxx"
+  awssecret: "xxxxxx"
+  awstoken: "xxxxxx"
+
 image:
   repository: "waiphyojpl/cdms.parquet.flask"
   pullPolicy: IfNotPresent
@@ -30,8 +32,11 @@ fullnameOverride: ""
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
+  
   # Annotations to add to the service account
   annotations: {}
+    # eks.amazonaws.com/role-arn: 'arn:aws:iam::xxxxxxxxxxxxxx:role/parquet-spark'
+  
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
@@ -62,10 +67,12 @@ ingress:
   hosts:
     - host: chart-example.local
       paths: []
+        # - path: "/"
+        #   pathType: "ImplementationSpecific"
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+    # - secretName: chart-example-tls
+    #   hosts:
+    #     - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -91,3 +98,50 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# livenessProbe:
+#   httpGet:
+#     path: '/1.0/doc/'
+#     port: 9801
+#   initialDelaySeconds: 5
+# readinessProbe:
+#   httpGet:
+#     path: '/1.0/doc/'
+#     port: 9801
+#   initialDelaySeconds: 5
+
+bitnami-spark:
+  image:
+    tag: 3.2.0-debian-10-r44
+  worker:
+    ## @param worker.memoryLimit Set the maximum memory the worker is allowed to use
+    ##
+    memoryLimit: "4g"
+    ## @param worker.coreLimit Se the maximum number of cores that the worker can use
+    ##
+    coreLimit: "2"
+    ## @param worker.replicaCount Number of spark workers (will be the minimum number when autoscaling is enabled)
+    ##
+    replicaCount: 4
+  ## Service parameters
+  ##
+  service:
+    ## @param service.type Kubernetes Service type
+    ##
+    type: NodePort
+    ## Specify the nodePort(s) value(s) for the LoadBalancer and NodePort service types.
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+    ## @param service.nodePorts.cluster Kubernetes cluster node port
+    ## @param service.nodePorts.web Kubernetes web node port
+    ##
+    nodePorts:
+      cluster: "32131"
+      web: "31140"
+  ## Configure the ingress resource that allows you to access the
+  ## Spark installation. Set up the URL
+  ## ref: http://kubernetes.io/docs/user-guide/ingress/
+  ##
+  ingress:
+    ## @param ingress.hostname Default host for the ingress resource
+    ##
+    hostname: tt.spark.local.test1
