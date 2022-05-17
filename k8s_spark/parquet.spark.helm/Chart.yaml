@@ -28,4 +28,4 @@ dependencies:
   version: ^5.9.11
   repository: https://charts.bitnami.com/bitnami
   alias: bitnami-spark
-  condition: bitnamiSpark.enabled
+  condition: bitnami-spark.enabled
