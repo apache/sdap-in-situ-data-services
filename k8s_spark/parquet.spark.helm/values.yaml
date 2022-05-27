@@ -6,7 +6,6 @@ replicaCount: 1
 
 flask_env:
   parquet_file_name: "s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet"
-  master_spark_url: "spark://custom-spark-master-0.custom-spark-headless.bitnami-spark.svc.cluster.local:7077"
   spark_app_name: "parquet_flask_demo"
   log_level: "DEBUG"
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"
@@ -15,10 +14,11 @@ flask_env:
   spark_config_dict: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
 
 # AWS EKS IRSA is favored over AWS IAM User credentials when possible
-aws_creds:
-  awskey: "xxxxxx"
-  awssecret: "xxxxxx"
-  awstoken: "xxxxxx"
+# Uncomment to enable IAM User Credential authentication
+# aws_creds:
+#   awskey: "xxxxxx"
+#   awssecret: "xxxxxx"
+#   awstoken: "xxxxxx"
 
 image:
   repository: "waiphyojpl/cdms.parquet.flask"
@@ -44,6 +44,10 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+extraEnvs: {}
+  # - name: master_spark_url
+  #   value: spark://my.external.spark.service:7077
+
 podAnnotations: {}
 
 podSecurityContext: {}
@@ -62,8 +66,6 @@ service:
   ##
   type: NodePort
   port: 9801
-  ## Disable nodePort by removing or commenting out value below
-  ##
   nodePort: 30801
 
 ingress:

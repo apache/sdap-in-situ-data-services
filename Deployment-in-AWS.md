@@ -68,7 +68,7 @@
 
 - From the [helm folder](k8s_spark/parquet.spark.helm), run this command
 
-        helm install parquet-t1 . -n bitnami-spark --dependency-update -f <custom path to values.yaml>
+        helm install parquet-t1 . -n bitnami-spark --dependency-update
 - After deploying, this is what kubernetes should look like: `kubectl get all -n bitnami-spark`
 
         NAME                                                 READY   STATUS    RESTARTS   AGE
