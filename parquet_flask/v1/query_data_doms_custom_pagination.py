@@ -140,8 +140,8 @@ class IngestParquet(Resource):
             query_json['provider'] = request.args.get('provider')
         if 'project' in request.args:
             query_json['project'] = request.args.get('project')
-        if 'columns' in request.args:
+        if 'columns' in request.args and request.args.get('columns').strip() != '':
             query_json['columns'] = [k.strip() for k in request.args.get('columns').split(',')]
-        if 'variable' in request.args:
+        if 'variable' in request.args and request.args.get('variable').strip() != '':
             query_json['variable'] = [k.strip() for k in request.args.get('variable').split(',')]
         return self.__execute_query(query_json)
