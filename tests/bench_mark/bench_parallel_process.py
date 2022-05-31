@@ -39,8 +39,8 @@ class BenchParallelProcess:
                     f'&provider={in_situ_props.provider}' \
                     f'&project={in_situ_props.project}' \
                     f'&platform={in_situ_props.platform_code}' \
-                    f'{"" if in_situ_props.variable is None else f"&variable={in_situ_props.variable}"}' \
-                    f'{"" if in_situ_props.columns is None else f"&columns={in_situ_props.columns}"}' \
+                    f'&variable={"" if in_situ_props.variable is None else f"{in_situ_props.variable}"}' \
+                    f'&columns={"" if in_situ_props.columns is None else f"{in_situ_props.columns}"}' \
                     f'&minDepth={in_situ_props.min_depth}&maxDepth={in_situ_props.max_depth}' \
                     f'&startTime={in_situ_props.start_time}&endTime={in_situ_props.end_time}' \
                     f'&bbox={in_situ_props.min_lat_lon[1]},{in_situ_props.min_lat_lon[0]},{in_situ_props.max_lat_lon[1]},{in_situ_props.max_lat_lon[0]}'
