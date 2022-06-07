@@ -119,8 +119,12 @@ affinity: {}
 #     port: 9801
 #   initialDelaySeconds: 5
 
+## The following are sane bitnami-spark defaults when being pared with a parquet-spark-helm deployment.
+##
 bitnami-spark:
   enabled: true
+  ## To retain bitnami-spark but render ONLY default bitnami-spark helm chart values, remove the following keys and values.
+  ##
   image:
     tag: 3.2.0-debian-10-r44
   master:
