@@ -37,12 +37,10 @@
 - Spark custom values are maintained in `values.yaml` within the `bitnami-spark` YAML block.
 - With the default values, Spark master can be accessed inside the `VPC` as the `NodePort` is being used.
 - Spark AWS Loadbalancer setting should only be used if internal load-balancers are used on private subnets, which would allow intra-VPC access only and block public access.
-- [values.yaml](k8s_spark/parquet.spark.helm/values.yaml) should be copied to another location so that default values can be updated.
 - This is the sample values.yaml with explanations
 
         flask_env:
           parquet_file_name: "S3 URL for the bucket created in the first step. Note that `s3a` needs to be used. s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet"
-          master_spark_url: "master spark URL.  spark://custom-spark-master-0.custom-spark-headless.bitnami-spark.svc.cluster.local:7077"
           spark_app_name: "any name of the spark app name. example: parquet_flask_demo"
           log_level: "python3 log level. DEBUG, INFO, and etc."
           parquet_metadata_tbl: "DynamoDB table name: cdms_parquet_meta_dev_v1"
@@ -65,10 +63,14 @@
           tag: "the tag value from `Build Parquet Flask container` step. example: t7"
 
         bitnami-spark: 'Default values for the Bitnami Spark helm chart.'
+- Update values in `values.yaml` to match your environment (dynamodb table name, s3 bucket name, etc.)
 
+- Create the `bitnami-spark` namespace
+
+        $ kubectl create namespace bitnami-spark
 - From the [helm folder](k8s_spark/parquet.spark.helm), run this command
 
-        helm install parquet-t1 . -n bitnami-spark --dependency-update -f <custom path to values.yaml>
+        $ helm install parquet-t1 . -n bitnami-spark --dependency-update
 - After deploying, this is what kubernetes should look like: `kubectl get all -n bitnami-spark`
 
         NAME                                                 READY   STATUS    RESTARTS   AGE
