@@ -66,10 +66,15 @@ class QueryV4:
         read_df_list = []
         for each in condition_manager.parquet_names:
             each: PartitionedParquetPath = each
-            temp_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(each.generate_path())
-            for k, v in each.get_df_columns().items():
-                temp_df: DataFrame = temp_df.withColumn(k, lit(v))
-            read_df_list.append(temp_df)
+            try:
+                temp_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(each.generate_path())
+                for k, v in each.get_df_columns().items():
+                    temp_df: DataFrame = temp_df.withColumn(k, lit(v))
+                read_df_list.append(temp_df)
+            except Exception as e:
+                LOGGER.exception(f'failed to retrieve data from spark for: {each.generate_path()}')
+        if len(read_df_list) < 1:
+            return None
         main_read_df: DataFrame = read_df_list[0]
         for each in read_df_list[1:]:
             main_read_df = main_read_df.union(each)
@@ -138,6 +143,11 @@ class QueryV4:
         LOGGER.debug(f'spark session created at {created_spark_session_time}. duration: {created_spark_session_time - query_begin_time}')
         LOGGER.debug(f'__parquet_name: {condition_manager.parquet_name}')
         read_df: DataFrame = self.get_unioned_read_df(condition_manager, spark)
+        if read_df is None:
+            return {
+                'total': 0,
+                'results': [],
+            }
         read_df_time = datetime.now()
         LOGGER.debug(f'parquet read created at {read_df_time}. duration: {read_df_time - created_spark_session_time}')
         query_result = read_df.where(conditions)
