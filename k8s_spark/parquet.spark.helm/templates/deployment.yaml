@@ -57,8 +57,10 @@ spec:
             {{- end }}
             - name: parquet_file_name
               value: {{ .Values.flask_env.parquet_file_name }}
+            {{- if ( index .Values "bitnami-spark" "enabled" ) }}
             - name: master_spark_url
-              value: {{ .Values.flask_env.master_spark_url }}
+              value: spark://{{ .Release.Name }}-bitnami-spark-master-0.{{ .Release.Name }}-bitnami-spark-headless:7077
+            {{- end }}
             - name: parquet_metadata_tbl
               value: {{ .Values.flask_env.parquet_metadata_tbl }}
             - name: spark_app_name
@@ -67,6 +69,9 @@ spec:
               value: {{ .Values.flask_env.log_level }}
             - name: spark_config_dict
               value: {{ .Values.flask_env.spark_config_dict | toJson | quote  }}
+          {{- if .Values.extraEnvs }}
+            {{- toYaml .Values.extraEnvs | nindent 12 }}
+          {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

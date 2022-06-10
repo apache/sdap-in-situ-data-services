@@ -6,17 +6,19 @@ replicaCount: 1
 
 flask_env:
   parquet_file_name: "s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet"
-  master_spark_url: "spark://custom-spark-master-0.custom-spark-headless.bitnami-spark.svc.cluster.local:7077"
   spark_app_name: "parquet_flask_demo"
   log_level: "DEBUG"
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"
+  ## Specify Spark config options
+  ## When using AWS EKS IRSA for AWS auth, use: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
   spark_config_dict: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
 
 # AWS EKS IRSA is favored over AWS IAM User credentials when possible
-aws_creds:
-  awskey: "xxxxxx"
-  awssecret: "xxxxxx"
-  awstoken: "xxxxxx"
+# Uncomment to enable IAM User Credential authentication
+# aws_creds:
+#   awskey: "xxxxxx"
+#   awssecret: "xxxxxx"
+#   awstoken: "xxxxxx"
 
 image:
   repository: "waiphyojpl/cdms.parquet.flask"
@@ -34,11 +36,17 @@ serviceAccount:
   
   # Annotations to add to the service account
   annotations: {}
+    ## When using AWS EKS IRSA for AWS auth, set the below annotation using the configured IAM Role ARN.
+    #
     # eks.amazonaws.com/role-arn: 'arn:aws:iam::xxxxxxxxxxxxxx:role/parquet-spark'
   
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+
+extraEnvs: {}
+  # - name: master_spark_url
+  #   value: spark://my.external.spark.service:7077
 
 podAnnotations: {}
 
@@ -54,6 +62,8 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
+  ## Service Type: ClusterIP / NodePort
+  ##
   type: NodePort
   port: 9801
   nodePort: 30801
@@ -109,9 +119,24 @@ affinity: {}
 #     port: 9801
 #   initialDelaySeconds: 5
 
+## The following are sane bitnami-spark defaults when being pared with a parquet-spark-helm deployment.
+##
 bitnami-spark:
+  enabled: true
+  ## To retain bitnami-spark but render ONLY default bitnami-spark helm chart values, remove the following keys and values.
+  ##
   image:
     tag: 3.2.0-debian-10-r44
+  master:
+    ## When using AWS EKS IRSA for AWS auth, disable securityContext.  Can potentially also keep
+    ## enabled and set 'fsGroup: 65534', though this is currently untested.
+    ##
+    # securityContext:
+    #   enabled: false
+    #   fsGroup: 1001
+    #   runAsUser: 1001
+    #   runAsGroup: 0
+    #   seLinuxOptions: {}
   worker:
     ## @param worker.memoryLimit Set the maximum memory the worker is allowed to use
     ##
@@ -122,6 +147,16 @@ bitnami-spark:
     ## @param worker.replicaCount Number of spark workers (will be the minimum number when autoscaling is enabled)
     ##
     replicaCount: 4
+    ## When using AWS EKS IRSA for AWS auth, disable securityContext.  Can potentially also keep
+    ## enabled and set 'fsGroup: 65534', though this is currently untested.
+    ##
+    # securityContext:
+    #   enabled: false
+    #   fsGroup: 1001
+    #   runAsUser: 1001
+    #   runAsGroup: 0
+    #   seLinuxOptions: {}
+
   ## Service parameters
   ##
   service:
@@ -144,3 +179,20 @@ bitnami-spark:
     ## @param ingress.hostname Default host for the ingress resource
     ##
     hostname: tt.spark.local.test1
+  serviceAccount:
+    ## @param serviceAccount.create Enable the creation of a ServiceAccount for Spark pods
+    ##
+    create: true
+    ## @param serviceAccount.name The name of the ServiceAccount to use.
+    ## If not set and create is true, a name is generated using the spark.fullname template
+    ##
+    name: ""
+    ## @param serviceAccount.annotations Annotations for Spark Service Account
+    ##
+    annotations: {}
+      ## When using AWS EKS IRSA for AWS auth, set the below annotation using the configured IAM Role ARN.
+      #
+      # eks.amazonaws.com/role-arn: 'arn:aws:iam::xxxxxxxxxxxxxx:role/parquet-spark'
+      ## @param serviceAccount.automountServiceAccountToken Automount API credentials for a service account.
+      ##
+    automountServiceAccountToken: true

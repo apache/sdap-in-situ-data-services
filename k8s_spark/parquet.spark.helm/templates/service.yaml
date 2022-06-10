@@ -11,6 +11,8 @@ spec:
       targetPort: {{ .Values.service.port }}
       protocol: TCP
       name: http
+      {{- if eq .Values.service.type "NodePort" }}
       nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
   selector:
     {{- include "parquet.spark.helm.selectorLabels" . | nindent 4 }}
