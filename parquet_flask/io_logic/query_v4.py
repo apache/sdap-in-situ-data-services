@@ -132,15 +132,16 @@ class QueryV4:
         return int(query_result.count())
 
     def search(self, spark_session=None):
+        LOGGER.debug(f'<delay_check> query_v4_search started')
         condition_manager = ParquetQueryConditionManagementV3(self.__parquet_name, self.__missing_depth_value, self.__props)
         condition_manager.manage_query_props()
 
         conditions = ' AND '.join(condition_manager.conditions)
         query_begin_time = datetime.now()
-        LOGGER.debug(f'query begins at {query_begin_time}')
+        LOGGER.debug(f'<delay_check> query begins at {query_begin_time}')
         spark = self.__retrieve_spark() if spark_session is None else spark_session
         created_spark_session_time = datetime.now()
-        LOGGER.debug(f'spark session created at {created_spark_session_time}. duration: {created_spark_session_time - query_begin_time}')
+        LOGGER.debug(f'<delay_check>spark session created at {created_spark_session_time}. duration: {created_spark_session_time - query_begin_time}')
         LOGGER.debug(f'__parquet_name: {condition_manager.parquet_name}')
         read_df: DataFrame = self.get_unioned_read_df(condition_manager, spark)
         if read_df is None:
@@ -149,14 +150,14 @@ class QueryV4:
                 'results': [],
             }
         read_df_time = datetime.now()
-        LOGGER.debug(f'parquet read created at {read_df_time}. duration: {read_df_time - created_spark_session_time}')
+        LOGGER.debug(f'<delay_check> parquet read created at {read_df_time}. duration: {read_df_time - created_spark_session_time}')
         query_result = read_df.where(conditions)
         query_result = query_result.sort(self.__get_sorting_params(query_result))
         query_time = datetime.now()
-        LOGGER.debug(f'parquet read filtered at {query_time}. duration: {query_time - read_df_time}')
-        LOGGER.debug(f'total duration: {query_time - query_begin_time}')
-        LOGGER.debug(f'total calc count duration: {datetime.now() - query_time}')
+        LOGGER.debug(f'<delay_check> parquet read filtered at {query_time}. duration: {query_time - read_df_time}')
+        LOGGER.debug(f'<delay_check> total duration: {query_time - query_begin_time}')
         total_result = self.__get_total_count(query_result)
+        LOGGER.debug(f'<delay_check> total calc count duration: {datetime.now() - query_time}')
         if self.__props.size < 1:
             LOGGER.debug(f'returning only the size: {total_result}')
             return {
@@ -171,10 +172,10 @@ class QueryV4:
             query_result = query_result.select(condition_manager.columns)
         else:
             query_result = query_result.drop(*removing_cols)
-        LOGGER.debug(f'returning size : {total_result}')
+        LOGGER.debug(f'<delay_check> returning size : {total_result}')
         result = self.__get_page(query_result, total_result)
         query_result.unpersist()
-        LOGGER.debug(f'total retrieval duration: {datetime.now() - query_time}')
+        LOGGER.debug(f'<delay_check> total retrieval duration: {datetime.now() - query_time}')
         # spark.stop()
         return {
             'total': total_result,

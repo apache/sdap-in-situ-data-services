@@ -13,5 +13,5 @@ def func_exec_time_decorator(f):
         time2 = datetime.now()
         duration = time2 - time1
         LOGGER.info(f'duration: {duration.total_seconds()} s. name: {f.__name__}')
-        return func_result, duration.total_seconds()
+        return func_result, duration.total_seconds(), {'time1': time1.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), 'time2': time2.strftime('%Y-%m-%dT%H:%M:%S.%fZ')}
     return decorated_function

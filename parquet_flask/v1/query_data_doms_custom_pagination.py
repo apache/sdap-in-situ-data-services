@@ -94,14 +94,17 @@ class IngestParquet(Resource):
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         try:
+            LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination calling QueryV4: {request.args}')
             query = QueryV4(QueryProps().from_json(payload))
             result_set = query.search()
             LOGGER.debug(f'search params: {payload}')
             # page_info = self.__calculate_4_ranges(result_set['total'])
+            LOGGER.debug(f'search done')
             result_set['last'] = 'keep browsing next till there is nothing left'
             result_set['first'] = self.__get_first_page_url()
             result_set['prev'] = self.__get_prev_page_url()
             result_set['next'] = self.__get_next_page_url(result_set['results'])
+            LOGGER.debug(f'pagination done')
             return result_set, 200
         except Exception as e:
             LOGGER.exception(f'failed to query parquet. cause: {str(e)}')
@@ -110,6 +113,7 @@ class IngestParquet(Resource):
     @api.expect()
     def get(self):
         self.__size = int(request.args.get('itemsPerPage', '10'))
+        LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination started: {request.args}')
         query_json = {
             'start_from': self.__start_from,
             'size': self.__size,
