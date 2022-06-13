@@ -15,14 +15,22 @@
 
 from flask import Blueprint
 from flask_restx import Api
+
 from .insitu_query_swagger import api as apidocs
 from .ingest_json_s3 import api as ingest_parquet_json_s3
 from .replace_json_s3 import api as replace_parquet_json_s3
 from .query_data import api as query_data
 from .query_data_doms import api as query_data_doms
-_version = "1.0"
+from .query_data_doms_custom_pagination import api as query_data_doms_custom_pagination
+from ..utils.config import Config
 
-blueprint = Blueprint('parquet_flask', __name__, url_prefix='/{}'.format(_version))
+_version = "1.0"
+config = Config()
+flask_prefix: str = config.get_value(config.flask_prefix, '')
+flask_prefix = flask_prefix if flask_prefix.startswith('/') else f'/{flask_prefix}'
+flask_prefix = flask_prefix if flask_prefix.endswith('/') else f'{flask_prefix}/'
+
+blueprint = Blueprint('parquet_flask', __name__, url_prefix=f'{flask_prefix}{_version}')
 blueprint.register_blueprint(apidocs)
 api = Api(blueprint,
           title='Parquet ingestion & query',
@@ -36,3 +44,4 @@ api.add_namespace(ingest_parquet_json_s3)
 api.add_namespace(replace_parquet_json_s3)
 api.add_namespace(query_data)
 api.add_namespace(query_data_doms)
+api.add_namespace(query_data_doms_custom_pagination)

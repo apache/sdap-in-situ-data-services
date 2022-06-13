@@ -55,6 +55,8 @@ spec:
                   name: {{ $.Release.Name }}-auth
                   key: awstoken
             {{- end }}
+            - name: flask_prefix
+              value: {{ .Values.flask_env.flask_prefix }}
             - name: parquet_file_name
               value: {{ .Values.flask_env.parquet_file_name }}
             {{- if ( index .Values "bitnami-spark" "enabled" ) }}

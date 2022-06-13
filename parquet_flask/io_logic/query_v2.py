@@ -39,6 +39,7 @@ QUERY_PROPS_SCHEMA = {
         },
         'platform_code': {'type': 'array', 'items': {'type': 'string'}, 'minItems': 1},
         'provider': {'type': 'string'},
+        'marker_platform_code': {'type': 'string'},
         'project': {'type': 'string'},
         'min_depth': {'type': 'number'},
         'max_depth': {'type': 'number'},
@@ -54,6 +55,7 @@ QUERY_PROPS_SCHEMA = {
 class QueryProps:
     def __init__(self):
         self.__variable: list = []
+        self.__marker_platform_code = None
         self.__quality_flag = False
         self.__platform_code = None
         self.__project = None
@@ -68,6 +70,19 @@ class QueryProps:
         self.__start_at = 0
         self.__size = 0
         self.__columns = []
+
+    @property
+    def marker_platform_code(self):
+        return self.__marker_platform_code
+
+    @marker_platform_code.setter
+    def marker_platform_code(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__marker_platform_code = val
+        return
 
     @property
     def variable(self) -> list:
@@ -96,7 +111,7 @@ class QueryProps:
         return
 
     @property
-    def platform_code(self):
+    def platform_code(self) -> list:
         return self.__platform_code
 
     @platform_code.setter
@@ -129,6 +144,8 @@ class QueryProps:
             self.columns = input_json['columns']
         if 'variable' in input_json:
             self.variable = input_json['variable']
+        if 'marker_platform_code' in input_json:
+            self.marker_platform_code = input_json['marker_platform_code']
         return self
 
     @property

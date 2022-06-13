@@ -33,6 +33,7 @@ class Config(metaclass=Singleton):
     missing_depth_value = 'missing_depth_value'
     authentication_type = 'authentication_type'
     authentication_key = 'authentication_key'
+    flask_prefix = 'flask_prefix'
 
     def __init__(self):
         self.__keys = [

@@ -19,20 +19,22 @@ from copy import deepcopy
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
+from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.query_v2 import QueryProps, QUERY_PROPS_SCHEMA
 from parquet_flask.io_logic.query_v4 import QueryV4
 from parquet_flask.utils.general_utils import GeneralUtils
 
-api = Namespace('query_data_doms', description="Querying data")
+api = Namespace('query_data_doms_custom_pagination', description="Querying data")
 LOGGER = logging.getLogger(__name__)
 
 query_model = api.model('query_data_doms', {
-    'startIndex': fields.Integer(required=True, example=0),
     'itemsPerPage': fields.Integer(required=True, example=0),
     'minDepth': fields.Float(required=True, example=-65.34),
     'maxDepth': fields.Float(required=True, example=-65.34),
     'startTime': fields.String(required=True, example='2020-01-01T00:00:00Z'),
     'endTime': fields.String(required=True, example='2020-01-31T00:00:00Z'),
+    'markerTime': fields.String(required=False, example='2020-01-02T00:00:00Z', description='timestamp of the last item of the current page'),
+    'markerPlatform': fields.String(required=False, example='30', description='platform ID of the last item of the current page'),
     'platform': fields.String(required=True, example='30,3B'),
     'provider': fields.Integer(required=True, example=0),
     'project': fields.Integer(required=True, example=0),
@@ -50,29 +52,29 @@ class IngestParquet(Resource):
         self.__start_from = 0
         self.__size = 0
 
-    def __calculate_4_ranges(self, total_result):
-        if self.__size == 0:
-            return {
-                'first': 0,
-                'last': 0,
-                'prev': 0,
-                'next': 0,
-            }
-        div, mod = divmod(total_result, self.__size)
-        if mod > 0:
-            div += 1
-        page_info = {
-            'first': 0,
-            'last': div - 1,
-            'prev': 0 if self.__start_from == 0 else self.__start_from - 1,
-        }
-        page_info['next'] = page_info['last'] if self.__start_from == page_info['last'] else self.__start_from + 1
-        return page_info
-
-    def __replace_start_from(self, new_start_from):
+    def __get_first_page_url(self):
         new_args = deepcopy(dict(request.args))
-        new_args['startIndex'] = new_start_from
-        return '&'.join([f'{k}={v}' for k, v in new_args.items()])
+        if 'markerTime' in new_args:
+            new_args.pop('markerTime')
+        if 'markerPlatform' in new_args:
+            new_args.pop('markerPlatform')
+        new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
+        return f'{request.base_url}?{new_args}'
+
+    def __get_prev_page_url(self):
+        new_args = deepcopy(dict(request.args))
+        new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
+        return f'{request.base_url}?{new_args}'
+
+    def __get_next_page_url(self, query_result: list):
+        if len(query_result) < 1:
+            return 'NA'
+        last_item: dict = query_result[-1]
+        new_args = deepcopy(dict(request.args))
+        new_args['markerTime'] = last_item[CDMSConstants.time_col]
+        new_args['markerPlatform'] = GeneralUtils.gen_sha_256_json_obj(last_item)
+        new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
+        return f'{request.base_url}?{new_args}'
 
     def __execute_query(self, payload):
         """
@@ -92,14 +94,17 @@ class IngestParquet(Resource):
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         try:
+            LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination calling QueryV4: {request.args}')
             query = QueryV4(QueryProps().from_json(payload))
             result_set = query.search()
-            LOGGER.debug(f'search params: {payload}b')
-            page_info = self.__calculate_4_ranges(result_set['total'])
-            result_set['last'] = f'{request.base_url}?{self.__replace_start_from(page_info["last"])}'
-            result_set['first'] = f'{request.base_url}?{self.__replace_start_from(page_info["first"])}'
-            result_set['next'] = f'{request.base_url}?{self.__replace_start_from(page_info["next"])}'
-            result_set['prev'] = f'{request.base_url}?{self.__replace_start_from(page_info["prev"])}'
+            LOGGER.debug(f'search params: {payload}')
+            # page_info = self.__calculate_4_ranges(result_set['total'])
+            LOGGER.debug(f'search done')
+            result_set['last'] = 'keep browsing next till there is nothing left'
+            result_set['first'] = self.__get_first_page_url()
+            result_set['prev'] = self.__get_prev_page_url()
+            result_set['next'] = self.__get_next_page_url(result_set['results'])
+            LOGGER.debug(f'pagination done')
             return result_set, 200
         except Exception as e:
             LOGGER.exception(f'failed to query parquet. cause: {str(e)}')
@@ -107,26 +112,34 @@ class IngestParquet(Resource):
 
     @api.expect()
     def get(self):
-        self.__start_from = int(request.args.get('startIndex', '0'))
         self.__size = int(request.args.get('itemsPerPage', '10'))
+        LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination started: {request.args}')
         query_json = {
             'start_from': self.__start_from,
             'size': self.__size,
         }
-        if 'startTime' in request.args:
+        if 'markerPlatform' in request.args:
+            query_json['marker_platform_code'] = request.args.get('markerPlatform')
+
+        if 'markerTime' in request.args:
+            query_json['min_time'] = request.args.get('markerTime')
+        elif 'startTime' in request.args:
             query_json['min_time'] = request.args.get('startTime')
         if 'endTime' in request.args:
             query_json['max_time'] = request.args.get('endTime')
+
         if 'minDepth' in request.args:
             query_json['min_depth'] = float(request.args.get('minDepth'))
         if 'maxDepth' in request.args:
             query_json['max_depth'] = float(request.args.get('maxDepth'))
+
         if 'bbox' in request.args:
             bounding_box = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('bbox'), 4)
             query_json['min_lat_lon'] = [bounding_box[1], bounding_box[0]]
             query_json['max_lat_lon'] = [bounding_box[3], bounding_box[2]]
         if 'platform' in request.args:
             query_json['platform_code'] = [k.strip() for k in request.args.get('platform').strip().split(',')]
+            query_json['platform_code'].sort()
         if 'provider' in request.args:
             query_json['provider'] = request.args.get('provider')
         if 'project' in request.args:

@@ -2,16 +2,35 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+replicaCount: 4
 
 flask_env:
   parquet_file_name: "s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet"
   spark_app_name: "parquet_flask_demo"
   log_level: "DEBUG"
+  flask_prefix: "insitu"
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"
+  # "spark.shuffle.service.enabled": "true",  This should be "true", but "shuffle.service" not setup yet.
   ## Specify Spark config options
   ## When using AWS EKS IRSA for AWS auth, use: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
-  spark_config_dict: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
+  spark_config_dict: {
+
+    "spark.shuffle.service.enabled": "false",
+    "spark.dynamicAllocation.shuffleTracking.enabled": "true",
+    "spark.dynamicAllocation.minExecutors": "4",
+    "spark.dynamicAllocation.maxExecutors": "4",
+    "spark.dynamicAllocation.initialExecutors": "4",
+    "spark.dynamicAllocation.executorAllocationRatio": "1",
+    "spark.dynamicAllocation.enabled": "true",
+
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
+    "spark.memory.offHeap.enabled":"true",
+    "spark.driver.memoryOverhead":"512M",
+    "spark.hadoop.fs.s3a.block.size":"1073741824",
+    "fs.s3a.block.size":"1073741824",
+    "spark.sql.sources.partitionOverwriteMode": "dynamic",
+    "spark.memory.offHeap.size":"512M"
+  }
 
 # AWS EKS IRSA is favored over AWS IAM User credentials when possible
 # Uncomment to enable IAM User Credential authentication
@@ -24,7 +43,7 @@ image:
   repository: "waiphyojpl/cdms.parquet.flask"
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "t9"
+  tag: "t25"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -146,7 +165,7 @@ bitnami-spark:
     coreLimit: "2"
     ## @param worker.replicaCount Number of spark workers (will be the minimum number when autoscaling is enabled)
     ##
-    replicaCount: 4
+    replicaCount: 8
     ## When using AWS EKS IRSA for AWS auth, disable securityContext.  Can potentially also keep
     ## enabled and set 'fsGroup: 65534', though this is currently untested.
     ##

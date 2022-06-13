@@ -7,7 +7,7 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 
 class BenchMark:
     def __init__(self):
-        self.__cdms_domain = 'http://localhost:30801'
+        self.__cdms_domain = 'http://localhost:30801/insitu'
         # self.__cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
         # self.__cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.__size = 100
@@ -33,7 +33,9 @@ class BenchMark:
 
         :return:
         """
-        print(f'{self.__cdms_domain}/1.0/query_data_doms?startIndex={self.__start_index}&itemsPerPage={self.__size}'
+        # rest_keyword = 'query_data_doms_custom_pagination'
+        rest_keyword = 'query_data_doms'
+        print(f'{self.__cdms_domain}/1.0/{rest_keyword}?startIndex={self.__start_index}&itemsPerPage={self.__size}'
                 f'&provider={self.__provider}'
                 f'&project={self.__project}'
                 f'&platform={self.__platform_code}'
@@ -42,8 +44,9 @@ class BenchMark:
                 f'&minDepth={self.__min_depth}&maxDepth={self.__max_depth}'
                 f'&startTime={self.__start_time}&endTime={self.__end_time}'
                 f'&bbox={self.__min_lat_lon[0]},{self.__min_lat_lon[1]},{self.__max_lat_lon[0]},{self.__max_lat_lon[1]}')
+
         response = requests.get(
-            url=f'{self.__cdms_domain}/1.0/query_data_doms?startIndex={self.__start_index}&itemsPerPage={self.__size}'
+            url=f'{self.__cdms_domain}/1.0/{rest_keyword}?startIndex={self.__start_index}&itemsPerPage={self.__size}'
                 f'&provider={self.__provider}'
                 f'&project={self.__project}'
                 f'&platform={self.__platform_code}'
@@ -53,6 +56,67 @@ class BenchMark:
                 f'&startTime={self.__start_time}&endTime={self.__end_time}'
                 f'&bbox={self.__min_lat_lon[0]},{self.__min_lat_lon[1]},{self.__max_lat_lon[0]},{self.__max_lat_lon[1]}', verify=False
         )
+        if response.status_code > 400:
+            raise ValueError(f'wrong status code: {response.status_code}. details: {response.text}')
+        return json.loads(response.text)
+
+    @func_exec_time_decorator
+    def __execute_query_custom_pagination(self):
+        """
+        time curl 'https://doms.jpl.nasa.gov/insitu?startIndex=3&itemsPerPage=20&minDepth=-99&variable=relative_humidity&columns=air_temperature&maxDepth=-1&startTime=2019-02-14T00:00:00Z&endTime=2021-02-16T00:00:00Z&platform=3B&bbox=-111,11,111,99'
+
+        :return:
+        """
+        rest_keyword = 'query_data_doms_custom_pagination'
+        get_url = f'{self.__cdms_domain}/1.0/{rest_keyword}?startIndex={self.__start_index}&itemsPerPage={self.__size}' \
+                    f'&provider={self.__provider}' \
+                    f'&project={self.__project}' \
+                    f'&platform={self.__platform_code}' \
+                    f'{"" if self.__variable is None else f"&variable={self.__variable}"}' \
+                    f'{"" if self.__columns is None else f"&columns={self.__columns}"}' \
+                    f'&minDepth={self.__min_depth}&maxDepth={self.__max_depth}' \
+                    f'&startTime={self.__start_time}&endTime={self.__end_time}' \
+                    f'&bbox={self.__min_lat_lon[1]},{self.__min_lat_lon[0]},{self.__max_lat_lon[1]},{self.__max_lat_lon[0]}'
+        # rest_keyword = 'query_data_doms'
+        print(get_url)
+        response = requests.get(url=get_url, verify=False)
+        if response.status_code > 400:
+            raise ValueError(f'wrong status code: {response.status_code}. details: {response.text}')
+        return json.loads(response.text)
+
+    @func_exec_time_decorator
+    def __execute_blind_query(self, get_url):
+        """
+        :return:
+        """
+        print(get_url)
+        response = requests.get(url=get_url, verify=False)
+        if response.status_code > 400:
+            raise ValueError(f'wrong status code: {response.status_code}. details: {response.text}')
+        return json.loads(response.text)
+
+    @func_exec_time_decorator
+    def __execute_query_custom_pagination_paginate(self, markerTime, markerPlatform):
+        """
+        time curl 'https://doms.jpl.nasa.gov/insitu?startIndex=3&itemsPerPage=20&minDepth=-99&variable=relative_humidity&columns=air_temperature&maxDepth=-1&startTime=2019-02-14T00:00:00Z&endTime=2021-02-16T00:00:00Z&platform=3B&bbox=-111,11,111,99'
+
+        :return:
+        """
+        rest_keyword = 'query_data_doms_custom_pagination'
+        get_url = f'{self.__cdms_domain}/1.0/{rest_keyword}?startIndex={self.__start_index}&itemsPerPage={self.__size}' \
+                  f'&provider={self.__provider}' \
+                  f'&markerTime={markerTime}' \
+                  f'&markerPlatform={markerPlatform}' \
+                  f'&project={self.__project}' \
+                  f'&platform={self.__platform_code}' \
+                  f'{"" if self.__variable is None else f"&variable={self.__variable}"}' \
+                  f'{"" if self.__columns is None else f"&columns={self.__columns}"}' \
+                  f'&minDepth={self.__min_depth}&maxDepth={self.__max_depth}' \
+                  f'&startTime={self.__start_time}&endTime={self.__end_time}' \
+                  f'&bbox={self.__min_lat_lon[0]},{self.__min_lat_lon[1]},{self.__max_lat_lon[0]},{self.__max_lat_lon[1]}'
+        # rest_keyword = 'query_data_doms'
+        print(get_url)
+        response = requests.get(url=get_url, verify=False)
         if response.status_code > 400:
             raise ValueError(f'wrong status code: {response.status_code}. details: {response.text}')
         return json.loads(response.text)
@@ -437,6 +501,48 @@ time: 2017-03-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- tota
                 print(f'first_item: {response[0]["results"][0]}')
         return
 
+    def custom_pagination_bench_mark(self):
+        self.__start_time = '2018-08-30T00:00:00Z'
+        self.__end_time = '2018-08-31T00:00:00Z'
+        # self.__platform_code = '42,41,30,16,17'
+        self.__platform_code = '42'
+        self.__min_lat_lon = (-25.2, 168.8)
+        self.__max_lat_lon = (-25.1, 169.0)
+
+        # self.__min_depth = -99
+        # self.__max_depth = 0
+        # self.__min_lat_lon = (-111, 11)
+        # self.__max_lat_lon = (111, 99)
+        # self.__provider = 'Florida State University, COAPS'
+        # self.__project = 'SAMOS'
+        # self.__platform_code = '30'
+
+        # self.__provider = 'Saildrone'
+        # self.__project = '1021_atlantic'
+        # self.__platform_code = '3B'
+        # self.__start_time = '2019-10-01T00:00:00Z'
+        # self.__end_time = '2019-10-16T00:00:00Z'
+        #
+
+
+        self.__variable = None
+        self.__columns = None
+
+        self.__start_index = 0
+        self.__size = 20000
+        self.__columns = None
+        response = self.__execute_query_custom_pagination()
+        print(f'time: {self.__start_time} - {self.__end_time} -- start_index: {self.__start_index} -- total: {response[0]["total"]} -- current_count: {len(response[0]["results"])} -- duration: {response[1]}')
+        while response[0]['next'] != 'NA':
+            if len(response[0]['results']) < 1:
+                print('empty result set. breaking')
+                break
+            print(f'first_item: {response[0]["results"][0]}')
+            print(f'last_item: {response[0]["results"][-1]}')
+            response = self.__execute_blind_query(response[0]['next'])
+            print(f'time: {self.__start_time} - {self.__end_time} -- start_index: {self.__start_index} -- total: {response[0]["total"]} -- current_count: {len(response[0]["results"])} -- duration: {response[1]}')
+        return
+
     def time_bench_mark(self):
         """
 time: 2017-01-01T00:00:00Z - 2017-01-02T00:00:00Z -- total: 8316 -- duration: 105.139927
@@ -456,6 +562,7 @@ time: 2017-01-01T00:00:00Z - 2017-06-30T00:00:00Z -- total: 979690 -- duration: 
         self.__project = 'SAMOS'
         self.__platform_code = '30'
         self.__start_index = 10
+
 
 
         # self.__start_time = '2017-01-01T00:00:00Z'
@@ -524,4 +631,4 @@ platform_code=30/
 
 
 if __name__ == '__main__':
-    BenchMark().pagination_bench_mark()
+    BenchMark().custom_pagination_bench_mark()
