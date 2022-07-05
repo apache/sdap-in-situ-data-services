@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - CDMS-xxx: Added `CLI` script to ingest S3 data into the Parquet system
+- CDMS-154: added meta as default column in in-situ endpoint response
 ### Changed
 ### Deprecated
 ### Removed
