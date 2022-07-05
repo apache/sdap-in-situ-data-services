@@ -45,7 +45,7 @@ class QueryV4:
         self.__sorting_columns = [CDMSConstants.time_col, CDMSConstants.platform_code_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col]
         self.__min_year = None
         self.__max_year = None
-        self.__default_columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col, CDMSConstants.platform_code_col, CDMSConstants.provider_col, CDMSConstants.project_col]   # , CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_col]
+        self.__default_columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col, CDMSConstants.platform_code_col, CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.meta_col]
         self.__set_missing_depth_val()
 
     def __set_missing_depth_val(self):
