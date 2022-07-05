@@ -12,7 +12,7 @@ class ParquetQueryConditionManagementV3:
     def __init__(self, parquet_name, missing_depth_value, props=QueryProps()):
         self.__conditions = []
         self.__parquet_name = parquet_name if not parquet_name.endswith('/') else parquet_name[:-1]
-        self.__columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col]
+        self.__columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col, CDMSConstants.platform_col, CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.meta_col]
         self.__is_extending_base = True
         self.__query_props = props
         self.__missing_depth_value = missing_depth_value

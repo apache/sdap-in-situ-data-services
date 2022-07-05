@@ -11,6 +11,7 @@ servers:
 #  - url: http://rda-data.ucar.edu:8890/ws/search
 #  - url: http://doms.coaps.fsu.edu/ws/search
   - url: https://doms.jpl.nasa.gov/insitu/1.0
+  - url: https://cdms.ucar.edu/insitu/1.0
 #  - url: https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu/1.0
 #  - url: /1.0
     description: 'proxied doms.jpl.nasa.gov insitu'
@@ -303,7 +304,7 @@ components:
     columnsParam:
       in: query
       name: columns
-      description: 'one or more column names to list only those columns in the result. Lat, Long, Time, and Depth are selected by default'
+      description: 'one or more column names to list only those columns in the result. Project, Platform, Provider, meta, Lat, Long, Time, and Depth are selected by default'
       schema:
         type: string
         example: air_temperature

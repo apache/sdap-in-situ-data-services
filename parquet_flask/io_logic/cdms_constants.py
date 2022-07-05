@@ -14,6 +14,7 @@
 # limitations under the License.
 
 class CDMSConstants:
+    meta_col = 'meta'
     time_col = 'time'
     provider_col = 'provider'
     project_col = 'project'
