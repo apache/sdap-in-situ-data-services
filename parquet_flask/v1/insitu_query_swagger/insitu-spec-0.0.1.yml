@@ -44,6 +44,45 @@ paths:
                 $ref: '#/components/schemas/QueryResponse'
         default:
           description: 'Invalid query'
+   '/query_data_doms_custom_pagination':
+    get:
+      summary: Query data source
+      tags:
+        - Query
+      parameters:
+        - $ref: '#/components/parameters/startIndexParam'
+        - $ref: '#/components/parameters/itemsPerPageParam'
+        - $ref: '#/components/parameters/providerParam'
+        - $ref: '#/components/parameters/projectParam'
+        - $ref: '#/components/parameters/platformParam'
+        - $ref: '#/components/parameters/startTimeParam'
+        - $ref: '#/components/parameters/endTimeParam'
+        - $ref: '#/components/parameters/minDepthParam'
+        - $ref: '#/components/parameters/maxDepthParam'
+        - $ref: '#/components/parameters/bboxParam'
+        - $ref: '#/components/parameters/variableParam'
+        - $ref: '#/components/parameters/columnsParam'
+      responses:
+        '200':
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+        default:
+          description: 'Invalid query'
+   '/cdms_schema':
+    get:
+      summary: get CDMS JSON Schema
+      responses:
+        '200':
+          description: 'Successful query'
+
+        '404':
+          description: 'File not found'
+
+        '500':
+          description: 'Other unexpected error'
 
 components:
   schemas:
@@ -53,6 +92,7 @@ components:
        last:
          type: string
          example: 'http://rda-data.ucar.edu:8890/ws/search/icoads?startIndex=928610&endTime=2013-10-31T23%3A59%3A59Z&bbox=-45%2C15%2C-30%2C30&startTime=2012-08-01T00%3A00%3A00Z'
+         description: 'This is not available as query only knows the next page in custom_pagination_query'
        next:
          type: string
          example: 'http://rda-data.ucar.edu:8890/ws/search/icoads?startIndex=10&endTime=2013-10-31T23%3A59%3A59Z&bbox=-45%2C15%2C-30%2C30&startTime=2012-08-01T00%3A00%3A00Z'
@@ -65,6 +105,7 @@ components:
            $ref: '#/components/schemas/Result'
        totalResults:
          type: integer
+         description: 'total number of results. NOte it may only be available on the first page in custom_pagination_query'
          example: 928618
          minimum: 0
        startIndex:
