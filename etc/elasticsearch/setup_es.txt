@@ -1,0 +1,14 @@
+export ES_HOST=localhost:9201
+
+curl -X PUT "$ES_HOST/parquet_stats_v1" --data "@parquet_stats_v1.json" -H 'Content-Type:application/json'
+
+curl -X POST "$ES_HOST/_aliases" --data "@all_alias.json" -H 'Content-Type:application/json'
+
+
+
+deleting indices
+curl -X DELETE "$ES_HOST/parquet_stats_v1"
+
+get index details
+curl -X GET "$ES_HOST/parquet_stats_v1"
+curl -X GET "$ES_HOST/parquet_stats_v1/_search"

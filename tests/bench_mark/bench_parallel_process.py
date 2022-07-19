@@ -10,8 +10,8 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 class InsituProps:
     def __init__(self):
         # self.cdms_domain = 'http://localhost:30801/insitu'
-        # self.cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
-        self.cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
+        self.cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
+        # self.cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.size = 100
         self.start_index = 0
 

@@ -9,12 +9,13 @@ flask_env:
   spark_app_name: "parquet_flask_demo"
   log_level: "DEBUG"
   flask_prefix: "insitu"
+  es_url: "https://aws-es-url/"
+  es_port: "443"
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"
   # "spark.shuffle.service.enabled": "true",  This should be "true", but "shuffle.service" not setup yet.
   ## Specify Spark config options
   ## When using AWS EKS IRSA for AWS auth, use: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
   spark_config_dict: {
-
     "spark.shuffle.service.enabled": "false",
     "spark.dynamicAllocation.shuffleTracking.enabled": "true",
     "spark.dynamicAllocation.minExecutors": "4",

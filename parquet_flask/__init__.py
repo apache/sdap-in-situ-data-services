@@ -15,11 +15,10 @@
 
 import logging
 
-from flask import Flask
-from .v1 import blueprint
-
 
 def get_app():
+    from flask import Flask
+    from .v1 import blueprint
     app = Flask(__name__)
     app.register_blueprint(blueprint)
     # api.init_app(app)

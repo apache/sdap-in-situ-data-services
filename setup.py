@@ -38,6 +38,8 @@ install_requires = [
     'fastjsonschema===2.15.1',
     'requests===2.26.0',
     'boto3', 'botocore',
+    'requests_aws4auth===1.1.1',  # to send aws signed headers in requests
+    'elasticsearch===7.13.4',
 ]
 
 setup(

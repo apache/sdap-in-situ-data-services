@@ -16,3 +16,4 @@ local.spark.cluster/aws-java-sdk-bundle*.jar
 *.ipynb
 
 parquet.spark.helm.values.yaml
+parquet.spark.helm.values.local*

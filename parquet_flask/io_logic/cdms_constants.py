@@ -29,6 +29,7 @@ class CDMSConstants:
     lat_col = 'latitude'
     lon_col = 'longitude'
     depth_col = 'depth'
+    geo_spatial_interval_col = 'geo_spatial_interval'
 
     s3_url_key = 's3_url'
     uuid_key = 'uuid'
@@ -42,3 +43,6 @@ class CDMSConstants:
     checksum_cause = 'checksum_cause'
 
     missing_depth_value = -99999
+    config_key_flask_prefix = 'flask_prefix'
+
+    es_index_parquet_stats = 'parquet_stats_v1'

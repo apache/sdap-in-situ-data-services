@@ -33,10 +33,13 @@ class Config(metaclass=Singleton):
     missing_depth_value = 'missing_depth_value'
     authentication_type = 'authentication_type'
     authentication_key = 'authentication_key'
-    flask_prefix = 'flask_prefix'
+    es_url = 'es_url'
+    es_index = 'es_index'
+    es_port = 'es_port'
 
     def __init__(self):
         self.__keys = [
+            Config.es_url,
             Config.master_spark_url,
             Config.spark_app_name,
             # Config.spark_config_dict,

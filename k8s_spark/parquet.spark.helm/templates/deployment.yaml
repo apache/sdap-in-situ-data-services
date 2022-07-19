@@ -65,6 +65,8 @@ spec:
             {{- end }}
             - name: parquet_metadata_tbl
               value: {{ .Values.flask_env.parquet_metadata_tbl }}
+            - name: es_url
+              value: {{ .Values.flask_env.es_url }}
             - name: spark_app_name
               value: {{ .Values.flask_env.spark_app_name }}
             - name: log_level

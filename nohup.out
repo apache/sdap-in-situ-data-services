@@ -1,0 +1,4 @@
+error: Pod 'parquet-t1-parquet-spark-helm-5fddc6d565-lh87v' does not have a named port 'parquet-t1-spark-master-0'
+error: Pod 'parquet-t1-parquet-spark-helm-5fddc6d565-lh87v' does not have a named port 'parquet-t1-spark-master-0'
+error: Pod 'parquet-t1-parquet-spark-helm-5fddc6d565-lh87v' does not have a named port 'parquet-t1-spark-master-0'
+Error from server (NotFound): namespaces "nexus-sit" not found

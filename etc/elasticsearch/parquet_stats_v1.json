@@ -1,0 +1,64 @@
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "bucket": {
+        "type": "keyword"
+      },
+      "geo_spatial_interval": {
+        "type": "keyword"
+      },
+      "month": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "platform_code": {
+        "type": "keyword"
+      },
+      "project": {
+        "type": "keyword"
+      },
+      "provider": {
+        "type": "keyword"
+      },
+      "s3_url": {
+        "type": "keyword"
+      },
+      "year": {
+        "type": "keyword"
+      },
+      "total": {
+        "type": "long"
+      },
+      "min_datetime": {
+        "type": "double"
+      },
+      "max_datetime": {
+        "type": "double"
+      },
+      "min_depth": {
+        "type": "double"
+      },
+      "max_depth": {
+        "type": "double"
+      },
+      "min_lat": {
+        "type": "double"
+      },
+      "max_lat": {
+        "type": "double"
+      },
+      "min_lon": {
+        "type": "double"
+      },
+      "max_lon": {
+        "type": "double"
+      }
+    }
+  }
+}

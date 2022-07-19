@@ -42,6 +42,18 @@ class AwsCred:
                 self.__boto3_session['aws_session_token'] = aws_session_token
         else:
             LOGGER.debug('using default session as there is  no aws_access_key_id')
+    @property
+    def region(self):
+        return self.__region
+
+    @region.setter
+    def region(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__region = val
+        return
 
     @property
     def boto3_session(self):
@@ -55,6 +67,9 @@ class AwsCred:
         """
         self.__boto3_session = val
         return
+
+    def get_session(self):
+        return boto3.Session(**self.boto3_session)
 
     def get_resource(self, service_name: str):
         return boto3.Session(**self.boto3_session).resource(service_name)

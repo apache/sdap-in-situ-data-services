@@ -20,9 +20,10 @@ from pyspark.sql.session import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import lit
 from pyspark.sql.types import Row
+from pyspark.sql.utils import AnalysisException
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
-from parquet_flask.io_logic.parquet_query_condition_management_v3 import ParquetQueryConditionManagementV3
+from parquet_flask.io_logic.parquet_query_condition_management_v4 import ParquetQueryConditionManagementV4
 from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
 from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
@@ -36,9 +37,14 @@ class QueryV4:
     def __init__(self, props=QueryProps()):
         self.__props = props
         config = Config()
-        self.__app_name = config.get_value('spark_app_name')
-        self.__master_spark = config.get_value('master_spark_url')
-        self.__parquet_name = config.get_value('parquet_file_name')
+        self.__app_name = config.get_value(Config.spark_app_name)
+        self.__master_spark = config.get_value(Config.master_spark_url)
+        self.__parquet_name = config.get_value(Config.parquet_file_name)
+        self.__es_config = {
+            'es_url': config.get_value(Config.es_url),
+            'es_index': CDMSConstants.es_index_parquet_stats,
+            'es_port': int(config.get_value(Config.es_port, '443')),
+        }
         self.__parquet_name = self.__parquet_name if not self.__parquet_name.endswith('/') else self.__parquet_name[:-1]
         self.__missing_depth_value = CDMSConstants.missing_depth_value
         self.__conditions = []
@@ -56,20 +62,40 @@ class QueryV4:
         spark = RetrieveSparkSession().retrieve_spark_session(self.__app_name, self.__master_spark)
         return spark
 
-    def get_unioned_read_df(self, condition_manager: ParquetQueryConditionManagementV3, spark: SparkSession) -> DataFrame:
+    def __strip_duplicates_maintain_order(self, condition_manager: ParquetQueryConditionManagementV4):
+        LOGGER.warning(f'length of parquet_names: {len(condition_manager.parquet_names)}')
+        distinct_list = []
+        distinct_set = set([])
+        for each in condition_manager.parquet_names:
+            each: PartitionedParquetPath = each
+            parquet_path = each.generate_path()
+            if parquet_path in distinct_set:
+                continue
+            distinct_set.add(parquet_path)
+            distinct_list.append(each)
+        LOGGER.warning(f'length of distinct_parquet_names: {len(distinct_list)}')
+        LOGGER.warning(f'distinct_parquet_names: {distinct_set}')
+        return distinct_list
+
+    def get_unioned_read_df(self, condition_manager: ParquetQueryConditionManagementV4, spark: SparkSession) -> DataFrame:
         if len(condition_manager.parquet_names) < 1:
             read_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(condition_manager.parquet_name)
             return read_df
         read_df_list = []
-        for each in condition_manager.parquet_names:
+        distinct_parquet_names = self.__strip_duplicates_maintain_order(condition_manager)
+        for each in distinct_parquet_names:
             each: PartitionedParquetPath = each
             try:
                 temp_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(each.generate_path())
-                for k, v in each.get_df_columns().items():
-                    temp_df: DataFrame = temp_df.withColumn(k, lit(v))
-                read_df_list.append(temp_df)
-            except Exception as e:
-                LOGGER.exception(f'failed to retrieve data from spark for: {each.generate_path()}')
+            except AnalysisException as analysis_exception:
+                if analysis_exception.desc is not None and analysis_exception.desc.startswith('Path does not exist'):
+                    LOGGER.debug(f'ignoring path: {each.generate_path()}')
+                    continue
+                else:
+                    raise analysis_exception
+            for k, v in each.get_df_columns().items():
+                temp_df: DataFrame = temp_df.withColumn(k, lit(v))
+            read_df_list.append(temp_df)
         if len(read_df_list) < 1:
             return None
         main_read_df: DataFrame = read_df_list[0]
@@ -106,6 +132,11 @@ class QueryV4:
                 new_index = i
                 break
         if new_index < 0:
+            LOGGER.warning(f'comparing sha256: {self.__props.marker_platform_code}')
+            for each_row in result_head:
+                each_row: Row = each_row
+                each_sha_256 = GeneralUtils.gen_sha_256_json_obj(each_row.asDict())
+                LOGGER.warning(f'each row: {str(each_row)}. each_sha_256: {each_sha_256}')
             raise ValueError(f'cannot find existing row. It should not happen.')
         result_page = query_result.take(self.__props.size + new_index + 1)
         result_tail = result_page[new_index + 1:]
@@ -130,7 +161,7 @@ class QueryV4:
 
     def search(self, spark_session=None):
         LOGGER.debug(f'<delay_check> query_v4_search started')
-        condition_manager = ParquetQueryConditionManagementV3(self.__parquet_name, self.__missing_depth_value, self.__props)
+        condition_manager = ParquetQueryConditionManagementV4(self.__parquet_name, self.__missing_depth_value, self.__es_config, self.__props)
         condition_manager.manage_query_props()
 
         conditions = ' AND '.join(condition_manager.conditions)
