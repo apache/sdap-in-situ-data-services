@@ -52,17 +52,15 @@ class ESMiddleware(ESAbstract):
         for k, v in doc_dict.items():
             body.append({'index': {'__index': index, '_id': k, 'retry_on_conflict': 3}})
             body.append(v)
-            pass
         index = self.__validate_index(index)
         try:
             index_result = self._engine.bulk(index=index,
-                                              body=body, doc_type=DEFAULT_TYPE)
+                                             body=body, doc_type=DEFAULT_TYPE)
             LOGGER.info('indexed. result: {}'.format(index_result))
-            return self.__check_errors_for_bulk(index_result)
-        except:
+        except Exception as e:
             LOGGER.exception('cannot add indices with ids: {} for index: {}'.format(list(doc_dict.keys()), index))
-            return doc_dict
-        return
+            raise RuntimeError(f'one or more failed. details: {str(e)} doc_dict: {doc_dict}')
+        return self.__check_errors_for_bulk(index_result)
 
     def index_one(self, doc, doc_id, index=None):
         index = self.__validate_index(index)
@@ -70,10 +68,9 @@ class ESMiddleware(ESAbstract):
             index_result = self._engine.index(index=index,
                                               body=doc, doc_type=DEFAULT_TYPE, id=doc_id)
             LOGGER.info('indexed. result: {}'.format(index_result))
-            pass
-        except:
+        except Exception as e:
             LOGGER.exception('cannot add a new index with id: {} for index: {}'.format(doc_id, index))
-            return None
+            raise RuntimeError(f'failed to add {index}:{doc_id}. cause: {str(e)}')
         return self
 
     def update_many(self, docs=None, doc_ids=None, doc_dict=None, index=None):
@@ -88,12 +85,11 @@ class ESMiddleware(ESAbstract):
             index_result = self._engine.bulk(index=index,
                                              body=body, doc_type=DEFAULT_TYPE)
             LOGGER.info('indexed. result: {}'.format(index_result))
-            return self.__check_errors_for_bulk(index_result)
         except:
             LOGGER.exception('cannot update indices with ids: {} for index: {}'.format(list(doc_dict.keys()),
                                                                                              index))
             return doc_dict
-        return
+        return self.__check_errors_for_bulk(index_result)
 
     def update_one(self, doc, doc_id, index=None):
         update_body = {
@@ -105,10 +101,9 @@ class ESMiddleware(ESAbstract):
             update_result = self._engine.update(index=index,
                                                 id=doc_id, body=update_body, doc_type=DEFAULT_TYPE)
             LOGGER.info('updated. result: {}'.format(update_result))
-            pass
         except:
             LOGGER.exception('cannot update id: {} for index: {}'.format(doc_id, index))
-            return None
+            raise RuntimeError(f'failed to update {index}:{doc_id}. cause: {str(e)}')
         return self
 
     @staticmethod
