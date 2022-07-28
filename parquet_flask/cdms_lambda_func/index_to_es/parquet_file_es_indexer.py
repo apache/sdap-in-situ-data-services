@@ -7,8 +7,10 @@ from parquet_flask.aws.es_factory import ESFactory
 from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConstants
 from parquet_flask.cdms_lambda_func.index_to_es.parquet_stat_extractor import ParquetStatExtractor
 from parquet_flask.cdms_lambda_func.index_to_es.s3_stat_extractor import S3StatExtractor
+from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
 from parquet_flask.cdms_lambda_func.s3_records.s3_2_sqs import S3ToSqs
 
+LOGGER = LambdaLoggerGenerator.get_logger(__name__, log_level=LambdaLoggerGenerator.get_level_from_env())
 
 class ParquetFileEsIndexer:
     def __init__(self):
@@ -36,6 +38,12 @@ class ParquetFileEsIndexer:
         return
 
     def start(self, event):
+        # LOGGER.warning(self.__es.query({
+        #     'size': 10,
+        #     'query': {
+        #         'match_all': {}
+        #     }
+        # }))
         s3_record = S3ToSqs(event)
         self.__s3_url = s3_record.get_s3_url()
         s3_event = s3_record.get_event_name().strip().lower()
