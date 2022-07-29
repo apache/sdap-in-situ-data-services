@@ -16,6 +16,7 @@ import logging
 from datetime import datetime
 
 import pyspark.sql.functions as F
+from parquet_flask.utils.file_utils import FileUtils
 from pyspark.sql.session import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import lit
@@ -57,14 +58,15 @@ class QueryV4:
         return spark
 
     def get_unioned_read_df(self, condition_manager: ParquetQueryConditionManagementV3, spark: SparkSession) -> DataFrame:
+        cdms_spark_struct = CdmsSchema().get_schema_from_json(FileUtils.read_json(Config().get_value(Config.in_situ_schema)))
         if len(condition_manager.parquet_names) < 1:
-            read_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(condition_manager.parquet_name)
+            read_df: DataFrame = spark.read.schema(cdms_spark_struct).parquet(condition_manager.parquet_name)
             return read_df
         read_df_list = []
         for each in condition_manager.parquet_names:
             each: PartitionedParquetPath = each
             try:
-                temp_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(each.generate_path())
+                temp_df: DataFrame = spark.read.schema(cdms_spark_struct).parquet(each.generate_path())
                 for k, v in each.get_df_columns().items():
                     temp_df: DataFrame = temp_df.withColumn(k, lit(v))
                 read_df_list.append(temp_df)
