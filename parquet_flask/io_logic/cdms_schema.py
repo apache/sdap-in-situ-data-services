@@ -127,13 +127,31 @@ class CdmsSchema:
             StructField('month', IntegerType(), True),
             StructField('job_id', StringType(), True),
         ]
+        self.__non_observation_columns = [
+            'time_obj',
+            'time',
+
+            'provider',
+            'project',
+            'platform_code',
+            'platform',
+            'year',
+            'month',
+            'job_id',
+
+            'device',
+
+            'latitude',
+            'longitude',
+            'depth',
+        ]
 
     def __get_spark_type(self, json_type: str):
         if json_type not in self.__json_to_spark_data_types:
             raise ValueError(f'unknown json type. cannot convert to spark type: {json_type}')
         return self.__json_to_spark_data_types[json_type]
 
-    def get_schema_from_json(self, in_situ_schema: dict):
+    def __get_obs_defs(self, in_situ_schema: dict):
         if 'definitions' not in in_situ_schema:
             raise ValueError(f'missing definitions in in_situ_schema: {in_situ_schema}')
         base_defs = in_situ_schema['definitions']
@@ -142,5 +160,12 @@ class CdmsSchema:
         obs_defs = base_defs['observation']
         if 'properties' not in obs_defs:
             raise ValueError(f'missing properties in in_situ_schema["definitions"]["observation"]: {obs_defs}')
-        dynamic_columns = [StructField(k, self.__get_spark_type(self.__get_json_datatype(k, v)), True) for k, v in obs_defs['properties'].items()]
+        return obs_defs['properties']
+
+    def get_observation_names(self, in_situ_schema: dict):
+        obs_names = [k for k in self.__get_obs_defs(in_situ_schema).keys() if k not in self.__non_observation_columns and not k.endswith('_quality')]
+        return obs_names
+
+    def get_schema_from_json(self, in_situ_schema: dict):
+        dynamic_columns = [StructField(k, self.__get_spark_type(self.__get_json_datatype(k, v)), True) for k, v in self.__get_obs_defs(in_situ_schema).items()]
         return StructType(dynamic_columns + self.__default_columns)

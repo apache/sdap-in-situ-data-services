@@ -5,7 +5,8 @@ from parquet_flask.io_logic.cdms_constants import CDMSConstants
 
 
 class StatisticsRetriever:
-    def __init__(self, input_dataset: DataFrame):
+    def __init__(self, input_dataset: DataFrame, observation_keys: list):
+        self.__observation_keys = observation_keys
         self.__input_dataset = input_dataset
         self.__total = -1
         self.__min_datetime = None
@@ -16,6 +17,7 @@ class StatisticsRetriever:
         self.__max_lat = None
         self.__min_lon = None
         self.__max_lon = None
+        self.__observation_count = []
 
     @property
     def total(self):
@@ -159,6 +161,7 @@ class StatisticsRetriever:
             'max_lat': self.max_lat,
             'min_lon': self.min_lon,
             'max_lon': self.max_lon,
+            'observation_counts': self.__observation_count
         }
 
     def start(self):
@@ -188,4 +191,5 @@ class StatisticsRetriever:
 
         if self.min_depth - CDMSConstants.missing_depth_value == 0:
             self.__get_min_depth_exclude_missing_val()
+        self.__observation_count = {each_obs_key: self.__input_dataset.where(self.__input_dataset[each_obs_key].isNotNull()).count() for each_obs_key in self.__observation_keys}
         return self
