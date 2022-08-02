@@ -26,8 +26,8 @@ class StatisticsRetrieverWrapper:
         full_parquet_path = f"{self.__parquet_name}/{parquet_path}"
         LOGGER.debug(f'searching for full_parquet_path: {full_parquet_path}')
         try:
-            cdms_spark_struct = CdmsSchema().get_schema_from_json(
-                FileUtils.read_json(Config().get_value(Config.in_situ_schema)))
+            insitu_schema = FileUtils.read_json(Config().get_value(Config.in_situ_schema))
+            cdms_spark_struct = CdmsSchema().get_schema_from_json(insitu_schema)
             read_df: DataFrame = spark.read.schema(cdms_spark_struct).parquet(full_parquet_path)
         except AnalysisException as analysis_exception:
             if analysis_exception.desc is not None and analysis_exception.desc.startswith('Path does not exist'):
@@ -35,5 +35,5 @@ class StatisticsRetrieverWrapper:
                 return None
             LOGGER.exception(f'error while retrieving full_parquet_path: {full_parquet_path}')
             raise analysis_exception
-        stats = StatisticsRetriever(read_df).start()
+        stats = StatisticsRetriever(read_df, CdmsSchema().get_observation_names(insitu_schema)).start()
         return stats.to_json()
