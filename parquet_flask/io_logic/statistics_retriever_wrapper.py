@@ -1,5 +1,6 @@
 import logging
 
+from parquet_flask.utils.file_utils import FileUtils
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.utils import AnalysisException
@@ -25,7 +26,9 @@ class StatisticsRetrieverWrapper:
         full_parquet_path = f"{self.__parquet_name}/{parquet_path}"
         LOGGER.debug(f'searching for full_parquet_path: {full_parquet_path}')
         try:
-            read_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(full_parquet_path)
+            cdms_spark_struct = CdmsSchema().get_schema_from_json(
+                FileUtils.read_json(Config().get_value(Config.in_situ_schema)))
+            read_df: DataFrame = spark.read.schema(cdms_spark_struct).parquet(full_parquet_path)
         except AnalysisException as analysis_exception:
             if analysis_exception.desc is not None and analysis_exception.desc.startswith('Path does not exist'):
                 LOGGER.debug(f'no such full_parquet_path: {full_parquet_path}')
