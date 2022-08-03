@@ -1,6 +1,9 @@
 import json
 import logging
 
+from parquet_flask.io_logic.cdms_schema import CdmsSchema
+from parquet_flask.utils.file_utils import FileUtils
+
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.utils.config import Config
 
@@ -22,6 +25,8 @@ class SubCollectionStatistics:
         self.__provider = None
         self.__project = None
         self.__platform_codes = []
+        self.__insitu_schema = FileUtils.read_json(Config().get_value(Config.in_situ_schema))
+        self.__cdms_obs_names = CdmsSchema().get_observation_names(self.__insitu_schema)
 
     def with_provider(self, provider: str):
         self.__provider = provider
@@ -81,6 +86,7 @@ class SubCollectionStatistics:
                 "max_depth": core_stats['max_depth']['value'],
                 "min_datetime": TimeUtils.get_time_str(int(core_stats['min_datetime']['value']), in_ms=False),
                 "max_datetime": TimeUtils.get_time_str(int(core_stats['max_datetime']['value']), in_ms=False),
+                'observation_counts': {k: core_stats[k]['value'] for k in self.__cdms_obs_names}
             }
         }
         LOGGER.debug(f'core_stats: {core_stats}')
@@ -168,6 +174,14 @@ class SubCollectionStatistics:
         LOGGER.debug(f'restructured_stats: {restructured_stats}')
         return restructured_stats
 
+    def __get_observation_agg_stmts(self):
+        agg_stmts = {k: {
+            'sum': {
+                'field': f'observation_counts.{k}'
+            }
+        } for k in self.__cdms_obs_names}
+        return agg_stmts
+
     def start(self):
         es_terms = []
         if self.__provider is not None:
@@ -186,6 +200,51 @@ class SubCollectionStatistics:
             else:
                 es_terms.append({'term': {CDMSConstants.platform_code_col: self.__platform_codes}})
 
+        normal_agg_stmts = {
+            "totals": {
+                "sum": {"field": "total"}}
+            ,
+            "max_datetime": {
+                "max": {
+                    "field": "max_datetime"
+                }
+            },
+            "max_depth": {
+                "max": {
+                    "field": "max_depth"
+                }
+            },
+            "max_lat": {
+                "max": {
+                    "field": "max_lat"
+                }
+            },
+            "max_lon": {
+                "max": {
+                    "field": "max_lon"
+                }
+            },
+            "min_datetime": {
+                "min": {
+                    "field": "min_datetime"
+                }
+            },
+            "min_depth": {
+                "min": {
+                    "field": "min_depth"
+                }
+            },
+            "min_lat": {
+                "min": {
+                    "field": "min_lat"
+                }
+            },
+            "min_lon": {
+                "min": {
+                    "field": "min_lon"
+                }
+            }
+        }
         stats_dsl = {
             "size": 0,
             "query": {
@@ -204,51 +263,7 @@ class SubCollectionStatistics:
                             "aggs": {
                                 "by_platform_code": {
                                     "terms": {"field": CDMSConstants.platform_code_col},
-                                    "aggs": {
-                                        "totals": {
-                                            "sum": {"field": "total"}}
-                                        ,
-                                        "max_datetime": {
-                                            "max": {
-                                                "field": "max_datetime"
-                                            }
-                                        },
-                                        "max_depth": {
-                                            "max": {
-                                                "field": "max_depth"
-                                            }
-                                        },
-                                        "max_lat": {
-                                            "max": {
-                                                "field": "max_lat"
-                                            }
-                                        },
-                                        "max_lon": {
-                                            "max": {
-                                                "field": "max_lon"
-                                            }
-                                        },
-                                        "min_datetime": {
-                                            "min": {
-                                                "field": "min_datetime"
-                                            }
-                                        },
-                                        "min_depth": {
-                                            "min": {
-                                                "field": "min_depth"
-                                            }
-                                        },
-                                        "min_lat": {
-                                            "min": {
-                                                "field": "min_lat"
-                                            }
-                                        },
-                                        "min_lon": {
-                                            "min": {
-                                                "field": "min_lon"
-                                            }
-                                        }
-                                    }
+                                    "aggs": {**normal_agg_stmts, **self.__get_observation_agg_stmts()}
                                 }
                             }
                         }
