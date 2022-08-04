@@ -12,6 +12,7 @@ from parquet_flask.cdms_lambda_func.s3_records.s3_2_sqs import S3ToSqs
 
 LOGGER = LambdaLoggerGenerator.get_logger(__name__, log_level=LambdaLoggerGenerator.get_level_from_env())
 
+
 class ParquetFileEsIndexer:
     def __init__(self):
         self.__s3_url = None
@@ -28,6 +29,8 @@ class ParquetFileEsIndexer:
         s3_stat = S3StatExtractor(self.__s3_url).start()
         s3_bucket, s3_key = AwsS3().split_s3_url(self.__s3_url)
         parquet_stat = ParquetStatExtractor().start(s3_key)
+        LOGGER.debug(f's3_stat: {s3_stat.to_json()}')
+        LOGGER.debug(f'parquet_stat: {parquet_stat}')
         self.__es.index_one({'s3_url': self.__s3_url, **s3_stat.to_json(), **parquet_stat}, s3_stat.s3_url)
         return
 
@@ -44,13 +47,21 @@ class ParquetFileEsIndexer:
         #         'match_all': {}
         #     }
         # }))
-        s3_record = S3ToSqs(event)
-        self.__s3_url = s3_record.get_s3_url()
-        s3_event = s3_record.get_event_name().strip().lower()
-        if s3_event.startswith('objectcreated'):
-            self.ingest_file()
-        elif s3_event.startswith('objectremoved'):
-            self.remove_file()
-        else:
-            raise ValueError(f'invalid s3_event: {s3_event}')
+        s3_records = S3ToSqs(event)
+        ignoring_phrases = ['spark-staging', '_temporary']
+        for i in range(s3_records.size()):
+            self.__s3_url = s3_records.get_s3_url(i)
+            if any([k in self.__s3_url for k in ignoring_phrases]):
+                LOGGER.debug(f'skipping temp file: {self.__s3_url}')
+                return
+            LOGGER.debug(f'executing: self.__s3_url')
+            s3_event = s3_records.get_event_name(i).strip().lower()
+            if s3_event.startswith('objectcreated'):
+                LOGGER.debug('executing index')
+                self.ingest_file()
+            elif s3_event.startswith('objectremoved'):
+                LOGGER.debug('executing to remove index')
+                self.remove_file()
+            else:
+                raise ValueError(f'invalid s3_event: {s3_event}')
         return

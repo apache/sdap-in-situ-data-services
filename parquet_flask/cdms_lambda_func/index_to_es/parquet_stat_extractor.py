@@ -1,12 +1,12 @@
 import json
-import logging
 import os
 
 import requests
 
 from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConstants
+from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = LambdaLoggerGenerator.get_logger(__name__, log_level=LambdaLoggerGenerator.get_level_from_env())
 
 
 class ParquetStatExtractor:
@@ -30,4 +30,6 @@ class ParquetStatExtractor:
         response = requests.get(url=stats_url, verify=self.__verify_ssl)
         if response.status_code > 400:
             raise ValueError(f'wrong status code: {response.status_code}. details: {response.text}')
+        LOGGER.debug(f'stats_response_code: {response.status_code}')
+        LOGGER.debug(f'stats_result: {response.text}')
         return json.loads(response.text)

@@ -60,9 +60,13 @@
 }
 """
 import json
+import urllib.parse
 
+from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
 from parquet_flask.cdms_lambda_func.s3_records.s3_event_validator_abstract import S3EventValidatorAbstract
 from parquet_flask.utils.general_utils import GeneralUtils
+
+LOGGER = LambdaLoggerGenerator.get_logger(__name__, log_level=LambdaLoggerGenerator.get_level_from_env())
 
 
 class S3ToSqs(S3EventValidatorAbstract):
@@ -72,7 +76,7 @@ class S3ToSqs(S3EventValidatorAbstract):
             'Records': {
                 'type': 'array',
                 'minItems': 1,
-                'maxItems': 1,
+                'maxItems': 10,
                 'items': {
                     'type': 'object',
                     'properties': {
@@ -120,26 +124,42 @@ class S3ToSqs(S3EventValidatorAbstract):
         super().__init__(event)
         self.__event = event
         self.__s3_record = None
+        self.__is_valid()
 
     def __is_valid(self):
         is_valid, validation_err = GeneralUtils.is_json_valid(self.__event, self.OUTER_SCHEMA)
         if is_valid is False:
             raise ValueError(f'invalid OUTER_SCHEMA: {self.__event} vs {self.OUTER_SCHEMA}. errors: {validation_err}')
-        s3_record = self.__event['Records'][0]['body']
-        if isinstance(s3_record, str):
-            s3_record = json.loads(s3_record)
-        is_valid, validation_err = GeneralUtils.is_json_valid(s3_record, self.S3_RECORD_SCHEMA)
-        if is_valid is False:
-            raise ValueError(f'invalid S3_RECORD_SCHEMA: {s3_record} vs {self.S3_RECORD_SCHEMA}. errors: {validation_err}')
-        self.__s3_record = s3_record
+        self.__s3_record = []
+        for each_s3_record in self.__event['Records']:
+            s3_record = each_s3_record['body']
+            if isinstance(s3_record, str):
+                s3_record = json.loads(s3_record)
+            is_valid, validation_err = GeneralUtils.is_json_valid(s3_record, self.S3_RECORD_SCHEMA)
+            if is_valid is False:
+                raise ValueError(f'invalid S3_RECORD_SCHEMA: {s3_record} vs {self.S3_RECORD_SCHEMA}. errors: {validation_err}')
+            self.__s3_record.append(s3_record)
         return self
 
-    def get_s3_url(self):
+    def size(self):
         if self.__s3_record is None:
             self.__is_valid()
-        return f"s3://{self.__s3_record['Records'][0]['s3']['bucket']['name']}/{self.__s3_record['Records'][0]['s3']['object']['key']}"
+        return len(self.__s3_record)
 
-    def get_event_name(self) -> str:
+    def get_s3_url(self, index: int):
         if self.__s3_record is None:
             self.__is_valid()
-        return self.__s3_record['Records'][0]['eventName']
+        if index >= len(self.__s3_record):
+            raise ValueError(f'index: {index} is larger than s3_record array size: {len(self.__s3_record)}')
+        s3_url = f"s3://{self.__s3_record[index]['Records'][0]['s3']['bucket']['name']}/{self.__s3_record[index]['Records'][0]['s3']['object']['key']}"
+        LOGGER.debug(f'original s3_url: {s3_url}')
+        s3_url = urllib.parse.unquote(s3_url)
+        LOGGER.debug(f'unquoted s3_url: {s3_url}')
+        return s3_url
+
+    def get_event_name(self, index: int) -> str:
+        if self.__s3_record is None:
+            self.__is_valid()
+        if index >= len(self.__s3_record):
+            raise ValueError(f'index: {index} is larger than s3_record array size: {len(self.__s3_record)}')
+        return self.__s3_record[index]['Records'][0]['eventName']

@@ -19,6 +19,7 @@ os.environ['parquet_metadata_tbl'] = ''
 os.environ[CdmsLambdaConstants.es_url] = 'https://search-insitu-parquet-dev-1-vgwt2bx23o5w3gpnq4afftmvaq.us-west-2.es.amazonaws.com/'
 os.environ[CdmsLambdaConstants.es_index] = 'parquet_stats_v1'
 os.environ[CdmsLambdaConstants.cdms_url] = 'http://localhost:30801/insitu/1.0/extract_stats/'
+os.environ[CdmsLambdaConstants.cdms_url] = 'https://doms.jpl.nasa.gov/insitu/1.0/extract_stats/'
 os.environ[CdmsLambdaConstants.parquet_base_folder] = 'CDMS_insitu.geo2.parquet'
 
 from parquet_flask.cdms_lambda_func.index_to_es.parquet_file_es_indexer import ParquetFileEsIndexer
@@ -53,7 +54,7 @@ s3_record_event = {
                     "arn": "arn:aws-us-gov:s3:::lsmd-data-bucket"
                 },
                 "object": {
-                    "key": "CDMS_insitu.geo2.parquet/provider=Florida State University, COAPS/project=SAMOS/platform_code=30/geo_spatial_interval=-10_-25/year=2018/month=2/job_id=0fa52200-3083-49d9-84f0-cc474e421964/part-00000-2aec5420-40de-47c7-9bfa-cb064435e808.c000.gz.parquet",
+                    "key": "CDMS_insitu.geo2.parquet/provider=Saildrone/project=1021_atlantic/platform_code=3B/geo_spatial_interval=35_-65/year=2019/month=2/job_id=51ee1bd2-0193-49cb-9e7f-67fb6d29378c/part-00000-4040bc15-457f-424e-8284-af175f422f2e.c000.gz.parquet",
                     "size": 841141,
                     "eTag": "1477b70ad2cd03be3d72a49dc58fb52a",
                     "sequencer": "0062015756ACFAA1FD"

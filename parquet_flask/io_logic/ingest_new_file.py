@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import logging
+from math import isnan
+
 from pyspark.sql.dataframe import DataFrame
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
@@ -67,19 +69,23 @@ class IngestNewJsonFile:
             .withColumn(CDMSConstants.job_id_col, lit(job_id))\
             .withColumn(CDMSConstants.provider_col, lit(provider))\
             .withColumn(CDMSConstants.project_col, lit(project))
-        df: DataFrame = df.withColumn(CDMSConstants.geo_spatial_interval_col, pyspark_functions.udf(lambda latitude, longitude: f'{int(latitude - divmod(latitude, GEOSPATIAL_INTERVAL)[1])}_{int(longitude - divmod(longitude, GEOSPATIAL_INTERVAL)[1])}', StringType())(df[CDMSConstants.lat_col], df[CDMSConstants.lon_col]))
-        df: DataFrame = df.repartition(1)  # combine to 1 data frame to increase size
-        # .withColumn('ingested_date', lit(TimeUtils.get_current_time_str()))
-        LOGGER.debug(f'create writer')
-        all_partitions = [CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_code_col,
-                          CDMSConstants.geo_spatial_interval_col,
-                          CDMSConstants.year_col, CDMSConstants.month_col,
-                          CDMSConstants.job_id_col]
-        df = df.repartition(1)
-        df_writer = df.write
-        LOGGER.debug(f'create partitions')
-        df_writer = df_writer.partitionBy(all_partitions)
-        LOGGER.debug(f'created partitions')
+        try:
+            df: DataFrame = df.withColumn(CDMSConstants.geo_spatial_interval_col, pyspark_functions.udf(lambda latitude, longitude: f'{int(latitude - divmod(latitude, GEOSPATIAL_INTERVAL)[1])}_{int(longitude - divmod(longitude, GEOSPATIAL_INTERVAL)[1])}', StringType())(df[CDMSConstants.lat_col], df[CDMSConstants.lon_col]))
+            df: DataFrame = df.repartition(1)  # combine to 1 data frame to increase size
+            # .withColumn('ingested_date', lit(TimeUtils.get_current_time_str()))
+            LOGGER.debug(f'create writer')
+            all_partitions = [CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_code_col,
+                              CDMSConstants.geo_spatial_interval_col,
+                              CDMSConstants.year_col, CDMSConstants.month_col,
+                              CDMSConstants.job_id_col]
+            df = df.repartition(1)
+            df_writer = df.write
+            LOGGER.debug(f'create partitions')
+            df_writer = df_writer.partitionBy(all_partitions)
+            LOGGER.debug(f'created partitions')
+        except BaseException as e:
+            LOGGER.exception(f'unexpected exception. latitude: {df[CDMSConstants.lat_col]}. longitude: {df[CDMSConstants.lon_col]}')
+            raise e
         return df_writer
 
     def ingest(self, abs_file_path, job_id):

@@ -7,9 +7,13 @@ class S3EventValidatorAbstract(ABC):
         super().__init__()
 
     @abstractmethod
-    def get_s3_url(self):
+    def size(self):
         return
 
     @abstractmethod
-    def get_event_name(self):
+    def get_s3_url(self, index: int):
+        return
+
+    @abstractmethod
+    def get_event_name(self, index: int):
         return

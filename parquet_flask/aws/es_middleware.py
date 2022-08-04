@@ -101,7 +101,7 @@ class ESMiddleware(ESAbstract):
             update_result = self._engine.update(index=index,
                                                 id=doc_id, body=update_body, doc_type=DEFAULT_TYPE)
             LOGGER.info('updated. result: {}'.format(update_result))
-        except:
+        except Exception as e:
             LOGGER.exception('cannot update id: {} for index: {}'.format(doc_id, index))
             raise RuntimeError(f'failed to update {index}:{doc_id}. cause: {str(e)}')
         return self
