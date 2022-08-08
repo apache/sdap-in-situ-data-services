@@ -187,8 +187,15 @@ class ESMiddleware(ESAbstract):
 
     def delete_by_id(self, doc_id, index=None):
         index = self.__validate_index(index)
-        self._engine.delete(index, doc_id)
-        return
+        try:
+            self._engine.delete(index, doc_id)
+        except Exception as e:
+            if getattr(e, 'status_code', 0) == 404:
+                LOGGER.info(f'deleting ID not found: {doc_id}')
+                return False
+            LOGGER.exception(f'error while deleting {doc_id}')
+            raise e
+        return True
 
     def delete_by_query(self, dsl, index=None):
         raise NotImplementedError('not yet.')
