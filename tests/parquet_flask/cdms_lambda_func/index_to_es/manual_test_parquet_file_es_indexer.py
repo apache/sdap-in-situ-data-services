@@ -2,25 +2,13 @@ import json
 import os
 
 from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConstants
-from tests.get_aws_creds import export_as_env
-
-aws_creds = export_as_env()
-for k, v in aws_creds.items():
-    os.environ[k] = v
-
-os.environ['master_spark_url'] = ''
-os.environ['spark_app_name'] = ''
-os.environ['parquet_file_name'] = ''
-os.environ['in_situ_schema'] = ''
-os.environ['authentication_type'] = ''
-os.environ['authentication_key'] = ''
-os.environ['parquet_metadata_tbl'] = ''
 
 os.environ[CdmsLambdaConstants.es_url] = 'https://search-insitu-parquet-dev-1-vgwt2bx23o5w3gpnq4afftmvaq.us-west-2.es.amazonaws.com/'
 os.environ[CdmsLambdaConstants.es_index] = 'parquet_stats_v1'
 os.environ[CdmsLambdaConstants.cdms_url] = 'http://localhost:30801/insitu/1.0/extract_stats/'
 os.environ[CdmsLambdaConstants.cdms_url] = 'https://doms.jpl.nasa.gov/insitu/1.0/extract_stats/'
-os.environ[CdmsLambdaConstants.parquet_base_folder] = 'CDMS_insitu.geo2.parquet'
+os.environ[CdmsLambdaConstants.parquet_base_folder] = 'CDMS_insitu.geo3.parquet'
+os.environ[CdmsLambdaConstants.insitu_schema_file] = '/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json'
 
 from parquet_flask.cdms_lambda_func.index_to_es.parquet_file_es_indexer import ParquetFileEsIndexer
 
@@ -54,7 +42,7 @@ s3_record_event = {
                     "arn": "arn:aws-us-gov:s3:::lsmd-data-bucket"
                 },
                 "object": {
-                    "key": "CDMS_insitu.geo2.parquet/provider=Saildrone/project=1021_atlantic/platform_code=3B/geo_spatial_interval=35_-65/year=2019/month=2/job_id=51ee1bd2-0193-49cb-9e7f-67fb6d29378c/part-00000-4040bc15-457f-424e-8284-af175f422f2e.c000.gz.parquet",
+                    "key": "CDMS_insitu.geo3.parquet/provider=NCAR/project=ICOADS Release 3.0/platform_code=17/geo_spatial_interval=10_140/year=2017/month=7/job_id=3476f5b7-4441-4c82-93fd-161658ba8657/part-00000-74ebb882-3536-435b-b736-96bf3be9ee29.c000.gz.parquet",
                     "size": 841141,
                     "eTag": "1477b70ad2cd03be3d72a49dc58fb52a",
                     "sequencer": "0062015756ACFAA1FD"

@@ -14,15 +14,11 @@
 # limitations under the License.
 
 import logging
-from copy import deepcopy
 
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
-from parquet_flask.io_logic.query_v2 import QueryProps, QUERY_PROPS_SCHEMA
-from parquet_flask.io_logic.query_v4 import QueryV4
-from parquet_flask.io_logic.statistics_retriever_wrapper import StatisticsRetrieverWrapper
-from parquet_flask.utils.general_utils import GeneralUtils
+from parquet_flask.parquet_stat_extractor.statistics_retriever_wrapper import StatisticsRetrieverWrapper
 
 api = Namespace('extract_stats', description="Querying data")
 LOGGER = logging.getLogger(__name__)

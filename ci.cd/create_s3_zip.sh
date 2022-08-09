@@ -11,6 +11,8 @@ tmp_proj='/tmp/parquet_flask'
 
 source_dir="/usr/local/lib/python3.8/site-packages/"
 
+mkdir -p "/etc" && \
+cp "${project_root_dir}/in_situ_schema.json" /etc/ && \
 mkdir -p "$tmp_proj/parquet_flask" && \
 cd $tmp_proj && \
 cp -a "${project_root_dir}/parquet_flask/." "$tmp_proj/parquet_flask" && \

@@ -4,7 +4,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
-from parquet_flask.io_logic.statistics_retriever import StatisticsRetriever
+from parquet_flask.parquet_stat_extractor.statistics_retriever import StatisticsRetriever
 from parquet_flask.utils.time_utils import TimeUtils
 
 

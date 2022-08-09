@@ -5,3 +5,4 @@ class CdmsLambdaConstants:
     cdms_url = 'cdms_url'
     parquet_base_folder = 'parquet_base_folder'
     verify_ssl = 'verify_ssl'
+    insitu_schema_file = 'insitu_schema_file'

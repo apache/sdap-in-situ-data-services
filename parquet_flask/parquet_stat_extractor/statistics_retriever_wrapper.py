@@ -6,7 +6,7 @@ from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.utils import AnalysisException
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
-from parquet_flask.io_logic.statistics_retriever import StatisticsRetriever
+from parquet_flask.parquet_stat_extractor.statistics_retriever import StatisticsRetriever
 from parquet_flask.utils.config import Config
 
 LOGGER = logging.getLogger(__name__)

@@ -1,5 +1,8 @@
 import os
 
+from parquet_flask.parquet_stat_extractor.local_statistics_retriever import LocalStatisticsRetriever
+from parquet_flask.utils.file_utils import FileUtils
+
 from parquet_flask.aws.aws_s3 import AwsS3
 from parquet_flask.aws.es_abstract import ESAbstract
 
@@ -23,13 +26,27 @@ class ParquetFileEsIndexer:
             raise ValueError(f'invalid env. must have {[CdmsLambdaConstants.es_url, CdmsLambdaConstants.es_index]}')
         self.__es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_index, base_url=self.__es_url, port=self.__es_port)
 
+    def extract_stats_locally(self):
+        LOGGER.debug('downloading parquet file locally to extract stats')
+        local_parquet_file_path = AwsS3().set_s3_url(self.__s3_url).download('/tmp')
+        stats_json = LocalStatisticsRetriever(local_parquet_file_path, os.environ.get(CdmsLambdaConstants.insitu_schema_file, '/etc/in_situ_schema.json')).start()
+        LOGGER.debug(f'locally extracted stats: {stats_json}')
+        FileUtils.del_file(local_parquet_file_path)
+        return stats_json
+
+    def extract_stats_remotely(self):
+        LOGGER.debug('calling server to extract stats')
+        s3_bucket, s3_key = AwsS3().split_s3_url(self.__s3_url)
+        parquet_stat = ParquetStatExtractor().start(s3_key)
+        LOGGER.debug(f'server extracted stats: {parquet_stat}')
+        return parquet_stat
+
     def ingest_file(self):
         if self.__s3_url is None:
             raise ValueError('s3 url is null. Set it first')
         s3_stat = S3StatExtractor(self.__s3_url).start()
-        s3_bucket, s3_key = AwsS3().split_s3_url(self.__s3_url)
-        parquet_stat = ParquetStatExtractor().start(s3_key)
         LOGGER.debug(f's3_stat: {s3_stat.to_json()}')
+        parquet_stat = self.extract_stats_locally()
         LOGGER.debug(f'parquet_stat: {parquet_stat}')
         self.__es.index_one({'s3_url': self.__s3_url, **s3_stat.to_json(), **parquet_stat}, s3_stat.s3_url)
         return
