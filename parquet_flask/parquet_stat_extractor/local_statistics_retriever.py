@@ -1,5 +1,6 @@
 import logging
 
+from parquet_flask.parquet_stat_extractor.local_spark_session import LocalSparkSession
 from parquet_flask.parquet_stat_extractor.statistics_retriever import StatisticsRetriever
 from pyspark.sql.utils import AnalysisException
 
@@ -18,10 +19,7 @@ class LocalStatisticsRetriever:
         self.__in_situ_schema_file_path = in_situ_schema_file_path
 
     def start(self):
-        spark = SparkSession.builder \
-            .master("local") \
-            .appName('TestAppName') \
-            .getOrCreate()
+        spark: SparkSession = LocalSparkSession().get_spark_session()
         try:
             insitu_schema = FileUtils.read_json(self.__in_situ_schema_file_path)
             cdms_spark_struct = CdmsSchema().get_schema_from_json(insitu_schema)
