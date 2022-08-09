@@ -37,7 +37,7 @@ class Config(metaclass=Singleton):
     es_index = 'es_index'
     es_port = 'es_port'
 
-    def __init__(self):
+    def __init__(self, validate_env: bool = True):
         self.__keys = [
             Config.es_url,
             Config.master_spark_url,
@@ -55,7 +55,8 @@ class Config(metaclass=Singleton):
             Config.aws_secret_access_key,
             Config.aws_session_token,
         ]
-        self.__validate()
+        if validate_env:
+            self.__validate()
 
     def __validate(self):
         missing_mandatory_keys = [k for k in self.__keys if k not in os.environ]

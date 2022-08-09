@@ -25,12 +25,12 @@ class AwsCred:
     __DEFAULT_REGION = 'us-west-2'
 
     def __init__(self):
-        self.__region = Config().get_value(Config.aws_region, AwsCred.__DEFAULT_REGION)
+        self.__region = Config(False).get_value(Config.aws_region, AwsCred.__DEFAULT_REGION)
         LOGGER.debug(f'using region: {self.__region}')
         self.__boto3_session = {'region_name': self.__region}
-        aws_access_key_id = Config().get_value(Config.aws_access_key_id, '')
-        aws_secret_access_key = Config().get_value(Config.aws_secret_access_key, '')
-        aws_session_token = Config().get_value(Config.aws_session_token, '')
+        aws_access_key_id = Config(False).get_value(Config.aws_access_key_id, '')
+        aws_secret_access_key = Config(False).get_value(Config.aws_secret_access_key, '')
+        aws_session_token = Config(False).get_value(Config.aws_session_token, '')
         if aws_access_key_id != '':
             LOGGER.debug('using aws_access_key_id as it is not empty')
             if aws_secret_access_key == '':
