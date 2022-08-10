@@ -2,6 +2,7 @@ import json
 import logging
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
+from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.utils.file_utils import FileUtils
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
@@ -16,15 +17,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SubCollectionStatistics:
-    def __init__(self):
+    def __init__(self, query_props: QueryProps):
         config = Config()
         self.__es: ESAbstract = ESFactory().get_instance('AWS',
                                                          index=CDMSConstants.es_index_parquet_stats,
                                                          base_url=config.get_value(Config.es_url),
                                                          port=int(config.get_value(Config.es_port, '443')))
-        self.__provider = None
-        self.__project = None
-        self.__platform_codes = []
+        self.__query_props = query_props
         self.__insitu_schema = FileUtils.read_json(Config().get_value(Config.in_situ_schema))
         self.__cdms_obs_names = CdmsSchema().get_observation_names(self.__insitu_schema)
 
@@ -184,21 +183,35 @@ class SubCollectionStatistics:
 
     def start(self):
         es_terms = []
-        if self.__provider is not None:
-            es_terms.append({'term': {CDMSConstants.provider_col: self.__provider}})
-        if self.__project is not None:
-            es_terms.append({'term': {CDMSConstants.project_col: self.__project}})
-        if self.__platform_codes is not None:
-            if isinstance(self.__platform_codes, list):
+        if self.__query_props.provider is not None:
+            es_terms.append({'term': {CDMSConstants.provider_col: self.__query_props.provider}})
+        if self.__query_props.project is not None:
+            es_terms.append({'term': {CDMSConstants.project_col: self.__query_props.project}})
+        if self.__query_props.platform_code is not None:
+            if isinstance(self.__query_props.platform_code, list):
                 es_terms.append({
                     'bool': {
                         'should': [
-                            {'term': {CDMSConstants.platform_code_col: k}} for k in self.__platform_codes
+                            {'term': {CDMSConstants.platform_code_col: k}} for k in self.__query_props.platform_code
                         ]
                     }
                 })
             else:
-                es_terms.append({'term': {CDMSConstants.platform_code_col: self.__platform_codes}})
+                es_terms.append({'term': {CDMSConstants.platform_code_col: self.__query_props.platform_code}})
+        if self.__query_props.min_depth is not None and self.__query_props.max_depth is not None:
+            es_terms.append({'range': {CDMSConstants.max_depth: {'gte': self.__query_props.min_depth}}})
+            es_terms.append({'range': {CDMSConstants.min_depth: {'lte': self.__query_props.max_depth}}})
+
+        if self.__query_props.min_datetime is not None and self.__query_props.max_datetime is not None:
+            es_terms.append({'range': {CDMSConstants.max_datetime: {'gte': self.__query_props.min_datetime}}})
+            es_terms.append({'range': {CDMSConstants.min_datetime: {'lte': self.__query_props.max_datetime}}})
+
+        if self.__query_props.min_lat_lon is not None and self.__query_props.max_lat_lon is not None:
+            es_terms.append({'range': {CDMSConstants.max_lat: {'gte': self.__query_props.min_lat_lon[0]}}})
+            es_terms.append({'range': {CDMSConstants.min_lat: {'lte': self.__query_props.max_lat_lon[0]}}})
+
+            es_terms.append({'range': {CDMSConstants.max_lon: {'gte': self.__query_props.min_lat_lon[1]}}})
+            es_terms.append({'range': {CDMSConstants.min_lon: {'lte': self.__query_props.max_lat_lon[1]}}})
 
         normal_agg_stmts = {
             "totals": {
@@ -206,42 +219,42 @@ class SubCollectionStatistics:
             ,
             "max_datetime": {
                 "max": {
-                    "field": "max_datetime"
+                    "field": CDMSConstants.max_datetime
                 }
             },
             "max_depth": {
                 "max": {
-                    "field": "max_depth"
+                    "field": CDMSConstants.max_depth
                 }
             },
             "max_lat": {
                 "max": {
-                    "field": "max_lat"
+                    "field": CDMSConstants.max_lat
                 }
             },
             "max_lon": {
                 "max": {
-                    "field": "max_lon"
+                    "field": CDMSConstants.max_lon
                 }
             },
             "min_datetime": {
                 "min": {
-                    "field": "min_datetime"
+                    "field": CDMSConstants.min_datetime
                 }
             },
             "min_depth": {
                 "min": {
-                    "field": "min_depth"
+                    "field": CDMSConstants.min_depth
                 }
             },
             "min_lat": {
                 "min": {
-                    "field": "min_lat"
+                    "field": CDMSConstants.min_lat
                 }
             },
             "min_lon": {
                 "min": {
-                    "field": "min_lon"
+                    "field": CDMSConstants.min_lon
                 }
             }
         }

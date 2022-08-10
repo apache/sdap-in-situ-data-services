@@ -46,3 +46,15 @@ class CDMSConstants:
     config_key_flask_prefix = 'flask_prefix'
 
     es_index_parquet_stats = 'parquet_stats_v1'
+
+    min_depth = 'min_depth'
+    max_depth = 'max_depth'
+
+    max_datetime = 'max_datetime'
+    min_datetime = 'min_datetime'
+
+    max_lat = 'max_lat'
+    min_lat = 'min_lat'
+
+    max_lon = 'max_lon'
+    min_lon = 'min_lon'

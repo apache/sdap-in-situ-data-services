@@ -330,7 +330,7 @@ components:
       in: query
       required: true
       name: bbox
-      description: 'Bounding box with coordinates specified in this order: west, south, east, north'
+      description: 'Bounding box with coordinates specified in this order: west, south, east, north || min_lon, min_lat, max_lon, max_lat'
       example: -45,15,-30,30
       schema:
         type: string

@@ -40,7 +40,7 @@ query_model = api.model('query_data_doms', {
     'project': fields.Integer(required=True, example=0),
     'columns': fields.String(required=False, example='latitudes, longitudes'),
     'variable': fields.String(required=False, example='air_pressure, relative_humidity'),
-    'bbox': fields.String(required=True, example='-45, 175, -30, 180'),  # west, south, east, north
+    'bbox': fields.String(required=True, example='-45, 175, -30, 180', description='west, south, east, north || min_lon, min_lat, max_lon, max_lat'),
 })
 
 
