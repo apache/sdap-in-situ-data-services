@@ -60,7 +60,7 @@
 }
 """
 import json
-import urllib.parse
+from urllib.parse import unquote_plus
 
 from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
 from parquet_flask.cdms_lambda_func.s3_records.s3_event_validator_abstract import S3EventValidatorAbstract
@@ -153,7 +153,7 @@ class S3ToSqs(S3EventValidatorAbstract):
             raise ValueError(f'index: {index} is larger than s3_record array size: {len(self.__s3_record)}')
         s3_url = f"s3://{self.__s3_record[index]['Records'][0]['s3']['bucket']['name']}/{self.__s3_record[index]['Records'][0]['s3']['object']['key']}"
         LOGGER.debug(f'original s3_url: {s3_url}')
-        s3_url = urllib.parse.unquote(s3_url)
+        s3_url = unquote_plus(s3_url)
         LOGGER.debug(f'unquoted s3_url: {s3_url}')
         return s3_url
 
