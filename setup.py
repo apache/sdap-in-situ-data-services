@@ -28,7 +28,7 @@ from setuptools import find_packages, setup
 # ]
 
 install_requires = [
-    'pyspark===3.1.2',
+    'pyspark===3.1.3',
     # 'fastparquet===0.5.0',  # not using it. sticking to pyspark with spark cluster according to Nga
     'findspark===1.4.2',
     'flask===2.0.1', 'flask_restful===0.3.9', 'flask-restx===0.5.0',  # to create Flask server
