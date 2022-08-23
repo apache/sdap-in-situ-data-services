@@ -76,7 +76,7 @@ class S3ToSqs(S3EventValidatorAbstract):
             'Records': {
                 'type': 'array',
                 'minItems': 1,
-                'maxItems': 10,
+                'maxItems': 100,
                 'items': {
                     'type': 'object',
                     'properties': {
