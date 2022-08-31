@@ -6,7 +6,7 @@ export VERSION ?= latest
 
 all: build_lambda upload_lambda update_lambda_function build_docker
 local: build_lambda local_upload
-local_lambda_docker: build_lambda_docker lambda_docker_push_docker_hub
+local_lambda_docker: build_lambda_docker local_lambda_docker_upload
 
 
 build_lambda_docker:
