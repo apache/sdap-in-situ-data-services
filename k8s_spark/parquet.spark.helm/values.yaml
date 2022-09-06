@@ -12,7 +12,7 @@ flask_env:
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"
   # "spark.shuffle.service.enabled": "true",  This should be "true", but "shuffle.service" not setup yet.
   ## Specify Spark config options
-  ## When using AWS EKS IRSA for AWS auth, use: {"spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"}
+  ## When using AWS EKS IRSA for AWS auth, use: {"spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"}
   spark_config_dict: {
 
     "spark.shuffle.service.enabled": "false",
@@ -200,18 +200,17 @@ bitnami-spark:
     hostname: tt.spark.local.test1
   serviceAccount:
     ## @param serviceAccount.create Enable the creation of a ServiceAccount for Spark pods
+    ## When utilizing EKS IRSA, set "create: false"
     ##
     create: true
     ## @param serviceAccount.name The name of the ServiceAccount to use.
     ## If not set and create is true, a name is generated using the spark.fullname template
+    ## When utilizing EKS IRSA, reuse the name given to the parquet-t1 service account
     ##
     name: ""
     ## @param serviceAccount.annotations Annotations for Spark Service Account
     ##
     annotations: {}
-      ## When using AWS EKS IRSA for AWS auth, set the below annotation using the configured IAM Role ARN.
-      #
-      # eks.amazonaws.com/role-arn: 'arn:aws:iam::xxxxxxxxxxxxxx:role/parquet-spark'
       ## @param serviceAccount.automountServiceAccountToken Automount API credentials for a service account.
       ##
     automountServiceAccountToken: true
