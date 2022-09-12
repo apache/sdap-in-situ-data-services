@@ -32,6 +32,8 @@ WORKDIR /usr/app
 
 COPY setup_lambda.py /usr/app
 RUN python3 /usr/app/setup_lambda.py install
+RUN python3 -m pip install pyspark==3.1.2
+
 ENV PYTHONPATH="${PYTHONPATH}:/usr/app/"
 
 COPY parquet_flask /usr/app/parquet_flask
