@@ -1,6 +1,6 @@
 import unittest
 
-from parquet_flask.local_parquet_stat_extractor.local_statistics_retriever import LocalStatisticsRetriever
+from parquet_flask.parquet_stat_extractor.local_statistics_retriever import LocalStatisticsRetriever
 from parquet_flask.utils.general_utils import GeneralUtils
 
 stats_result_schema = {
