@@ -19,7 +19,7 @@ lambda_docker_push_docker_hub:
 	docker push "$(IMAGE_PREFIX)/$(LAMBDA_NAME):$(VERSION)"
 
 build_lambda:
-	docker run --rm -v `PWD`:"/usr/src/app/cdms_lambda_functions":z -w "/usr/src/app/cdms_lambda_functions" cae-artifactory.jpl.nasa.gov:17001/python:3.8 ci.cd/create_s3_zip.sh
+	docker run --rm -v `PWD`:"/usr/src/app/cdms_lambda_functions":z -w "/usr/src/app/cdms_lambda_functions" cae-artifactory.jpl.nasa.gov:17001/python:3.7 ci.cd/create_s3_zip.sh
 
 local_upload:
 	/bin/bash ci.cd/local_upload.sh
@@ -28,7 +28,7 @@ build_lambda_public:
 	docker run --rm -v `PWD`:"/usr/src/app/cdms_lambda_functions":z -w "/usr/src/app/cdms_lambda_functions" python:3.8 ci.cd/create_s3_zip.sh
 
 upload_lambda:
-	aws --profile saml-pub s3 cp cumulus_lambda_functions_deployment.zip s3://am-uds-dev-cumulus-tf-state/unity_cumulus_lambda/
+	aws --profile saml-pub s3 cp cdms_lambda_functions__0.1.1.zip s3://cdms-dev-in-situ-parquet/cdms_lambda/
 
 update_lambda_function:
-	aws --profile saml-pub lambda update-function-code --s3-key unity_cumulus_lambda/cumulus_lambda_functions_deployment.zip --s3-bucket am-uds-dev-cumulus-tf-state --function-name arn:aws:lambda:us-west-2:884500545225:function:Test1 --publish
+	aws --profile saml-pub lambda update-function-code --zip-file fileb:///Users/wphyo/Projects/access/parquet_test_1/cdms_lambda_functions__0.1.1.zip --function-name arn:aws:lambda:us-west-2:848373852523:function:cdms-dev-in-situ-parquet-ingestion-v1 --publish
