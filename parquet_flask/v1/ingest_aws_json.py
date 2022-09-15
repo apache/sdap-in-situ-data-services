@@ -206,7 +206,7 @@ class IngestAwsJson:
             #     'job_id': self.__props.uuid,
             # })
         except Exception as e:
-            LOGGER.debug(f'deleting error file')
+            LOGGER.exception(f'deleting error file')
             FileUtils.del_file(self.__saved_file_name)
             return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500
         if self.__sha512_result is True:
@@ -253,6 +253,6 @@ class IngestAwsJson:
                 bg_process.start()
                 return {'message': 'ingesting. Not waiting.', 'job_id': self.__props.uuid}, 204
         except Exception as e:
-            LOGGER.debug(f'deleting error file')
+            LOGGER.exception(f'deleting error file')
             FileUtils.del_file(self.__saved_file_name)
             return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500

@@ -20,3 +20,10 @@ class TestGeneralUtilsV3(unittest.TestCase):
         new_struct = cdms_schema.get_schema_from_json(FileUtils.read_json('../../../in_situ_schema.json'))
         self.assertEqual(sorted(str(old_struct)), sorted(str(new_struct)), f'not equal old_struct = {old_struct}. new_struct = {new_struct}')
         return
+
+    def test_02(self):
+        cdms_schema = CdmsSchema()
+        new_struct = cdms_schema.get_pandas_schema_from_json(FileUtils.read_json('../../../in_situ_schema.json'))
+        print(new_struct)
+        self.assertTrue(isinstance(new_struct, dict), f'wrong type: {new_struct}')
+        return

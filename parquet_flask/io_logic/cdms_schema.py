@@ -111,6 +111,12 @@ class CdmsSchema:
         raise ValueError(f'unknown datatype: {datetype_name}: {datatype_def}')
 
     def __init__(self):
+        self.__json_to_pandas_data_type = {
+            'number': 'double',
+            'long': 'int64',
+            'string': 'object',
+            'platform': 'object',
+        }
         self.__json_to_spark_data_types = {
             'number': DoubleType(),
             'long': LongType(),
@@ -146,6 +152,11 @@ class CdmsSchema:
             'depth',
         ]
 
+    def __get_pandas_type(self, json_type: str):
+        if json_type not in self.__json_to_pandas_data_type:
+            raise ValueError(f'unknown json type. cannot convert to pandas type: {json_type}')
+        return self.__json_to_pandas_data_type[json_type]
+
     def __get_spark_type(self, json_type: str):
         if json_type not in self.__json_to_spark_data_types:
             raise ValueError(f'unknown json type. cannot convert to spark type: {json_type}')
@@ -169,3 +180,7 @@ class CdmsSchema:
     def get_schema_from_json(self, in_situ_schema: dict):
         dynamic_columns = [StructField(k, self.__get_spark_type(self.__get_json_datatype(k, v)), True) for k, v in self.__get_obs_defs(in_situ_schema).items()]
         return StructType(dynamic_columns + self.__default_columns)
+
+    def get_pandas_schema_from_json(self, in_situ_schema: dict):
+        dynamic_columns = {k: self.__get_pandas_type(self.__get_json_datatype(k, v)) for k, v in self.__get_obs_defs(in_situ_schema).items()}
+        return dynamic_columns
