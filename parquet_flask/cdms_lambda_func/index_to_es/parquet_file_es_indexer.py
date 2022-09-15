@@ -71,7 +71,7 @@ class ParquetFileEsIndexer:
             if any([k in self.__s3_url for k in ignoring_phrases]):
                 LOGGER.debug(f'skipping temp file: {self.__s3_url}')
                 return
-            LOGGER.debug(f'executing: self.__s3_url')
+            LOGGER.debug(f'executing: {self.__s3_url}')
             s3_event = s3_records.get_event_name(i).strip().lower()
             if s3_event.startswith('objectcreated'):
                 LOGGER.debug('executing index')

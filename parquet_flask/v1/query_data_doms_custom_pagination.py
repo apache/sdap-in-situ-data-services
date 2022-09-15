@@ -110,8 +110,9 @@ class IngestParquet(Resource):
         try:
             LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination calling QueryV4: {request.args}')
             query = QueryV4(QueryProps().from_json(payload))
-            with timeout(seconds=20):
-                result_set = query.search()
+            # with timeout(seconds=20):
+            #     result_set = query.search()
+            result_set = query.search()
             LOGGER.debug(f'search params: {payload}')
             # page_info = self.__calculate_4_ranges(result_set['total'])
             LOGGER.debug(f'search done')

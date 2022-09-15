@@ -9,7 +9,7 @@ zip_file="${project_root_dir}/${ZIP_NAME}__${software_version}.zip" ; # save the
 
 tmp_proj='/tmp/parquet_flask'
 
-source_dir="/usr/local/lib/python3.8/site-packages/"
+source_dir="/usr/local/lib/python3.7/site-packages/"
 
 mkdir -p "/etc" && \
 cp "${project_root_dir}/in_situ_schema.json" /etc/ && \
