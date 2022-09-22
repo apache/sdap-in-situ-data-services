@@ -32,7 +32,7 @@ import pyspark.sql.functions as pyspark_functions
 from pyspark.sql.types import StringType, DoubleType
 
 LOGGER = logging.getLogger(__name__)
-GEOSPATIAL_INTERVAL = 5
+GEOSPATIAL_INTERVAL = 30
 
 
 class IngestNewJsonFile:

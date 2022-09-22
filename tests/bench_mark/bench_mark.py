@@ -8,8 +8,8 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 class BenchMark:
     def __init__(self):
         # self.__cdms_domain = 'http://localhost:30801/insitu'
-        self.__cdms_domain = 'http://localhost:8083/insitu'
-        # self.__cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
+        # self.__cdms_domain = 'http://localhost:8083/insitu'
+        self.__cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
         # self.__cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.__size = 100
         self.__start_index = 0
@@ -506,8 +506,8 @@ time: 2017-03-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- tota
         return
 
     def custom_pagination_bench_mark(self):
-        self.__start_time = '2018-01-01T00:00:00Z'
-        self.__end_time = '2018-12-31T00:00:00Z'
+        self.__start_time = '2017-07-03T01:00:00Z'
+        self.__end_time = '2017-07-08T23:00:00Z'
         # self.__platform_code = '42,41,30,16,17'
         # self.__platform_code = '42'
         # self.__min_lat_lon = (-25.2, 168.8)
@@ -532,13 +532,17 @@ time: 2017-03-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- tota
         # self.__min_lat_lon = (-25.2, 168.8)
         # self.__max_lat_lon = (-25.1, 169.0)
 
-        self.__min_depth = -99
-        self.__max_depth = 0
+        self.__provider = 'NCAR'
+        self.__project = 'ICOADS Release 3.0'
+        self.__platform_code = '30,41,42'
+
+        self.__min_depth = -10
+        self.__max_depth = 10
         self.__min_lat_lon = (-80, -100)
         self.__max_lat_lon = (20, 100)
-        self.__provider = 'Florida State University, COAPS'
-        self.__project = 'SAMOS'
-        self.__platform_code = '30'
+        # self.__provider = 'Florida State University, COAPS'
+        # self.__project = 'SAMOS'
+        # self.__platform_code = '30'
 
         # self.__provider = 'Saildrone'
         # self.__project = '1021_atlantic'

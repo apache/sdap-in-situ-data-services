@@ -37,13 +37,14 @@ def flask_me():
     stream_handler.setFormatter(log_formatter)
 
     logging.basicConfig(
-        level=log_level,
+        level=logging.ERROR,
         format=log_format,
-        handlers=[file_handler, stream_handler]
+        handlers=[stream_handler]
     )
 
-    LOGGER = logging.getLogger(__name__)
-    LOGGER.setLevel(logging.INFO)
+    logger = logging.getLogger('parquet_flask')
+    logger.addHandler(stream_handler)
+    logger.setLevel(log_level)
 
     from gevent.pywsgi import WSGIServer
     from parquet_flask import get_app

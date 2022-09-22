@@ -32,3 +32,10 @@ upload_lambda:
 
 update_lambda_function:
 	aws --profile saml-pub lambda update-function-code --zip-file fileb:///Users/wphyo/Projects/access/parquet_test_1/cdms_lambda_functions__0.1.1.zip --function-name arn:aws:lambda:us-west-2:848373852523:function:cdms-dev-in-situ-parquet-ingestion-v1 --publish
+
+build_cdms_docker:
+	docker build -f docker/parquet.spark.3.2.0.r44.Dockerfile -t waiphyojpl/cdms.parquet.flask:${VERSION} .
+
+push_cdms_docker:
+	docker push waiphyojpl/cdms.parquet.flask:${VERSION}
+
