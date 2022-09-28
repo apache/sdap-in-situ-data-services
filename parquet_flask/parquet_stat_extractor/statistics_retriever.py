@@ -1,7 +1,10 @@
+import logging
+
 from pyspark.sql.dataframe import DataFrame
 import pyspark.sql.functions as pyspark_functions
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
+LOGGER = logging.getLogger(__name__)
 
 
 class StatisticsRetriever:
@@ -191,5 +194,13 @@ class StatisticsRetriever:
 
         if self.min_depth - CDMSConstants.missing_depth_value == 0:
             self.__get_min_depth_exclude_missing_val()
-        self.__observation_count = {each_obs_key: self.__input_dataset.where(self.__input_dataset[each_obs_key].isNotNull()).count() for each_obs_key in self.__observation_keys}
+        self.__observation_count = {}
+        for each_obs_key in self.__observation_keys:
+            try:
+                obs_count = self.__input_dataset.where(self.__input_dataset[each_obs_key].isNotNull()).count()
+            except Exception as e:
+                LOGGER.exception(f'error while getting total for key: {each_obs_key}')
+                obs_count = 0
+            self.__observation_count[each_obs_key] = obs_count
+        # self.__observation_count = {each_obs_key: self.__input_dataset.where(self.__input_dataset[each_obs_key].isNotNull()).count() for each_obs_key in self.__observation_keys}
         return self
