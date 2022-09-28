@@ -61,14 +61,7 @@ class IngestNewJsonFile:
     @staticmethod
     def create_df(spark_session, data_list, job_id, provider, project):
         LOGGER.debug(f'creating data frame with length {len(data_list)}')
-        pandas_data_frame = pandas.DataFrame(data_list)
-        for each_column in pandas_data_frame.columns:
-            if not each_column.endswith('quality'):
-                continue
-            # a[each_column] = a[each_column].apply(new_struct[each_column])
-            pandas_data_frame[each_column] = pandas_data_frame[each_column].apply(lambda k: int(k) if pandas.notnull(k) else k)
-        # df = spark_session.createDataFrame(data_list)
-        df = spark_session.createDataFrame(pandas_data_frame)
+        df = spark_session.createDataFrame(data_list)
         # spark_session.sparkContext.addPyFile('/usr/app/parquet_flask/lat_lon_udf.py')
         LOGGER.debug(f'adding columns')
         df: DataFrame = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))\

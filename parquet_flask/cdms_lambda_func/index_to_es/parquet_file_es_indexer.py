@@ -55,7 +55,8 @@ class ParquetFileEsIndexer:
         if self.__s3_url is None:
             raise ValueError('s3 url is null. Set it first')
         delete_result = self.__es.delete_by_id(self.__s3_url)
-        return f'deletion result: {delete_result}. id: self'
+        LOGGER.debug(f'deletion result: {delete_result}. id: {self.__s3_url}')
+        return
 
     def start(self, event):
         # LOGGER.warning(self.__es.query({

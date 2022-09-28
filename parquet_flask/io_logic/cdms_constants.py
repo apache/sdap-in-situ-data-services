@@ -42,7 +42,7 @@ class CDMSConstants:
     checksum_validation = 'checksum_validation'
     checksum_cause = 'checksum_cause'
 
-    missing_depth_value = -99999
+    missing_depth_value = -99999.0
     config_key_flask_prefix = 'flask_prefix'
 
     es_index_parquet_stats = 'parquet_stats_v1'
