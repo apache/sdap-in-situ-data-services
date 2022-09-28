@@ -112,6 +112,10 @@ class IngestNewJsonFile:
         for each_record in input_json[CDMSConstants.observations_key]:
             if 'depth' in each_record:
                 each_record['depth'] = float(each_record['depth'])
+            if 'wind_from_direction' in each_record:
+                each_record['wind_from_direction'] = float(each_record['wind_from_direction'])
+            if 'wind_to_direction' in each_record:
+                each_record['wind_to_direction'] = float(each_record['wind_from_direction'])
         df_writer = self.create_df(self.__sss.retrieve_spark_session(self.__app_name, self.__master_spark),
                                    input_json[CDMSConstants.observations_key],
                                    job_id,
