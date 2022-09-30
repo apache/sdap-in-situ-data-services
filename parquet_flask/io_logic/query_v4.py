@@ -38,7 +38,7 @@ class QueryV4:
     def __init__(self, props=QueryProps()):
         self.__props = props
         config = Config()
-        self.__app_name = config.get_value(Config.spark_app_name)
+        self.__app_name = config.get_spark_app_name()
         self.__master_spark = config.get_value(Config.master_spark_url)
         self.__parquet_name = config.get_value(Config.parquet_file_name)
         self.__es_config = {

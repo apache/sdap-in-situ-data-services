@@ -72,7 +72,7 @@ class RawQuery:
     def __init__(self, props: RawQueryProps=RawQueryProps()):
         self.__props = props
         config = Config()
-        self.__app_name = config.get_value('spark_app_name')
+        self.__app_name = config.get_spark_app_name()
         self.__master_spark = config.get_value('master_spark_url')
         self.__parquet_name = config.get_value('parquet_file_name')
 

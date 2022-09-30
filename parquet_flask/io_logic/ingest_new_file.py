@@ -39,7 +39,7 @@ class IngestNewJsonFile:
     def __init__(self, is_overwriting=False):
         self.__sss = RetrieveSparkSession()
         config = Config()
-        self.__app_name = config.get_value('spark_app_name')
+        self.__app_name = config.get_spark_app_name()
         self.__master_spark = config.get_value('master_spark_url')
         self.__mode = 'overwrite' if is_overwriting else 'append'
         self.__parquet_name = config.get_value('parquet_file_name')

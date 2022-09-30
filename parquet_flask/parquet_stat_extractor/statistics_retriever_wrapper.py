@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 class StatisticsRetrieverWrapper:
     def __init__(self):
         config = Config()
-        self.__app_name = config.get_value('spark_app_name')
+        self.__app_name = config.get_spark_app_name()
         self.__master_spark = config.get_value('master_spark_url')
         self.__parquet_name = config.get_value('parquet_file_name')
         self.__parquet_name = self.__parquet_name if not self.__parquet_name.endswith('/') else self.__parquet_name[:-1]
