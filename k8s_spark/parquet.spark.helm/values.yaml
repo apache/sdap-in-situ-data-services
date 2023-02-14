@@ -33,6 +33,13 @@ flask_env:
     "spark.memory.offHeap.size":"512M"
   }
 
+  # The config, geo_spatial_interval_by_project, allows specifying geo-spartial
+  # partition interval/limit at project level. If not specified, 30 is the 
+  # default value.
+  geospatial_interval_by_project: {
+    "ICOADS Release 3.0": "100"
+  }
+
 # AWS EKS IRSA is favored over AWS IAM User credentials when possible
 # Uncomment to enable IAM User Credential authentication
 # aws_creds:

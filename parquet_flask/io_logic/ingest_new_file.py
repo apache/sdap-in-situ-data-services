@@ -15,6 +15,8 @@
 
 import logging
 from math import isnan
+from os import environ
+import json
 
 import pandas
 from pyspark.sql.dataframe import DataFrame
@@ -28,11 +30,31 @@ from parquet_flask.utils.file_utils import FileUtils
 
 from pyspark.sql.functions import to_timestamp, year, month, lit, col
 
-import pyspark.sql.functions as pyspark_functions
+import pyspark.sql.functions as pyspark_functions # XXX: why not merge with import statement above?
 from pyspark.sql.types import StringType, DoubleType
 
 LOGGER = logging.getLogger(__name__)
 GEOSPATIAL_INTERVAL = 30
+
+
+def get_geospatial_interval(project: str) -> int:
+    """
+    Get geospatial interval from environment variable. If not found, return default value.
+
+    :param project: project name
+    :return: geospatial interval
+    """
+    interval = GEOSPATIAL_INTERVAL
+    try:
+        geo_spatial_interval_by_project = environ.get(CDMSConstants.geospatial_interval_by_project)
+        if geo_spatial_interval_by_project:
+            geo_spatial_interval_by_project_dict = json.loads(geo_spatial_interval_by_project)
+            if type(geo_spatial_interval_by_project_dict) is dict and \
+            project in geo_spatial_interval_by_project_dict and \
+            type(geo_spatial_interval_by_project_dict[project]) is int:
+                interval = geo_spatial_interval_by_project_dict[project]
+    finally:
+        return interval
 
 
 class IngestNewJsonFile:
@@ -71,8 +93,15 @@ class IngestNewJsonFile:
             .withColumn(CDMSConstants.job_id_col, lit(job_id))\
             .withColumn(CDMSConstants.provider_col, lit(provider))\
             .withColumn(CDMSConstants.project_col, lit(project))
+        geospatial_interval = get_geospatial_interval(project)
         try:
-            df: DataFrame = df.withColumn(CDMSConstants.geo_spatial_interval_col, pyspark_functions.udf(lambda latitude, longitude: f'{int(latitude - divmod(latitude, GEOSPATIAL_INTERVAL)[1])}_{int(longitude - divmod(longitude, GEOSPATIAL_INTERVAL)[1])}', StringType())(df[CDMSConstants.lat_col], df[CDMSConstants.lon_col]))
+            df: DataFrame = df.withColumn(
+                CDMSConstants.geo_spatial_interval_col, 
+                pyspark_functions.udf(
+                    lambda latitude, longitude: f'{int(latitude - divmod(latitude, geospatial_interval)[1])}_{int(longitude - divmod(longitude, geospatial_interval)[1])}',
+                    StringType())(
+                        df[CDMSConstants.lat_col],
+                        df[CDMSConstants.lon_col]))
             df: DataFrame = df.repartition(1)  # combine to 1 data frame to increase size
             # .withColumn('ingested_date', lit(TimeUtils.get_current_time_str()))
             LOGGER.debug(f'create writer')
@@ -80,7 +109,7 @@ class IngestNewJsonFile:
                               CDMSConstants.geo_spatial_interval_col,
                               CDMSConstants.year_col, CDMSConstants.month_col,
                               CDMSConstants.job_id_col]
-            df = df.repartition(1)
+            df = df.repartition(1)  # XXX: is this line repeated?
             df_writer = df.write
             LOGGER.debug(f'create partitions')
             df_writer = df_writer.partitionBy(all_partitions)
@@ -116,11 +145,14 @@ class IngestNewJsonFile:
                 each_record['wind_from_direction'] = float(each_record['wind_from_direction'])
             if 'wind_to_direction' in each_record:
                 each_record['wind_to_direction'] = float(each_record['wind_from_direction'])
-        df_writer = self.create_df(self.__sss.retrieve_spark_session(self.__app_name, self.__master_spark),
-                                   input_json[CDMSConstants.observations_key],
-                                   job_id,
-                                   input_json[CDMSConstants.provider_col],
-                                   input_json[CDMSConstants.project_col])
+        df_writer = self.create_df(
+            self.__sss.retrieve_spark_session(
+                self.__app_name,
+                self.__master_spark),
+            input_json[CDMSConstants.observations_key],
+            job_id,
+            input_json[CDMSConstants.provider_col],
+            input_json[CDMSConstants.project_col])
         df_writer.mode(self.__mode).parquet(self.__parquet_name, compression='GZIP')  # snappy GZIP
         LOGGER.debug(f'finished writing parquet')
         return len(input_json[CDMSConstants.observations_key])

@@ -73,6 +73,8 @@ spec:
               value: {{ .Values.flask_env.log_level }}
             - name: spark_config_dict
               value: {{ .Values.flask_env.spark_config_dict | toJson | quote  }}
+            - name: geospatial_interval_by_project
+              value: {{ .Values.flask_env.geospatial_interval_by_project | toJson | quote }}
           {{- if .Values.extraEnvs }}
             {{- toYaml .Values.extraEnvs | nindent 12 }}
           {{- end }}
