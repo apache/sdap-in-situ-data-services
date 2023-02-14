@@ -1,0 +1,5 @@
+{
+    "actions" : [
+        {"add" : {"index" : "parquet_stats_v1", "alias" : "parquet_stats_alias"}}
+    ]
+}

@@ -45,7 +45,7 @@ class CDMSConstants:
     missing_depth_value = -99999.0
     config_key_flask_prefix = 'flask_prefix'
 
-    es_index_parquet_stats = 'parquet_stats_v1'
+    es_index_parquet_stats = 'parquet_stats_alias'
 
     min_depth = 'min_depth'
     max_depth = 'max_depth'
