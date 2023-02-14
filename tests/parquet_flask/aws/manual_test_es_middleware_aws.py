@@ -23,7 +23,7 @@ export AWS_SESSION_TOKEN="""
 from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.aws.es_factory import ESFactory
 
-index = 'parquet_stats_v1'
+index = 'parquet_stats_alias'
 es_url = 'https://search-insitu-parquet-dev-1-vgwt2bx23o5w3gpnq4afftmvaq.us-west-2.es.amazonaws.com'
 aws_es: ESAbstract = ESFactory().get_instance('AWS', index=index, base_url=es_url, port=443)
 # aws_es.index_one({'s3_url': 'test1'}, 'test21', index)

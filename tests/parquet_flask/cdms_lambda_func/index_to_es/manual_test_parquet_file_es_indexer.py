@@ -4,7 +4,7 @@ import os
 from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConstants
 
 os.environ[CdmsLambdaConstants.es_url] = 'https://search-insitu-parquet-dev-1-vgwt2bx23o5w3gpnq4afftmvaq.us-west-2.es.amazonaws.com/'
-os.environ[CdmsLambdaConstants.es_index] = 'parquet_stats_v1'
+os.environ[CdmsLambdaConstants.es_index] = 'parquet_stats_alias'
 os.environ[CdmsLambdaConstants.cdms_url] = 'http://localhost:30801/insitu/1.0/extract_stats/'
 os.environ[CdmsLambdaConstants.cdms_url] = 'https://doms.jpl.nasa.gov/insitu/1.0/extract_stats/'
 os.environ[CdmsLambdaConstants.parquet_base_folder] = 'CDMS_insitu.geo3.parquet'
