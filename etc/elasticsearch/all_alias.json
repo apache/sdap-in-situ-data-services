@@ -1,5 +1,6 @@
 {
     "actions" : [
-        {"add" : {"index" : "parquet_stats_v1", "alias" : "parquet_stats_alias"}}
+        {"remove" : {"index" : "parquet_stats_v1", "alias" : "parquet_stats_alias"}},
+        {"add" : {"index" : "parquet_stats_adjustable_geo", "alias" : "parquet_stats_alias"}}
     ]
 }

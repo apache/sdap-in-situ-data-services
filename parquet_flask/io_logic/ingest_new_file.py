@@ -45,15 +45,19 @@ def get_geospatial_interval(project: str) -> int:
     :return: geospatial interval
     """
     interval = GEOSPATIAL_INTERVAL
+    geo_spatial_interval_by_project = environ.get(CDMSConstants.geospatial_interval_by_project)
+    if not geo_spatial_interval_by_project:
+        return interval
+    geo_spatial_interval_by_project_dict = json.loads(geo_spatial_interval_by_project)
+    if not isinstance(geo_spatial_interval_by_project_dict, dict):
+        return interval
+    if project not in geo_spatial_interval_by_project_dict:
+        return interval
     try:
-        geo_spatial_interval_by_project = environ.get(CDMSConstants.geospatial_interval_by_project)
-        if geo_spatial_interval_by_project:
-            geo_spatial_interval_by_project_dict = json.loads(geo_spatial_interval_by_project)
-            if type(geo_spatial_interval_by_project_dict) is dict and \
-            project in geo_spatial_interval_by_project_dict and \
-            type(geo_spatial_interval_by_project_dict[project]) is int:
-                interval = geo_spatial_interval_by_project_dict[project]
-    finally:
+        return int(geo_spatial_interval_by_project_dict[project])
+    except:
+        LOGGER.exception(
+            f'geo_spatial_interval_by_project_dict for {project} is not int: {geo_spatial_interval_by_project_dict[project]}')
         return interval
 
 
