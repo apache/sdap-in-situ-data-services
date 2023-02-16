@@ -34,8 +34,8 @@ class MetadataTblES(MetadataTblInterface):
         s3_url as primary key
         secondary index: uuid
     """
-    def __init__(self, es_mds: ESAbstract):
-        self.__es: ESAbstract = es_mds
+    def __init__(self, es_mdw: ESAbstract):
+        self.__es: ESAbstract = es_mdw
 
     def insert_record(self, new_record):
         self.__es.index_one(new_record, new_record[CDMSConstants.s3_url_key], CDMSConstants.entry_file_records_index)
