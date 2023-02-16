@@ -1,6 +1,7 @@
 {
     "actions" : [
         {"remove" : {"index" : "parquet_stats_v1", "alias" : "parquet_stats_alias"}},
-        {"add" : {"index" : "parquet_stats_adjustable_geo", "alias" : "parquet_stats_alias"}}
+        {"add" : {"index" : "parquet_stats_adjustable_geo", "alias" : "parquet_stats_alias"}},
+        {"add" : {"index" : "entry_file_records_v1", "alias" : "entry_file_records_alias"}}
     ]
 }
