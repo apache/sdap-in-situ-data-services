@@ -46,6 +46,7 @@ class CDMSConstants:
     config_key_flask_prefix = 'flask_prefix'
 
     es_index_parquet_stats = 'parquet_stats_alias'
+    entry_file_records_index = 'entry_file_records_alias'
 
     min_depth = 'min_depth'
     max_depth = 'max_depth'

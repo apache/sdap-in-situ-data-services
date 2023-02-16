@@ -14,12 +14,13 @@
 # limitations under the License.
 
 from parquet_flask.aws.aws_ddb import AwsDdb, AwsDdbProps
+from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.metadata_tbl_interface import MetadataTblInterface
 from parquet_flask.utils.config import Config
 
 
-class MetadataTblIO(MetadataTblInterface):
+class MetadataTblES(MetadataTblInterface):
     """
     Table columns
         - s3_url
@@ -33,29 +34,44 @@ class MetadataTblIO(MetadataTblInterface):
         s3_url as primary key
         secondary index: uuid
     """
-    def __init__(self):
-        ddb_props = AwsDdbProps()
-        ddb_props.hash_key = CDMSConstants.s3_url_key
-        ddb_props.tbl_name = Config().get_value(Config.parquet_metadata_tbl)
-        self.__uuid_index = 'uuid-index'
-        self.__ddb = AwsDdb(ddb_props)
+    def __init__(self, es_mds: ESAbstract):
+        self.__es: ESAbstract = es_mds
 
     def insert_record(self, new_record):
-        self.__ddb.add_one_item(new_record, new_record[CDMSConstants.s3_url_key])
-        return
+        self.__es.index_one(new_record, new_record[CDMSConstants.s3_url_key], CDMSConstants.entry_file_records_index)
+        return self
 
     def replace_record(self, new_record):
-        self.__ddb.add_one_item(new_record, new_record[CDMSConstants.s3_url_key], replace=True)
+        self.__es.update_one(new_record, new_record[CDMSConstants.s3_url_key], CDMSConstants.entry_file_records_index)
         return
 
     def get_by_s3_url(self, s3_url):
-        return self.__ddb.get_one_item(s3_url)
+        result = self.__es.query_by_id(s3_url)
+        if result is None:
+            return None
+        return result['_source']
 
     def get_by_uuid(self, uuid):
-        return self.__ddb.get_from_index(self.__uuid_index, {CDMSConstants.uuid_key: uuid})
+        result = self.__es.query({
+            'query': {
+                'bool': {
+                    'must': [
+                        {
+                            'term': {'uuid': uuid}
+                        }
+                    ]
+                }
+            }
+        }, CDMSConstants.entry_file_records_index)
+        if result is None:
+            return None
+        result = result['hits']['hits']
+        if len(result) < 1:
+            return None
+        return result[0]['_source']
 
     def delete_by_s3_url(self, s3_url):
-        self.__ddb.delete_one_item(s3_url)
+        self.__es.delete_by_id(s3_url)
         return self
 
     def query_by_date_range(self, start_time, end_time):

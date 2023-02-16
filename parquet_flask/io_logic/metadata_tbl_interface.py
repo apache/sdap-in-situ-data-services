@@ -34,5 +34,9 @@ class MetadataTblInterface(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
+    def delete_by_s3_url(self, s3_url):
+        return
+
+    @abc.abstractmethod
     def query_by_date_range(self, start_time, end_time):
         return
