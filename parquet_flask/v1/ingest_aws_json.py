@@ -26,7 +26,6 @@ from parquet_flask.aws.aws_s3 import AwsS3
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.ingest_new_file import IngestNewJsonFile
 from parquet_flask.io_logic.metadata_tbl_interface import MetadataTblInterface
-from parquet_flask.io_logic.metadata_tbl_io import MetadataTblIO
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.time_utils import TimeUtils
@@ -147,7 +146,7 @@ class IngestAwsJson:
         config = Config()
         es_url = config.get_value(Config.es_url)
         es_port = int(config.get_value(Config.es_port, '443'))
-        self.__es: ESAbstract = ESFactory().get_instance('AWS', index=None, base_url=es_url, port=es_port)
+        self.__es: ESAbstract = ESFactory().get_instance('AWS', index='', base_url=es_url, port=es_port)
         self.__db_io: MetadataTblInterface = MetadataTblES(self.__es)
 
     def __get_s3_sha512(self):
