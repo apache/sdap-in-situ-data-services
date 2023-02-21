@@ -22,26 +22,25 @@ from parquet_flask.utils.singleton import Singleton
 LOGGER = logging.getLogger(__name__)
 
 
-def __validate_small_data(small_data):
-    validator = ParallelJsonValidator()
+def __validate_small_data(small_data, schema):
     try:
-        validator.schema(small_data)
+        fastjsonschema.compile(schema)(small_data)
         return None
     except Exception as e:
         return str(e)
 
 
-def parallel_validate(chunked_data):
+def parallel_validate(chunked_data, schema):
     a = datetime.now()
     with Pool(16) as p:
-        all_result = p.map(__validate_small_data, chunked_data)
+        all_result = p.starmap(__validate_small_data, [(k, schema) for k in chunked_data])
     all_result = [k for k in all_result if k is not None]
     b = datetime.now()
     LOGGER.debug(f'validation took: {b - a}')
     return len(all_result) < 1, all_result
 
 
-class ParallelJsonValidator(metaclass=Singleton):
+class ParallelJsonValidator(object):
     def __init__(self):
         self.__schema = None
 
@@ -55,7 +54,7 @@ class ParallelJsonValidator(metaclass=Singleton):
         :param val:
         :return: None
         """
-        self.__schema = fastjsonschema.compile(val)
+        self.__schema = val
         return
 
     def load_schema(self, input_schema):
@@ -79,4 +78,4 @@ class ParallelJsonValidator(metaclass=Singleton):
             LOGGER.debug(f'no need to validate empty json')
             return True
         LOGGER.debug(f'chunked_data size: {len(chunked_data)}')
-        return parallel_validate(chunked_data)
+        return parallel_validate(chunked_data, self.schema)
