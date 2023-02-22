@@ -30,6 +30,7 @@ class Config(metaclass=Singleton):
     aws_secret_access_key = 'aws_secret_access_key'
     aws_session_token = 'aws_session_token'
     in_situ_schema = 'in_situ_schema'
+    file_structure_setting = 'file_structure_setting'
     spark_ram_size = 'spark_ram_size'
     missing_depth_value = 'missing_depth_value'
     authentication_type = 'authentication_type'
@@ -46,6 +47,7 @@ class Config(metaclass=Singleton):
             # Config.spark_config_dict,
             Config.parquet_file_name,
             Config.in_situ_schema,
+            Config.file_structure_setting,
             Config.authentication_type,
             Config.authentication_key,
             Config.parquet_metadata_tbl,

@@ -21,6 +21,7 @@ import json
 import pandas
 from pyspark.sql.dataframe import DataFrame
 
+from insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
 from parquet_flask.io_logic.retrieve_spark_session import RetrieveSparkSession
@@ -70,6 +71,14 @@ class IngestNewJsonFile:
         self.__mode = 'overwrite' if is_overwriting else 'append'
         self.__parquet_name = config.get_value('parquet_file_name')
         self.__sanitize_record = True
+        self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(Config().get_value(Config.in_situ_schema)), FileUtils.read_json(Config().get_value(Config.file_structure_setting)))
+        self.__pyspark_func_mappers = {
+            'time': to_timestamp,
+            'year': year,
+            'month': month,
+            'literal': lit,
+            'column': col,
+        }
 
     @property
     def sanitize_record(self):
@@ -84,46 +93,46 @@ class IngestNewJsonFile:
         self.__sanitize_record = val
         return
 
-    @staticmethod
-    def create_df(spark_session, data_list, job_id, provider, project):
+    def create_df(self, spark_session, input_json, data_list, job_id, provider, project):
         LOGGER.debug(f'creating data frame with length {len(data_list)}')
         df = spark_session.createDataFrame(data_list)
         # spark_session.sparkContext.addPyFile('/usr/app/parquet_flask/lat_lon_udf.py')
         LOGGER.debug(f'adding columns')
-        df: DataFrame = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))\
-            .withColumn(CDMSConstants.year_col, year(CDMSConstants.time_col))\
-            .withColumn(CDMSConstants.month_col, month(CDMSConstants.time_col))\
-            .withColumn(CDMSConstants.platform_code_col, df[CDMSConstants.platform_col][CDMSConstants.code_col])\
-            .withColumn(CDMSConstants.job_id_col, lit(job_id))\
-            .withColumn(CDMSConstants.provider_col, lit(provider))\
-            .withColumn(CDMSConstants.project_col, lit(project))
-        geospatial_interval = get_geospatial_interval(project)
+        df = self.__add_columns(df, input_json)
         try:
-            df: DataFrame = df.withColumn(
-                CDMSConstants.geo_spatial_interval_col, 
-                pyspark_functions.udf(
-                    lambda latitude, longitude: f'{int(latitude - divmod(latitude, geospatial_interval)[1])}_{int(longitude - divmod(longitude, geospatial_interval)[1])}',
-                    StringType())(
-                        df[CDMSConstants.lat_col],
-                        df[CDMSConstants.lon_col]))
             df: DataFrame = df.repartition(1)  # combine to 1 data frame to increase size
             # .withColumn('ingested_date', lit(TimeUtils.get_current_time_str()))
             LOGGER.debug(f'create writer')
-            all_partitions = [CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_code_col,
-                              CDMSConstants.geo_spatial_interval_col,
-                              CDMSConstants.year_col, CDMSConstants.month_col,
-                              CDMSConstants.job_id_col]
             df = df.repartition(1)  # XXX: is this line repeated?
             df_writer = df.write
             LOGGER.debug(f'create partitions')
-            df_writer = df_writer.partitionBy(all_partitions)
+            df_writer = df_writer.partitionBy(self.__file_structure_setting.get_partitioning_columns())
             LOGGER.debug(f'created partitions')
         except BaseException as e:
             LOGGER.exception(f'unexpected exception. latitude: {df[CDMSConstants.lat_col]}. longitude: {df[CDMSConstants.lon_col]}')
             raise e
         return df_writer
 
-    def ingest(self, abs_file_path, job_id):
+    def __add_columns(self, df: DataFrame, input_json: dict):
+        for column_name, column_details in self.__file_structure_setting.get_derived_columns().items():
+            original_column = column_details['original_column']
+            updated_type = column_details['updated_type']
+            if updated_type == 'insitu_geo_spatial':
+                geospatial_interval = get_geospatial_interval(input_json[column_details['split_interval_key']])
+                df: DataFrame = df.withColumn(
+                    column_name,
+                    pyspark_functions.udf(
+                        lambda latitude, longitude: f'{int(latitude - divmod(latitude, geospatial_interval)[1])}_{int(longitude - divmod(longitude, geospatial_interval)[1])}',
+                        StringType())(
+                        df[original_column[0]],
+                        df[original_column[1]]))
+                continue
+            if updated_type == 'literal':
+                original_column = input_json[original_column]
+            df = df.withColumn(column_name, self.__pyspark_func_mappers[updated_type](original_column))
+        return df
+
+    def ingest(self, abs_file_path, job_id, spark_session=None):
         """
         This method will assume that incoming file has data with in_situ_schema file.
 
@@ -149,10 +158,12 @@ class IngestNewJsonFile:
                 each_record['wind_from_direction'] = float(each_record['wind_from_direction'])
             if 'wind_to_direction' in each_record:
                 each_record['wind_to_direction'] = float(each_record['wind_from_direction'])
-        df_writer = self.create_df(
-            self.__sss.retrieve_spark_session(
+        input_json['job_id'] = job_id
+        current_spark_session = self.__sss.retrieve_spark_session(
                 self.__app_name,
-                self.__master_spark),
+                self.__master_spark) if spark_session is None else spark_session
+        df_writer = self.create_df(current_spark_session,
+                                   input_json,
             input_json[CDMSConstants.observations_key],
             job_id,
             input_json[CDMSConstants.provider_col],

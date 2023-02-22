@@ -1,0 +1,40 @@
+{
+  "time_columns": ["time"],
+  "partitioning_columns": ["provider", "project", "platform_code", "geo_spatial_interval", "year", "month", "job_id"],
+  "non_data_columns": ["time_obj", "time", "provider", "project", "platform_code", "platform", "year", "month", "job_id", "device", "latitude", "longitude", "depth"],
+  "derived_columns": {
+    "time_obj": {
+      "original_column": "time",
+      "updated_type": "time"
+    },
+    "year": {
+      "original_column": "time",
+      "updated_type": "year"
+    },
+    "month": {
+      "original_column": "time",
+      "updated_type": "month"
+    },
+    "platform_code": {
+      "original_column": "platform.code",
+      "updated_type": "column"
+    },
+    "project": {
+      "original_column": "project",
+      "updated_type": "literal"
+    },
+    "provider": {
+      "original_column": "provider",
+      "updated_type": "literal"
+    },
+    "job_id": {
+      "original_column": "job_id",
+      "updated_type": "literal"
+    },
+    "geo_spatial_interval": {
+      "original_column": ["latitude", "longitude"],
+      "split_interval_key": "project",
+      "updated_type": "insitu_geo_spatial"
+    }
+  }
+}
