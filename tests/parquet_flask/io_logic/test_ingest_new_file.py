@@ -5,6 +5,146 @@ from unittest import TestCase
 
 from pyspark.sql import SparkSession
 
+lsmd_json_schema = {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cloud-based Data Match-Up Service In Situ Schema",
+  "description": "Schema for in situ data",
+  "properties": {
+    "MISSION": {
+      "description": "",
+      "type": "string"
+    },
+    "SPACECRAFT": {
+      "description": "",
+      "type": "string"
+    },
+    "VENUE": {
+      "description": "",
+      "type": "string"
+    },
+    "VENUE_NUMBER": {
+      "description": "",
+      "type": "string"
+    },
+    "RECORDS": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/observation"
+      },
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "observation": {
+      "description": "Description for each variable is copied from CF standard names table found at https://cfconventions.org/Data/cf-standard-names/77/build/cf-standard-name-table.html",
+      "type": "object",
+      "additionalProperties": False,
+      "properties": {
+        "channel": {
+          "type": "string",
+        },
+          "ERT": {
+              "type": "string",
+              "format": "date-time"
+          },
+          "SCET": {
+              "type": "string",
+              "format": "date-time"
+          },
+          "eu": {
+              "type": "number",
+          },
+          "dn": {
+              "type": "number",
+          },
+      },
+      "required": [
+        "channel",
+        "ERT",
+        "SCET",
+        "eu",
+        "dn"
+      ],
+      "minProperties": 5
+    }
+  }
+}
+lsmd_structure_setting = {
+  "data_array_key": "RECORDS",
+  "file_metadata_keys": [
+    "MISSION",
+    "SPACECRAFT",
+    "VENUE",
+    "VENUE_NUMBER",
+  ],
+  "time_columns": ["SCET"],
+  "partitioning_columns": ["MISSION", "SPACECRAFT", "VENUE", "VENUE_NUMBER", "channel", "year", "month", "job_id"],
+  "non_data_columns": [],
+  "derived_columns": {
+    "SCET_obj": {
+      "original_column": "SCET",
+      "updated_type": "time"
+    },
+    "year": {
+      "original_column": "SCET",
+      "updated_type": "year"
+    },
+    "month": {
+      "original_column": "SCET",
+      "updated_type": "month"
+    },
+    "MISSION": {
+      "original_column": "MISSION",
+      "updated_type": "literal"
+    },
+    "SPACECRAFT": {
+      "original_column": "SPACECRAFT",
+      "updated_type": "literal"
+    },
+    "VENUE": {
+      "original_column": "VENUE",
+      "updated_type": "literal"
+    },
+    "VENUE_NUMBER": {
+      "original_column": "VENUE_NUMBER",
+      "updated_type": "literal"
+    },
+    "job_id": {
+      "original_column": "job_id",
+      "updated_type": "literal"
+    },
+  }
+}
+lsmd_sample_data = {
+    'MISSION': 'Sample1',
+    'SPACECRAFT': 'Sample1',
+    'VENUE': 'ATLO',
+    'VENUE_NUMBER': '001',
+    'RECORDS': [
+        {
+            'channel': 'A-0001',
+            'ERT': '2021-01-01T00:00:00Z',
+            'SCET': '2021-01-01T00:00:00Z',
+            'eu': 0.001,
+            'dn': 0.001,
+        },
+        {
+            'channel': 'A-0001',
+            'ERT': '2021-01-01T00:00:01Z',
+            'SCET': '2021-01-01T00:00:01Z',
+            'eu': 0.002,
+            'dn': 0.002,
+        },
+        {
+            'channel': 'A-0002',
+            'ERT': '2021-01-01T00:00:00Z',
+            'SCET': '2021-01-01T00:00:00Z',
+            'eu': 0.001,
+            'dn': 0.001,
+        },
+
+    ]
+}
 
 class TestGeneralUtilsV3(TestCase):
     def test_get_geospatial_interval(self):
@@ -149,6 +289,33 @@ class TestGeneralUtilsV3(TestCase):
                 ff.write(json.dumps(mock_data))
             spark = SparkSession.builder.getOrCreate()
             from parquet_flask.io_logic.ingest_new_file import get_geospatial_interval, IngestNewJsonFile
+            ingest_file = IngestNewJsonFile(False)
+            ingest_file.ingest(data_file, 'test-id', spark)
+            print('say hi')
+        return
+
+    def test_ingest_lsmd_01(self):
+        os.environ['es_url'] = ''
+        os.environ['master_spark_url'] = ''
+        os.environ['spark_app_name'] = ''
+        os.environ['in_situ_schema'] = 'TODO: set it in temp dir'
+        os.environ['file_structure_setting'] = 'TODO: set it in temp dir'
+        os.environ['authentication_type'] = ''
+        os.environ['authentication_key'] = ''
+        os.environ['parquet_metadata_tbl'] = ''
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            os.environ['in_situ_schema'] = os.path.join(tmp_dir_name, 'in_situ_schema.json')
+            os.environ['file_structure_setting'] = os.path.join(tmp_dir_name, 'insitu.data.settings.json')
+            os.environ['parquet_file_name'] = os.path.join(tmp_dir_name, 'parquet')
+            with open(os.environ.get('in_situ_schema'), 'w') as ff:
+                ff.write(json.dumps(lsmd_json_schema))
+            with open(os.environ.get('file_structure_setting'), 'w') as ff:
+                ff.write(json.dumps(lsmd_structure_setting))
+            data_file = os.path.join(tmp_dir_name, 'sample-file.json')
+            with open(data_file, 'w') as ff:
+                ff.write(json.dumps(lsmd_sample_data))
+            spark = SparkSession.builder.getOrCreate()
+            from parquet_flask.io_logic.ingest_new_file import IngestNewJsonFile
             ingest_file = IngestNewJsonFile(False)
             ingest_file.ingest(data_file, 'test-id', spark)
             print('say hi')
