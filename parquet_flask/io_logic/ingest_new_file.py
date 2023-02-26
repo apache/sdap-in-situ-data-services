@@ -93,7 +93,7 @@ class IngestNewJsonFile:
         self.__sanitize_record = val
         return
 
-    def create_df(self, spark_session, input_json, data_list, job_id, provider, project):
+    def create_df(self, spark_session, input_json, data_list):
         LOGGER.debug(f'creating data frame with length {len(data_list)}')
         df = spark_session.createDataFrame(data_list)
         # spark_session.sparkContext.addPyFile('/usr/app/parquet_flask/lat_lon_udf.py')
@@ -109,7 +109,7 @@ class IngestNewJsonFile:
             df_writer = df_writer.partitionBy(self.__file_structure_setting.get_partitioning_columns())
             LOGGER.debug(f'created partitions')
         except BaseException as e:
-            LOGGER.exception(f'unexpected exception. latitude: {df[CDMSConstants.lat_col]}. longitude: {df[CDMSConstants.lon_col]}')
+            LOGGER.exception(f'unexpected exception.')
             raise e
         return df_writer
 
@@ -164,10 +164,7 @@ class IngestNewJsonFile:
                 self.__master_spark) if spark_session is None else spark_session
         df_writer = self.create_df(current_spark_session,
                                    input_json,
-            input_json[CDMSConstants.observations_key],
-            job_id,
-            input_json[CDMSConstants.provider_col],
-            input_json[CDMSConstants.project_col])
+            input_json[CDMSConstants.observations_key])
         df_writer.mode(self.__mode).parquet(self.__parquet_name, compression='GZIP')  # snappy GZIP
         LOGGER.debug(f'finished writing parquet')
         return len(input_json[CDMSConstants.observations_key])
