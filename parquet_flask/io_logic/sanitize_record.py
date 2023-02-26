@@ -30,7 +30,7 @@ class SanitizeRecord:
         if not FileUtils.file_exist(json_schema_path):
             raise ValueError('json_schema file does not exist: {}'.format(json_schema_path))
         self.__json_schema = FileUtils.read_json(json_schema_path)
-        self.__schema_key_values = {k: v for k, v in self.__json_schema['definitions'][self.__file_structure_setting.get_data_array_key()]['properties'].items()}
+        self.__schema_key_values = {k: v for k, v in self.__json_schema['definitions']['observation']['properties'].items()}  # TODO assuming json schema s
         self.__parallel_json_validator = ParallelJsonValidator()
 
     def __sanitize_record(self, data_blk):
@@ -43,10 +43,12 @@ class SanitizeRecord:
 
     def __validate_json(self, data):
         LOGGER.debug(f'validating input data')
+        file_level_data = {
+            k: data[k] for k in self.__file_structure_setting.get_file_metadata_keys()
+        }
         chunked_data = [{
-            "provider": data['provider'],  # TODO provider and project to be abstracted out.
-            "project": data['project'],
-            self.__file_structure_setting.get_data_array_key(): eachChunk,
+            **file_level_data,
+            **{self.__file_structure_setting.get_data_array_key(): eachChunk}
         } for eachChunk in GeneralUtils.chunk_list(data[self.__file_structure_setting.get_data_array_key()], 1000)]
         if not self.__parallel_json_validator.is_schema_loaded():
             self.__parallel_json_validator.load_schema(self.__json_schema)
@@ -54,30 +56,29 @@ class SanitizeRecord:
         return result, error
 
     def __get_basic_schema(self):
+        file_level_key_schema = {
+            k: {
+                "description": "",
+                "type": "string"
+            } for k in self.__file_structure_setting.get_file_metadata_keys()
+        }
         basic_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "title": "Cloud-based Data Match-Up Service In Situ Schema",
             "description": "Schema for in situ data",
             "properties": {
-                "provider": {
-                    "description": "",
-                    "type": "string"
-                },
-                "project": {
-                    "description": "",
-                    "type": "string"
-                },
-                self.__file_structure_setting.get_data_array_key(): {
-                    "type": "array",
-                    "items": {
-                        "type": "object"
-                    },
-                    "minItems": 1
+                **file_level_key_schema,
+                **{
+                    self.__file_structure_setting.get_data_array_key(): {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        },
+                        "minItems": 1
+                    }
                 }
             },
-            "required": [
-                "provider",
-                "project",
+            "required": self.__file_structure_setting.get_file_metadata_keys() + [
                 self.__file_structure_setting.get_data_array_key(),
             ]
         }

@@ -1,5 +1,9 @@
 {
   "data_array_key": "observations",
+  "file_metadata_keys": [
+    "provider",
+    "project"
+  ],
   "time_columns": ["time"],
   "partitioning_columns": ["provider", "project", "platform_code", "geo_spatial_interval", "year", "month", "job_id"],
   "non_data_columns": ["time_obj", "time", "provider", "project", "platform_code", "platform", "year", "month", "job_id", "device", "latitude", "longitude", "depth"],

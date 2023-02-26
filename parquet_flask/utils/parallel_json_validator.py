@@ -17,7 +17,6 @@ import fastjsonschema
 import logging
 from datetime import datetime
 from multiprocessing import Pool
-from parquet_flask.utils.singleton import Singleton
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,6 +69,13 @@ class ParallelJsonValidator(object):
             return None
         except Exception as e:
             return str(e)
+
+    def validate_single_json(self, input_object):
+        try:
+            fastjsonschema.compile(self.schema)(input_object)
+        except Exception as e:
+            return False, str(e)
+        return True, ''
 
     def validate_json(self, chunked_data: list):
         if self.is_schema_loaded() is False:
