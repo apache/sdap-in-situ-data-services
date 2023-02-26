@@ -93,7 +93,8 @@ class IngestNewJsonFile:
         self.__sanitize_record = val
         return
 
-    def create_df(self, spark_session, input_json, data_list):
+    def create_df(self, spark_session, input_json):
+        data_list = input_json[self.__file_structure_setting.get_data_array_key()]
         LOGGER.debug(f'creating data frame with length {len(data_list)}')
         df = spark_session.createDataFrame(data_list)
         # spark_session.sparkContext.addPyFile('/usr/app/parquet_flask/lat_lon_udf.py')
@@ -146,12 +147,12 @@ class IngestNewJsonFile:
             raise ValueError('missing file to ingest it. path: {}'.format(abs_file_path))
         LOGGER.debug(f'sanitizing the files ? : {self.__sanitize_record}')
         if self.sanitize_record is True:
-            input_json = SanitizeRecord(Config().get_value('in_situ_schema')).start(abs_file_path)
+            input_json = SanitizeRecord(Config().get_value('in_situ_schema'), self.__file_structure_setting).start(abs_file_path)
         else:
             if not FileUtils.file_exist(abs_file_path):
                 raise ValueError('json file does not exist: {}'.format(abs_file_path))
             input_json = FileUtils.read_json(abs_file_path)
-        for each_record in input_json[CDMSConstants.observations_key]:
+        for each_record in input_json[self.__file_structure_setting.get_data_array_key()]:
             if 'depth' in each_record:
                 each_record['depth'] = float(each_record['depth'])
             if 'wind_from_direction' in each_record:
@@ -163,8 +164,7 @@ class IngestNewJsonFile:
                 self.__app_name,
                 self.__master_spark) if spark_session is None else spark_session
         df_writer = self.create_df(current_spark_session,
-                                   input_json,
-            input_json[CDMSConstants.observations_key])
+                                   input_json)
         df_writer.mode(self.__mode).parquet(self.__parquet_name, compression='GZIP')  # snappy GZIP
         LOGGER.debug(f'finished writing parquet')
-        return len(input_json[CDMSConstants.observations_key])
+        return len(input_json[self.__file_structure_setting.get_data_array_key()])

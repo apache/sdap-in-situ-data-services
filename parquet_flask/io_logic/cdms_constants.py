@@ -25,7 +25,6 @@ class CDMSConstants:
     time_obj_col = 'time_obj'
     year_col = 'year'
     month_col = 'month'
-    observations_key = 'observations'
     lat_col = 'latitude'
     lon_col = 'longitude'
     depth_col = 'depth'

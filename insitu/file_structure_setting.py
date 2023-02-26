@@ -17,6 +17,9 @@ class FileStructureSetting:
         self.__data_json_schema = data_json_schema
         self.__structure_config = structure_config
 
+    def get_data_array_key(self):
+        return self.__structure_config['data_array_key']
+
     def get_derived_columns(self):
         return self.__structure_config['derived_columns']
 
