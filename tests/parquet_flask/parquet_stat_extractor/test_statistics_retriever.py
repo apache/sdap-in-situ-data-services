@@ -1,10 +1,15 @@
+import json
+import os
 from unittest import TestCase
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_timestamp
 
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.parquet_stat_extractor.statistics_retriever import StatisticsRetriever
+from parquet_flask.parquet_stat_extractor.statistics_retriever_2 import StatisticsRetriever2
+from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.time_utils import TimeUtils
 
 
@@ -50,7 +55,7 @@ class TestStatisticsRetriever(TestCase):
             .getOrCreate()
         df = spark.createDataFrame(input_json)
         df = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))
-        stats_retriever = StatisticsRetriever(df).start()
+        stats_retriever = StatisticsRetriever(df, ["air_pressure", "air_temperature", "dew_point_temperature", "downwelling_longwave_flux_in_air", "downwelling_longwave_radiance_in_air", "downwelling_shortwave_flux_in_air", "mass_concentration_of_chlorophyll_in_sea_water", "rainfall_rate", "relative_humidity", "sea_surface_salinity", "sea_surface_skin_temperature", "sea_surface_subskin_temperature", "sea_surface_temperature", "sea_water_density", "sea_water_electrical_conductivity", "sea_water_practical_salinity", "sea_water_salinity", "sea_water_temperature", "surface_downwelling_photosynthetic_photon_flux_in_air", "wet_bulb_temperature", "wind_speed", "wind_from_direction", "wind_to_direction", "eastward_wind", "northward_wind"]).start()
         self.assertEqual(stats_retriever.min_lat, 0.0, 'wrong min_lat')
         self.assertEqual(stats_retriever.max_lat, 3.0, 'wrong max_lat')
         self.assertEqual(stats_retriever.min_lon, 0.0, 'wrong min_lon')
@@ -60,4 +65,56 @@ class TestStatisticsRetriever(TestCase):
         self.assertEqual(stats_retriever.min_datetime, TimeUtils.get_datetime_obj('2000-01-01T00:00:00Z').timestamp(), 'wrong min_datetime')
         self.assertEqual(stats_retriever.max_datetime, TimeUtils.get_datetime_obj('2000-01-01T00:00:03Z').timestamp(), 'wrong max_datetime')
         self.assertEqual(stats_retriever.total, 5, 'wrong total')
+        print(stats_retriever.to_json())
+        return
+
+    def test_new_config_01(self):
+        input_json = [
+            {
+                CDMSConstants.lat_col: 0.0,
+                CDMSConstants.lon_col: 1.0,
+                CDMSConstants.depth_col: 2.0,
+                'air_pressure': 1.1,
+                CDMSConstants.time_col: '2000-01-01T00:00:03Z',
+            },
+            {
+                CDMSConstants.lat_col: 1.0,
+                CDMSConstants.lon_col: 2.0,
+                CDMSConstants.depth_col: 3.0,
+                CDMSConstants.time_col: '2000-01-01T00:00:00Z',
+            },
+            {
+                CDMSConstants.lat_col: 2.0,
+                CDMSConstants.lon_col: 3.0,
+                CDMSConstants.depth_col: 0.0,
+                CDMSConstants.time_col: '2000-01-01T00:00:01Z',
+            },
+            {
+                CDMSConstants.lat_col: 3.0,
+                CDMSConstants.lon_col: 0.0,
+                CDMSConstants.depth_col: 1.0,
+                CDMSConstants.time_col: '2000-01-01T00:00:02Z',
+            },
+            {
+                CDMSConstants.lat_col: 0.0,
+                CDMSConstants.lon_col: 1.0,
+                CDMSConstants.depth_col: float(CDMSConstants.missing_depth_value),
+                CDMSConstants.time_col: '2000-01-01T00:00:03Z',
+            },
+
+        ]
+        file_structure_config_file = '/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json'
+        file_structure_config_file = FileUtils.read_json(file_structure_config_file)
+        file_structure_setting = FileStructureSetting({}, file_structure_config_file)
+        spark = SparkSession.builder \
+            .master("local") \
+            .appName('TestAppName') \
+            .getOrCreate()
+        df = spark.createDataFrame(input_json)
+        df = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))
+        stats_retriever = StatisticsRetriever2(df, file_structure_setting).start()
+        old_result = {'total': 5, 'min_datetime': 946684800.0, 'max_datetime': 946684803.0, 'min_depth': 0.0, 'max_depth': 3.0, 'min_lat': 0.0, 'max_lat': 3.0, 'min_lon': 0.0, 'max_lon': 3.0, 'observation_counts': {'air_pressure': 1, 'air_temperature': 0, 'dew_point_temperature': 0, 'downwelling_longwave_flux_in_air': 0, 'downwelling_longwave_radiance_in_air': 0, 'downwelling_shortwave_flux_in_air': 0, 'mass_concentration_of_chlorophyll_in_sea_water': 0, 'rainfall_rate': 0, 'relative_humidity': 0, 'sea_surface_salinity': 0, 'sea_surface_skin_temperature': 0, 'sea_surface_subskin_temperature': 0, 'sea_surface_temperature': 0, 'sea_water_density': 0, 'sea_water_electrical_conductivity': 0, 'sea_water_practical_salinity': 0, 'sea_water_salinity': 0, 'sea_water_temperature': 0, 'surface_downwelling_photosynthetic_photon_flux_in_air': 0, 'wet_bulb_temperature': 0, 'wind_speed': 0, 'wind_from_direction': 0, 'wind_to_direction': 0, 'eastward_wind': 0, 'northward_wind': 0}}
+        print(json.dumps(old_result, sort_keys=True))
+        print(json.dumps(stats_retriever.to_json(), sort_keys=True))
+        self.assertEqual(json.dumps(old_result, sort_keys=True), json.dumps(stats_retriever.to_json(), sort_keys=True), 'backward compatibility failed')
         return

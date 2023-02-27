@@ -2,7 +2,7 @@ from parquet_flask.utils.parallel_json_validator import ParallelJsonValidator
 
 STRUCTURE_CONFIG = {
     "type": "object",
-    "required": ["partitioning_columns", "non_data_columns", "derived_columns", "file_metadata_keys", "data_array_key"],
+    "required": ["partitioning_columns", "non_data_columns", "derived_columns", "file_metadata_keys", "data_array_key", "data_stats"],
     "properties": {
         "data_array_key": {"type": "string"},
         "partitioning_columns": {"type": "array", "items": {"type": "string"}},
@@ -12,6 +12,26 @@ STRUCTURE_CONFIG = {
             "type": "object",
             "required": [],
             "properties": {}
+        },
+        "data_stats": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["stat_type", "output_name"],
+                "properties": {
+                    "output_name": {"type": "string"},
+                    "stat_type": {
+                        "type": "string",
+                        "enum": ["minmax", "count", "record_count"]
+                    },
+                    "special_data_type": {
+                        "type": "string",
+                        "enum": ["timestamp"]
+                    },
+                    "column": {"type": "string"},
+                    "columns": {"type": "array", "items": {"type": "string"}}
+                }
+            }
         }
     }
 }
@@ -33,6 +53,9 @@ class FileStructureSetting:
 
     def get_derived_columns(self):
         return self.__structure_config['derived_columns']
+
+    def get_data_stats_config(self):
+        return self.__structure_config['data_stats']
 
     def get_partitioning_columns(self):
         return self.__structure_config['partitioning_columns']

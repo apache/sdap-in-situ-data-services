@@ -169,7 +169,7 @@ class TestGeneralUtilsV3(TestCase):
         os.environ['authentication_type'] = ''
         os.environ['authentication_key'] = ''
         os.environ['parquet_metadata_tbl'] = ''
-        os.environ['file_structure_setting'] = '/Users/wphyo/Projects/access/parquet_test_1/insitu.data.settings.json'
+        os.environ['file_structure_setting'] = '/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json'
         mock_data = {
             "project": "Sample-Project",
             "provider": "Sample-Provider",
@@ -305,7 +305,7 @@ class TestGeneralUtilsV3(TestCase):
         os.environ['parquet_metadata_tbl'] = ''
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             os.environ['in_situ_schema'] = os.path.join(tmp_dir_name, 'in_situ_schema.json')
-            os.environ['file_structure_setting'] = os.path.join(tmp_dir_name, 'insitu.data.settings.json')
+            os.environ['file_structure_setting'] = os.path.join(tmp_dir_name, 'insitu.file.structure.config.json')
             os.environ['parquet_file_name'] = os.path.join(tmp_dir_name, 'parquet')
             with open(os.environ.get('in_situ_schema'), 'w') as ff:
                 ff.write(json.dumps(lsmd_json_schema))
