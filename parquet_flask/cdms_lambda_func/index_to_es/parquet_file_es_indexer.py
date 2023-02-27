@@ -1,5 +1,8 @@
+import json
 import os
 
+from insitu.file_structure_setting import FileStructureSetting
+from parquet_flask.cdms_lambda_func.index_to_es.parquet_file_path_stat_extractor import ParquetFilePathStatExtractor
 from parquet_flask.parquet_stat_extractor.local_statistics_retriever import LocalStatisticsRetriever
 from parquet_flask.utils.file_utils import FileUtils
 
@@ -9,7 +12,6 @@ from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.aws.es_factory import ESFactory
 from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConstants
 from parquet_flask.cdms_lambda_func.index_to_es.parquet_stat_extractor import ParquetStatExtractor
-from parquet_flask.cdms_lambda_func.index_to_es.s3_stat_extractor import S3StatExtractor
 from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
 from parquet_flask.cdms_lambda_func.s3_records.s3_2_sqs import S3ToSqs
 
@@ -22,7 +24,8 @@ class ParquetFileEsIndexer:
         self.__es_url = os.environ.get(CdmsLambdaConstants.es_url, None)
         self.__es_index = os.environ.get(CdmsLambdaConstants.es_index, None)
         self.__es_port = int(os.environ.get(CdmsLambdaConstants.es_port, '443'))
-        if any([k is None for k in [self.__es_url, self.__es_index]]):
+        self.__file_structure_json = os.environ.get(CdmsLambdaConstants.file_structure_setting_json, None)  # TODO update setting
+        if any([k is None for k in [self.__es_url, self.__es_index, self.__file_structure_json]]):
             raise ValueError(f'invalid env. must have {[CdmsLambdaConstants.es_url, CdmsLambdaConstants.es_index]}')
         self.__es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_index, base_url=self.__es_url, port=self.__es_port)
 
@@ -44,11 +47,13 @@ class ParquetFileEsIndexer:
     def ingest_file(self):
         if self.__s3_url is None:
             raise ValueError('s3 url is null. Set it first')
-        s3_stat = S3StatExtractor(self.__s3_url).start()
-        LOGGER.debug(f's3_stat: {s3_stat.to_json()}')
+        file_structure_setting = FileStructureSetting({}, json.loads(self.__file_structure_json))
+        stat_extractor = ParquetFilePathStatExtractor(file_structure_setting, self.__s3_url, 'bucket', 'name', 's3_url').start()
+        stat_extractor_json = stat_extractor.to_json()
+        LOGGER.debug(f'file_path_stat: {stat_extractor_json}')
         parquet_stat = self.extract_stats_locally()
         LOGGER.debug(f'parquet_stat: {parquet_stat}')
-        self.__es.index_one({'s3_url': self.__s3_url, **s3_stat.to_json(), **parquet_stat}, s3_stat.s3_url)
+        self.__es.index_one({'s3_url': self.__s3_url, **stat_extractor_json, **parquet_stat}, self.__s3_url)
         return
 
     def remove_file(self):
