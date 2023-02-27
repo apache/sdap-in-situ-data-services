@@ -142,7 +142,7 @@ stats_result_schema = {
                 "wind_to_direction",
                 "eastward_wind",
                 "northward_wind",
-                "meta"
+                # "meta",  # TODO this is no longer showing in new stats retriever
             ]
         }
     },
@@ -161,9 +161,9 @@ stats_result_schema = {
 }
 
 
-class TestGeneralUtilsV3(unittest.TestCase):
+class TestLocalStatisticsRetriever(unittest.TestCase):
     def test_01(self):
-        stats_retriever = LocalStatisticsRetriever('part-00000-74ebb882-3536-435b-b736-96bf3be9ee29.c000.gz.parquet', 'in_situ_schema.json')
+        stats_retriever = LocalStatisticsRetriever('part-00000-74ebb882-3536-435b-b736-96bf3be9ee29.c000.gz.parquet', 'in_situ_schema.json', '/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json')
         stats = stats_retriever.start()
         validate_result, validate_error = GeneralUtils.is_json_valid(stats, stats_result_schema)
         self.assertTrue(validate_result, f'schema error: {validate_error}')

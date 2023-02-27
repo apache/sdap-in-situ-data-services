@@ -32,7 +32,9 @@ class ParquetFileEsIndexer:
     def extract_stats_locally(self):
         LOGGER.debug('downloading parquet file locally to extract stats')
         local_parquet_file_path = AwsS3().set_s3_url(self.__s3_url).download('/tmp')
-        stats_json = LocalStatisticsRetriever(local_parquet_file_path, os.environ.get(CdmsLambdaConstants.insitu_schema_file, '/etc/in_situ_schema.json')).start()
+        stats_json = LocalStatisticsRetriever(local_parquet_file_path,
+                                              os.environ.get(CdmsLambdaConstants.insitu_schema_file, '/etc/in_situ_schema.json'),
+                                              os.environ.get(CdmsLambdaConstants.file_structure_setting_json, '/etc/insitu.file.structure.config.json')).start()
         LOGGER.debug(f'locally extracted stats: {stats_json}')
         FileUtils.del_file(local_parquet_file_path)
         return stats_json

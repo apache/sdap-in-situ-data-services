@@ -1,9 +1,10 @@
 import logging
 
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.parquet_stat_extractor.local_spark_session import LocalSparkSession
-from parquet_flask.parquet_stat_extractor.statistics_retriever import StatisticsRetriever
 from pyspark.sql.utils import AnalysisException
 
+from parquet_flask.parquet_stat_extractor.statistics_retriever import StatisticsRetriever
 from parquet_flask.utils.file_utils import FileUtils
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
@@ -14,9 +15,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class LocalStatisticsRetriever:
-    def __init__(self, local_parquet_file_path: str, in_situ_schema_file_path: str):
+    def __init__(self, local_parquet_file_path: str, in_situ_schema_file_path: str, in_situ_file_structure_config_file_path: str):
         self.__local_parquet_file_path = local_parquet_file_path
         self.__in_situ_schema_file_path = in_situ_schema_file_path
+        self.__file_structure_setting = FileStructureSetting({}, FileUtils.read_json(in_situ_file_structure_config_file_path))
 
     def start(self):
         spark: SparkSession = LocalSparkSession().get_spark_session()
@@ -30,5 +32,5 @@ class LocalStatisticsRetriever:
                 return None
             LOGGER.exception(f'error while retrieving full_parquet_path: {self.__in_situ_schema_file_path}')
             raise analysis_exception
-        stats = StatisticsRetriever(read_df, CdmsSchema().get_observation_names(insitu_schema)).start()
+        stats = StatisticsRetriever(read_df, self.__file_structure_setting).start()
         return stats.to_json()

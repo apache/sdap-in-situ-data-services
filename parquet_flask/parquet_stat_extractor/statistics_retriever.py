@@ -3,204 +3,90 @@ import logging
 from pyspark.sql.dataframe import DataFrame
 import pyspark.sql.functions as pyspark_functions
 
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 LOGGER = logging.getLogger(__name__)
 
 
 class StatisticsRetriever:
-    def __init__(self, input_dataset: DataFrame, observation_keys: list):
-        self.__observation_keys = observation_keys
+    def __init__(self, input_dataset: DataFrame, file_structure_setting: FileStructureSetting):
+        self.__file_structure_setting = file_structure_setting
         self.__input_dataset = input_dataset
-        self.__total = -1
-        self.__min_datetime = None
-        self.__max_datetime = None
-        self.__min_depth = None
-        self.__max_depth = None
-        self.__min_lat = None
-        self.__max_lat = None
-        self.__min_lon = None
-        self.__max_lon = None
-        self.__observation_count = []
-
-    @property
-    def total(self):
-        if self.__total == -1:
-            self.total = int(self.__input_dataset.count())
-        return self.__total
-
-    @total.setter
-    def total(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__total = val
-        return
-
-    @property
-    def min_datetime(self):
-        return self.__min_datetime
-
-    @min_datetime.setter
-    def min_datetime(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__min_datetime = val
-        return
-
-    @property
-    def max_datetime(self):
-        return self.__max_datetime
-
-    @max_datetime.setter
-    def max_datetime(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__max_datetime = val
-        return
-
-    @property
-    def min_depth(self):
-        return self.__min_depth
-
-    @min_depth.setter
-    def min_depth(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__min_depth = val
-        return
-
-    @property
-    def max_depth(self):
-        return self.__max_depth
-
-    @max_depth.setter
-    def max_depth(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__max_depth = val
-        return
-
-    @property
-    def min_lat(self):
-        return self.__min_lat
-
-    @min_lat.setter
-    def min_lat(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__min_lat = val
-        return
-
-    @property
-    def max_lat(self):
-        return self.__max_lat
-
-    @max_lat.setter
-    def max_lat(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__max_lat = val
-        return
-
-    @property
-    def min_lon(self):
-        return self.__min_lon
-
-    @min_lon.setter
-    def min_lon(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__min_lon = val
-        return
-
-    @property
-    def max_lon(self):
-        return self.__max_lon
-
-    @max_lon.setter
-    def max_lon(self, val):
-        """
-        :param val:
-        :return: None
-        """
-        self.__max_lon = val
-        return
-
-    def __get_min_depth_exclude_missing_val(self):
-        filtered_input_dsert = self.__input_dataset.where(f'{CDMSConstants.depth_col} != {CDMSConstants.missing_depth_value}')
-        stats = filtered_input_dsert.select(pyspark_functions.min(CDMSConstants.depth_col)).collect()
-        if len(stats) != 1:
-            raise ValueError(f'invalid row count on stats function: {stats}')
-        stats = stats[0].asDict()
-        self.min_depth = stats[f'min({CDMSConstants.depth_col})']
-        return
+        self.__stat_result = {}
+        self.__querying_stat_list = []
+        self.__result_keys = {}
+        self.__special_mapping = {}
 
     def to_json(self) -> dict:
         """
         :return:
         """
-        return {
-            'total': self.total,
-            'min_datetime': self.min_datetime,
-            'max_datetime': self.max_datetime,
-            'min_depth': self.min_depth,
-            'max_depth': self.max_depth,
-            'min_lat': self.min_lat,
-            'max_lat': self.max_lat,
-            'min_lon': self.min_lon,
-            'max_lon': self.max_lon,
-            'observation_counts': self.__observation_count
-        }
+        return self.__stat_result
+
+    def __data_type_record_counts(self, data_columns):
+        data_type_counts = {}
+        for each_data_key in data_columns:
+            try:
+                obs_count = self.__input_dataset.where(self.__input_dataset[each_data_key].isNotNull()).count()
+            except Exception as e:
+                LOGGER.exception(f'error while getting total for key: {each_data_key}')
+                obs_count = 0
+            data_type_counts[each_data_key] = obs_count
+        return data_type_counts
+
+    def __excluded_min_max_count(self, column_name, excluded_val, is_min_stat=True):
+        filtered_input_dsert = self.__input_dataset.where(f'{column_name} {">" if is_min_stat else "<"} {excluded_val}')
+        querying_stat_list = [
+            pyspark_functions.min(column_name) if is_min_stat else pyspark_functions.max(column_name)
+        ]
+        stats = filtered_input_dsert.select(querying_stat_list).collect()
+        if len(stats) != 1:
+            raise ValueError(f'invalid row count on stats function: {stats}')
+        stats = stats[0].asDict()
+        return stats[f'{"min" if is_min_stat else "max"}({CDMSConstants.depth_col})']
 
     def start(self):
-        stats = self.__input_dataset.select(pyspark_functions.min(CDMSConstants.lat_col),
-                                            pyspark_functions.max(CDMSConstants.lat_col),
-                                            pyspark_functions.min(CDMSConstants.lon_col),
-                                            pyspark_functions.max(CDMSConstants.lon_col),
-                                            pyspark_functions.min(CDMSConstants.depth_col),
-                                            pyspark_functions.max(CDMSConstants.depth_col),
-                                            pyspark_functions.min(CDMSConstants.time_obj_col),
-                                            pyspark_functions.max(CDMSConstants.time_obj_col)).collect()
+        self.__stat_result = {}
+        for each_stat_dict in self.__file_structure_setting.get_data_stats_config():
+            if each_stat_dict['stat_type'] == 'minmax':
+                self.__result_keys[f'min({each_stat_dict["column"]})'] = f'min_{each_stat_dict["output_name"]}'
+                self.__result_keys[f'max({each_stat_dict["column"]})'] = f'max_{each_stat_dict["output_name"]}'
+                if 'min_excluded' in each_stat_dict:
+                    self.__stat_result[f'min({each_stat_dict["column"]})'] = self.__excluded_min_max_count(
+                        each_stat_dict['column'],
+                        each_stat_dict['min_excluded'],
+                        True
+                    )
+                else:
+                    self.__querying_stat_list.append(pyspark_functions.min(each_stat_dict['column']))
+                if 'max_excluded' in each_stat_dict:
+                    self.__stat_result[f'min({each_stat_dict["column"]})'] = self.__excluded_min_max_count(
+                        each_stat_dict['column'],
+                        each_stat_dict['max_excluded'],
+                        False
+                    )
+                else:
+                    self.__querying_stat_list.append(pyspark_functions.max(each_stat_dict['column']))
+                if 'special_data_type' in each_stat_dict:
+                    self.__special_mapping[f'min({each_stat_dict["column"]})'] = each_stat_dict['special_data_type']
+                    self.__special_mapping[f'max({each_stat_dict["column"]})'] = each_stat_dict['special_data_type']
+            elif each_stat_dict['stat_type'] == 'record_count':
+                self.__result_keys['total'] = each_stat_dict["output_name"]
+                self.__stat_result['total'] = int(self.__input_dataset.count())
+            elif each_stat_dict['stat_type'] == 'count':
+                self.__result_keys['observation_counts'] = each_stat_dict["output_name"]
+                self.__stat_result['observation_counts'] = self.__data_type_record_counts(each_stat_dict['columns'])
+
+        stats = self.__input_dataset.select(self.__querying_stat_list).collect()
         if len(stats) != 1:
             raise ValueError(f'invalid row count on stats function: {stats}')
 
         stats = stats[0].asDict()
-        self.min_lat = stats[f'min({CDMSConstants.lat_col})']
-        self.max_lat = stats[f'max({CDMSConstants.lat_col})']
-
-        self.min_lon = stats[f'min({CDMSConstants.lon_col})']
-        self.max_lon = stats[f'max({CDMSConstants.lon_col})']
-
-        self.min_depth = stats[f'min({CDMSConstants.depth_col})']
-        self.max_depth = stats[f'max({CDMSConstants.depth_col})']
-
-        self.min_datetime = stats[f'min({CDMSConstants.time_obj_col})'].timestamp()
-        self.max_datetime = stats[f'max({CDMSConstants.time_obj_col})'].timestamp()
-
-        if self.min_depth - CDMSConstants.missing_depth_value == 0:
-            self.__get_min_depth_exclude_missing_val()
-        self.__observation_count = {}
-        for each_obs_key in self.__observation_keys:
-            try:
-                obs_count = self.__input_dataset.where(self.__input_dataset[each_obs_key].isNotNull()).count()
-            except Exception as e:
-                LOGGER.exception(f'error while getting total for key: {each_obs_key}')
-                obs_count = 0
-            self.__observation_count[each_obs_key] = obs_count
-        # self.__observation_count = {each_obs_key: self.__input_dataset.where(self.__input_dataset[each_obs_key].isNotNull()).count() for each_obs_key in self.__observation_keys}
+        self.__stat_result = {**self.__stat_result, **stats}
+        for k, v in self.__special_mapping.items():
+            self.__stat_result[k] = getattr(stats[k], v)()
+        renamed_stats = {}
+        for k, v in self.__stat_result.items():
+            renamed_stats[self.__result_keys[k]] = v
+        self.__stat_result = renamed_stats
         return self
