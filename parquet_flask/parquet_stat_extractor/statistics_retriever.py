@@ -4,7 +4,6 @@ from pyspark.sql.dataframe import DataFrame
 import pyspark.sql.functions as pyspark_functions
 
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
-from parquet_flask.io_logic.cdms_constants import CDMSConstants
 LOGGER = logging.getLogger(__name__)
 
 
@@ -43,7 +42,7 @@ class StatisticsRetriever:
         if len(stats) != 1:
             raise ValueError(f'invalid row count on stats function: {stats}')
         stats = stats[0].asDict()
-        return stats[f'{"min" if is_min_stat else "max"}({CDMSConstants.depth_col})']
+        return stats[f'{"min" if is_min_stat else "max"}({column_name})']
 
     def start(self):
         self.__stat_result = {}
