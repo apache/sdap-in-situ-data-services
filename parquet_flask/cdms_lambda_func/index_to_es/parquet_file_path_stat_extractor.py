@@ -1,4 +1,4 @@
-from insitu.file_structure_setting import FileStructureSetting
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 
 
 class ParquetFilePathStatExtractor:

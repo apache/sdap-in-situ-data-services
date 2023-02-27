@@ -21,7 +21,7 @@ import json
 import pandas
 from pyspark.sql.dataframe import DataFrame
 
-from insitu.file_structure_setting import FileStructureSetting
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
 from parquet_flask.io_logic.retrieve_spark_session import RetrieveSparkSession

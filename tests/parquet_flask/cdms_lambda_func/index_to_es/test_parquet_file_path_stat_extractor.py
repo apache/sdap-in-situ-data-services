@@ -1,7 +1,7 @@
 import json
 from unittest import TestCase
 
-from insitu.file_structure_setting import FileStructureSetting
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.cdms_lambda_func.index_to_es.parquet_file_path_stat_extractor import ParquetFilePathStatExtractor
 
 

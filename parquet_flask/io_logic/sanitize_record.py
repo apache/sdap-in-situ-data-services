@@ -15,7 +15,7 @@
 
 import logging
 
-from insitu.file_structure_setting import FileStructureSetting
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.utils.parallel_json_validator import ParallelJsonValidator

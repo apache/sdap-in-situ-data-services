@@ -1,7 +1,7 @@
 import json
 import os
 
-from insitu.file_structure_setting import FileStructureSetting
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.cdms_lambda_func.index_to_es.parquet_file_path_stat_extractor import ParquetFilePathStatExtractor
 from parquet_flask.parquet_stat_extractor.local_statistics_retriever import LocalStatisticsRetriever
 from parquet_flask.utils.file_utils import FileUtils
