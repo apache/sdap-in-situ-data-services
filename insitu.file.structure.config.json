@@ -69,6 +69,163 @@
       "updated_type": "insitu_geo_spatial"
     }
   },
+  "query_input_transformer_schema": {
+    "type": "object",
+    "properties": {
+        "provider": {"type": "string"},
+        "project": {"type": "string"},
+        "platform": {
+            "type": "array",
+            "items": {"type": "string"}
+        },
+        "startTime": {"type": "string"},
+        "endTime": {"type": "string"},
+        "minDepth": {"type": "number"},
+        "maxDepth": {"type": "number"},
+        "bbox": {
+            "type": "array",
+            "items": {"type": "number"}
+        },
+        "variable": {
+            "type": "array",
+            "items": {"type": "string"}
+        },
+        "columns": {
+            "type": "array",
+            "items": {"type": "string"}
+        }
+    }
+},
+  "query_input_metadata_search_instructions": {
+    "provider": {
+        "type": "string",
+        "dsl_terms": [
+            {
+                "term": {
+                    "provider": "repr_value"
+                }
+            }
+        ]
+    },
+    "project": {
+        "type": "string",
+        "dsl_terms": [
+            {
+                "term": {
+                    "project": "repr_value"
+                }
+            }
+        ]
+    },
+    "platform": {
+        "type": "string",
+        "dsl_terms": [
+            {
+                "term": {
+                    "platform_code": "repr_value"
+                }
+            }
+        ]
+    },
+    "minDepth": {
+        "type": "float",
+        "dsl_terms": [
+            {
+                "range": {
+                    "max_depth": {
+                        "gte": "repr_value"
+                    }
+                }
+            }
+        ]
+    },
+    "maxDepth": {
+        "type": "float",
+        "dsl_terms": [
+            {
+                "range": {
+                    "min_depth": {
+                        "lte": "repr_value"
+                    }
+                }
+            }
+        ]
+    },
+    "startTime": {
+        "type": "string",
+        "dsl_terms": [
+            {
+                "range": {
+                    "max_datetime": {
+                        "gte": "repr_value"
+                    }
+                }
+            }
+        ]
+    },
+    "endTime": {
+        "type": "string",
+        "dsl_terms": [
+            {
+                "range": {
+                    "min_datetime": {
+                        "lte": "repr_value"
+                    }
+                }
+            }
+        ]
+    },
+    "bbox": [
+        {
+            "type": "float",
+            "dsl_terms": [
+                {
+                    "range": {
+                        "max_lat": {
+                            "gte": "repr_value"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "float",
+            "dsl_terms": [
+                {
+                    "range": {
+                        "max_lon": {
+                            "gte": "repr_value"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "float",
+            "dsl_terms": [
+                {
+                    "range": {
+                        "min_lat": {
+                            "lte": "repr_value"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "float",
+            "dsl_terms": [
+                {
+                    "range": {
+                        "min_lat": {
+                            "lte": "repr_value"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+},
   "data_stats": [
     {
       "output_name": "depth",

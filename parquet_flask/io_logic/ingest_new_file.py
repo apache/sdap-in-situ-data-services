@@ -23,7 +23,6 @@ from pyspark.sql.dataframe import DataFrame
 
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
-from parquet_flask.io_logic.cdms_schema import CdmsSchema
 from parquet_flask.io_logic.retrieve_spark_session import RetrieveSparkSession
 from parquet_flask.io_logic.sanitize_record import SanitizeRecord
 from parquet_flask.utils.config import Config
