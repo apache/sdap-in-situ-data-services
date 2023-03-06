@@ -7,7 +7,7 @@ from parquet_flask.utils.file_utils import FileUtils
 
 
 class TestGetQueryTransformer(TestCase):
-    def test_01(self):
+    def test_01_transform_param(self):
         data_json_schema = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json')
         structure_config = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json')
         file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
@@ -40,7 +40,7 @@ class TestGetQueryTransformer(TestCase):
         self.assertEqual(transformed_query_param_dict, mock_transformed_query_param_dict)
         return
 
-    def test_02(self):
+    def test_02_transform_param(self):
         data_json_schema = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json')
         structure_config = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json')
         file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
@@ -180,6 +180,76 @@ class TestGetQueryTransformer(TestCase):
                     }
                 }
             }
+        ]
+        self.assertEqual(dsl_dict, mock_dsl_dict)
+        return
+
+    def test_04_generate_dsl_conditions(self):
+        data_json_schema = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json')
+        structure_config = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json')
+        file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
+        transformer = GetQueryTransformer(file_struct_setting)
+        query_param_dict = {
+            'provider': 'sample_provider',
+            'project': 'sample_project',
+            'platform': '5,6,7,8'.split(','),
+            'startTime': '2023-01-01T00:00:00',
+            'endTime': '2023-01-01T00:00:00',
+            'variable': 'a1,a2,a3'.split(','),
+            'columns': 'c1,c2,c3'.split(',')
+        }
+        dsl_dict = transformer.generate_dsl_conditions(query_param_dict)
+        mock_dsl_dict = [
+            {
+                "term": {
+                    "provider": "sample_provider"
+                }
+            },
+            {
+                "term": {
+                    "project": "sample_project"
+                }
+            },
+            {
+                "bool": {
+                    "should": [
+                        {
+                            "term": {
+                                "platform_code": "5"
+                            }
+                        },
+                        {
+                            "term": {
+                                "platform_code": "6"
+                            }
+                        },
+                        {
+                            "term": {
+                                "platform_code": "7"
+                            }
+                        },
+                        {
+                            "term": {
+                                "platform_code": "8"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "range": {
+                    "max_datetime": {
+                        "gte": "2023-01-01T00:00:00"
+                    }
+                }
+            },
+            {
+                "range": {
+                    "min_datetime": {
+                        "lte": "2023-01-01T00:00:00"
+                    }
+                }
+            },
         ]
         self.assertEqual(dsl_dict, mock_dsl_dict)
         return
