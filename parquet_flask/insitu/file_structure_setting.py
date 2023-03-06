@@ -2,7 +2,8 @@ from parquet_flask.utils.parallel_json_validator import ParallelJsonValidator
 
 STRUCTURE_CONFIG = {
     "type": "object",
-    "required": ["partitioning_columns", "non_data_columns", "derived_columns", "file_metadata_keys", "data_array_key", "data_stats", "query_input_metadata_search_instructions", "query_input_transformer_schema"],
+    "required": ["partitioning_columns", "non_data_columns", "derived_columns", "file_metadata_keys", "data_array_key",
+                 "data_stats", "query_input_metadata_search_instructions", "es_index_schema_parquet_stats", "query_input_transformer_schema"],
     "properties": {
         "data_array_key": {"type": "string"},
         "partitioning_columns": {"type": "array", "items": {"type": "string"}},
@@ -14,6 +15,7 @@ STRUCTURE_CONFIG = {
             "properties": {}
         },
         "query_input_transformer_schema": {"type": "object"},
+        "es_index_schema_parquet_stats": {"type": "object"},
         "query_input_metadata_search_instructions": {
             "type": "object"
         },
@@ -48,6 +50,9 @@ class FileStructureSetting:
         result, message = ParallelJsonValidator().load_schema(STRUCTURE_CONFIG).validate_single_json(self.__structure_config)
         if result is False:
             raise ValueError(f'invalid structure_config: {message}')
+
+    def get_es_index_schema_parquet_stats(self):
+        return self.__structure_config['es_index_schema_parquet_stats']
 
     def get_query_input_transformer_schema(self):
         return self.__structure_config['query_input_transformer_schema']

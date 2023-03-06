@@ -72,160 +72,244 @@
   "query_input_transformer_schema": {
     "type": "object",
     "properties": {
-        "provider": {"type": "string"},
-        "project": {"type": "string"},
-        "platform": {
-            "type": "array",
-            "items": {"type": "string"}
-        },
-        "startTime": {"type": "string"},
-        "endTime": {"type": "string"},
-        "minDepth": {"type": "number"},
-        "maxDepth": {"type": "number"},
-        "bbox": {
-            "type": "array",
-            "items": {"type": "number"}
-        },
-        "variable": {
-            "type": "array",
-            "items": {"type": "string"}
-        },
-        "columns": {
-            "type": "array",
-            "items": {"type": "string"}
+      "provider": {
+        "type": "string"
+      },
+      "project": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "array",
+        "items": {
+          "type": "string"
         }
+      },
+      "startTime": {
+        "type": "string"
+      },
+      "endTime": {
+        "type": "string"
+      },
+      "minDepth": {
+        "type": "number"
+      },
+      "maxDepth": {
+        "type": "number"
+      },
+      "bbox": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        }
+      },
+      "variable": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "columns": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
     }
-},
+  },
   "query_input_metadata_search_instructions": {
     "provider": {
-        "type": "string",
-        "dsl_terms": [
-            {
-                "term": {
-                    "provider": "repr_value"
-                }
-            }
-        ]
+      "type": "string",
+      "dsl_terms": [
+        {
+          "term": {
+            "provider": "repr_value"
+          }
+        }
+      ]
     },
     "project": {
-        "type": "string",
-        "dsl_terms": [
-            {
-                "term": {
-                    "project": "repr_value"
-                }
-            }
-        ]
+      "type": "string",
+      "dsl_terms": [
+        {
+          "term": {
+            "project": "repr_value"
+          }
+        }
+      ]
     },
     "platform": {
-        "type": "string",
-        "dsl_terms": [
-            {
-                "term": {
-                    "platform_code": "repr_value"
-                }
-            }
-        ]
+      "type": "string",
+      "dsl_terms": [
+        {
+          "term": {
+            "platform_code": "repr_value"
+          }
+        }
+      ]
     },
     "minDepth": {
-        "type": "float",
-        "dsl_terms": [
-            {
-                "range": {
-                    "max_depth": {
-                        "gte": "repr_value"
-                    }
-                }
+      "type": "float",
+      "dsl_terms": [
+        {
+          "range": {
+            "max_depth": {
+              "gte": "repr_value"
             }
-        ]
+          }
+        }
+      ]
     },
     "maxDepth": {
-        "type": "float",
-        "dsl_terms": [
-            {
-                "range": {
-                    "min_depth": {
-                        "lte": "repr_value"
-                    }
-                }
+      "type": "float",
+      "dsl_terms": [
+        {
+          "range": {
+            "min_depth": {
+              "lte": "repr_value"
             }
-        ]
+          }
+        }
+      ]
     },
     "startTime": {
-        "type": "string",
-        "dsl_terms": [
-            {
-                "range": {
-                    "max_datetime": {
-                        "gte": "repr_value"
-                    }
-                }
+      "type": "string",
+      "dsl_terms": [
+        {
+          "range": {
+            "max_datetime": {
+              "gte": "repr_value"
             }
-        ]
+          }
+        }
+      ]
     },
     "endTime": {
-        "type": "string",
-        "dsl_terms": [
-            {
-                "range": {
-                    "min_datetime": {
-                        "lte": "repr_value"
-                    }
-                }
+      "type": "string",
+      "dsl_terms": [
+        {
+          "range": {
+            "min_datetime": {
+              "lte": "repr_value"
             }
-        ]
+          }
+        }
+      ]
     },
     "bbox": [
-        {
-            "type": "float",
-            "dsl_terms": [
-                {
-                    "range": {
-                        "max_lat": {
-                            "gte": "repr_value"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "type": "float",
-            "dsl_terms": [
-                {
-                    "range": {
-                        "max_lon": {
-                            "gte": "repr_value"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "type": "float",
-            "dsl_terms": [
-                {
-                    "range": {
-                        "min_lat": {
-                            "lte": "repr_value"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "type": "float",
-            "dsl_terms": [
-                {
-                    "range": {
-                        "min_lat": {
-                            "lte": "repr_value"
-                        }
-                    }
-                }
-            ]
-        }
+      {
+        "type": "float",
+        "dsl_terms": [
+          {
+            "range": {
+              "max_lat": {
+                "gte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "float",
+        "dsl_terms": [
+          {
+            "range": {
+              "max_lon": {
+                "gte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "float",
+        "dsl_terms": [
+          {
+            "range": {
+              "min_lat": {
+                "lte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "float",
+        "dsl_terms": [
+          {
+            "range": {
+              "min_lat": {
+                "lte": "repr_value"
+              }
+            }
+          }
+        ]
+      }
     ]
-},
+  },
+  "es_index_schema_parquet_stats": {
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "properties": {
+        "min_datetime": {
+          "type": "double"
+        },
+        "max_datetime": {
+          "type": "double"
+        },
+        "min_lat": {
+          "type": "double"
+        },
+        "max_lat": {
+          "type": "double"
+        },
+        "min_lon": {
+          "type": "double"
+        },
+        "max_lon": {
+          "type": "double"
+        },
+        "platform_code": {
+          "type": "keyword"
+        },
+        "s3_url": {
+          "type": "keyword"
+        },
+        "bucket": {
+          "type": "keyword"
+        },
+        "geo_spatial_interval": {
+          "type": "keyword"
+        },
+        "month": {
+          "type": "keyword"
+        },
+        "name": {
+          "type": "keyword"
+        },
+        "project": {
+          "type": "keyword"
+        },
+        "provider": {
+          "type": "keyword"
+        },
+        "year": {
+          "type": "keyword"
+        },
+        "total": {
+          "type": "long"
+        },
+        "min_depth": {
+          "type": "double"
+        },
+        "max_depth": {
+          "type": "double"
+        }
+      }
+    }
+  },
   "data_stats": [
     {
       "output_name": "depth",
@@ -251,7 +335,33 @@
     },
     {
       "output_name": "observation_counts",
-      "columns": ["air_pressure", "air_temperature", "dew_point_temperature", "downwelling_longwave_flux_in_air", "downwelling_longwave_radiance_in_air", "downwelling_shortwave_flux_in_air", "mass_concentration_of_chlorophyll_in_sea_water", "rainfall_rate", "relative_humidity", "sea_surface_salinity", "sea_surface_skin_temperature", "sea_surface_subskin_temperature", "sea_surface_temperature", "sea_water_density", "sea_water_electrical_conductivity", "sea_water_practical_salinity", "sea_water_salinity", "sea_water_temperature", "surface_downwelling_photosynthetic_photon_flux_in_air", "wet_bulb_temperature", "wind_speed", "wind_from_direction", "wind_to_direction", "eastward_wind", "northward_wind"],
+      "columns": [
+        "air_pressure",
+        "air_temperature",
+        "dew_point_temperature",
+        "downwelling_longwave_flux_in_air",
+        "downwelling_longwave_radiance_in_air",
+        "downwelling_shortwave_flux_in_air",
+        "mass_concentration_of_chlorophyll_in_sea_water",
+        "rainfall_rate",
+        "relative_humidity",
+        "sea_surface_salinity",
+        "sea_surface_skin_temperature",
+        "sea_surface_subskin_temperature",
+        "sea_surface_temperature",
+        "sea_water_density",
+        "sea_water_electrical_conductivity",
+        "sea_water_practical_salinity",
+        "sea_water_salinity",
+        "sea_water_temperature",
+        "surface_downwelling_photosynthetic_photon_flux_in_air",
+        "wet_bulb_temperature",
+        "wind_speed",
+        "wind_from_direction",
+        "wind_to_direction",
+        "eastward_wind",
+        "northward_wind"
+      ],
       "stat_type": "count"
     },
     {

@@ -166,6 +166,7 @@ class ParquetQueryConditionManagementV4:
         self.__check_depth()
         self.__add_variables_filter()
         self.__check_columns()
+        # TODO replace with ParquetPathRetriever. probably move up to parent class as well
         es_retriever = ParquetPathsEsRetriever(self.__parquet_name, self.__query_props).load_es_from_config(self.__es_config['es_url'], self.__es_config['es_index'], self.__es_config.get('es_port', 443))
         self.__parquet_names = es_retriever.start()
         return
