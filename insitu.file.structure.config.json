@@ -172,7 +172,7 @@
       ]
     },
     "startTime": {
-      "type": "string",
+      "type": "datetime",
       "dsl_terms": [
         {
           "range": {
@@ -184,7 +184,7 @@
       ]
     },
     "endTime": {
-      "type": "string",
+      "type": "datetime",
       "dsl_terms": [
         {
           "range": {

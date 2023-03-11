@@ -1,6 +1,7 @@
 import json
 
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
+from parquet_flask.utils.time_utils import TimeUtils
 
 
 class GetQueryTransformer:
@@ -30,6 +31,8 @@ class GetQueryTransformer:
         repr_value = str(input_value)
         if value_type == 'string':
             repr_value = f'"{repr_value}"'
+        elif value_type == 'datetime':
+            repr_value = str(TimeUtils.get_datetime_obj(repr_value).timestamp())
         return json.loads(json.dumps(each_condition).replace('"repr_value"', repr_value))
 
     def __generate_dsl_stmt(self, dsl_terms: list, input_value: object, value_type: str):

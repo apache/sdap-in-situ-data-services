@@ -10,7 +10,7 @@ class ParquetPathRetriever:
         self.__file_struct_setting = file_struct_setting
         self.__es_mw = es_mw
 
-    def start(self, query_dict):
+    def start(self, query_dict) -> [PartitionedParquetPath]:
         query_transformer = GetQueryTransformer(self.__file_struct_setting)
         query_object = query_transformer.transform_param(query_dict)
         es_terms = query_transformer.generate_dsl_conditions(query_object)
@@ -25,7 +25,5 @@ class ParquetPathRetriever:
             ]
         }
         result = self.__es_mw.query_pages(es_dsl)
-        # TODO add test case
-        # TODO update PartitionedParquetPath
         result = [PartitionedParquetPath(self.__base_path, self.__file_struct_setting.get_partitioning_columns()).load_from_es(k['_source']) for k in result['items']]
         return result

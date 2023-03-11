@@ -4,6 +4,7 @@ from unittest import TestCase
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.insitu.get_query_transformer import GetQueryTransformer
 from parquet_flask.utils.file_utils import FileUtils
+from parquet_flask.utils.time_utils import TimeUtils
 
 
 class TestGetQueryTransformer(TestCase):
@@ -16,8 +17,8 @@ class TestGetQueryTransformer(TestCase):
             'provider': 'sample_provider',
             'project': 'sample_project',
             'platform': '1,2,3,4',
-            'startTime': '2023-01-01T00:00:00',
-            'endTime': '2023-01-01T00:00:00',
+            'startTime': '2023-01-01T00:00:00Z',
+            'endTime': '2023-01-01T00:00:00Z',
             'minDepth': '-120.12',
             'maxDepth': '-10.102',
             'bbox': '-100.1, -50.2, 22.3, 2.4',
@@ -29,8 +30,8 @@ class TestGetQueryTransformer(TestCase):
             'provider': 'sample_provider',
             'project': 'sample_project',
             'platform': '1,2,3,4'.split(','),
-            'startTime': '2023-01-01T00:00:00',
-            'endTime': '2023-01-01T00:00:00',
+            'startTime': '2023-01-01T00:00:00Z',
+            'endTime': '2023-01-01T00:00:00Z',
             'minDepth': -120.12,
             'maxDepth': -10.102,
             'bbox': [-100.1, -50.2, 22.3, 2.4],
@@ -49,8 +50,8 @@ class TestGetQueryTransformer(TestCase):
             'provider': 'sample_provider',
             'project': 'sample_project',
             'platform': '1,2, 3,4',
-            'startTime': '2023-01-01T00:00:00',
-            'endTime': '2023-01-01T00:00:00',
+            'startTime': '2023-01-01T00:00:00Z',
+            'endTime': '2023-01-01T00:00:00Z',
             'minDepth': '-120.12',
             'maxDepth': '-10.102',
             'bbox': '-100.1, -50.2,22.3, 2.4',
@@ -60,8 +61,8 @@ class TestGetQueryTransformer(TestCase):
             'provider': 'sample_provider',
             'project': 'sample_project',
             'platform': '1,2,3,4'.split(','),
-            'startTime': '2023-01-01T00:00:00',
-            'endTime': '2023-01-01T00:00:00',
+            'startTime': '2023-01-01T00:00:00Z',
+            'endTime': '2023-01-01T00:00:00Z',
             'minDepth': -120.12,
             'maxDepth': -10.102,
             'bbox': [-100.1, -50.2, 22.3, 2.4],
@@ -78,8 +79,8 @@ class TestGetQueryTransformer(TestCase):
             'provider': 'sample_provider',
             'project': 'sample_project',
             'platform': '1,2,3,4'.split(','),
-            'startTime': '2023-01-01T00:00:00',
-            'endTime': '2023-01-01T00:00:00',
+            'startTime': '2023-01-01T00:00:00Z',
+            'endTime': '2023-01-01T00:00:00Z',
             'minDepth': -120.12,
             'maxDepth': -10.102,
             'bbox': [-100.1, -50.2, 22.3, 2.4],
@@ -141,14 +142,14 @@ class TestGetQueryTransformer(TestCase):
             {
                 "range": {
                     "max_datetime": {
-                        "gte": "2023-01-01T00:00:00"
+                        "gte": TimeUtils.get_datetime_obj("2023-01-01T00:00:00Z").timestamp()
                     }
                 }
             },
             {
                 "range": {
                     "min_datetime": {
-                        "lte": "2023-01-01T00:00:00"
+                        "lte": TimeUtils.get_datetime_obj("2023-01-01T00:00:00Z").timestamp()
                     }
                 }
             },
@@ -193,8 +194,8 @@ class TestGetQueryTransformer(TestCase):
             'provider': 'sample_provider',
             'project': 'sample_project',
             'platform': '5,6,7,8'.split(','),
-            'startTime': '2023-01-01T00:00:00',
-            'endTime': '2023-01-01T00:00:00',
+            'startTime': '2023-01-01T00:00:00Z',
+            'endTime': '2023-01-01T00:00:00Z',
             'variable': 'a1,a2,a3'.split(','),
             'columns': 'c1,c2,c3'.split(',')
         }
@@ -239,14 +240,14 @@ class TestGetQueryTransformer(TestCase):
             {
                 "range": {
                     "max_datetime": {
-                        "gte": "2023-01-01T00:00:00"
+                        "gte": TimeUtils.get_datetime_obj("2023-01-01T00:00:00Z").timestamp()
                     }
                 }
             },
             {
                 "range": {
                     "min_datetime": {
-                        "lte": "2023-01-01T00:00:00"
+                        "lte": TimeUtils.get_datetime_obj("2023-01-01T00:00:00Z").timestamp()
                     }
                 }
             },
