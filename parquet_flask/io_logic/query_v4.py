@@ -16,6 +16,8 @@ import logging
 from datetime import datetime
 
 import pyspark.sql.functions as F
+
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.utils.file_utils import FileUtils
 from pyspark.sql.session import SparkSession
 from pyspark.sql.dataframe import DataFrame
@@ -38,6 +40,7 @@ class QueryV4:
     def __init__(self, props=QueryProps()):
         self.__props = props
         config = Config()
+        self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(config.get_value(Config.in_situ_schema)), FileUtils.read_json(config.get_value(Config.file_structure_setting)))
         self.__app_name = config.get_spark_app_name()
         self.__master_spark = config.get_value(Config.master_spark_url)
         self.__parquet_name = config.get_value(Config.parquet_file_name)
@@ -162,7 +165,7 @@ class QueryV4:
 
     def search(self, spark_session=None):
         LOGGER.debug(f'<delay_check> query_v4_search started')
-        condition_manager = ParquetQueryConditionManagementV4(self.__parquet_name, self.__missing_depth_value, self.__es_config, self.__props)
+        condition_manager = ParquetQueryConditionManagementV4(self.__parquet_name, self.__missing_depth_value, self.__es_config, self.__file_structure_setting, self.__props)
         condition_manager.manage_query_props()
 
         conditions = ' AND '.join(condition_manager.conditions)

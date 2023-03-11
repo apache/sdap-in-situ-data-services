@@ -1,6 +1,9 @@
 import logging
 
-from parquet_flask.io_logic.parquet_paths_es_retriever import ParquetPathsEsRetriever
+from parquet_flask.aws.es_abstract import ESAbstract
+from parquet_flask.aws.es_factory import ESFactory
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
+from parquet_flask.io_logic.parquet_path_retriever import ParquetPathRetriever
 from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.query_v2 import QueryProps
@@ -9,7 +12,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ParquetQueryConditionManagementV4:
-    def __init__(self, parquet_name: str, missing_depth_value, es_config: dict, props=QueryProps()):
+    def __init__(self, parquet_name: str, missing_depth_value, es_config: dict, file_structure_setting: FileStructureSetting, props=QueryProps()):
+        self.__file_structure_setting = file_structure_setting
         self.__conditions = []
         self.__parquet_name = parquet_name if not parquet_name.endswith('/') else parquet_name[:-1]
         self.__columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col]
@@ -143,7 +147,16 @@ class ParquetQueryConditionManagementV4:
         self.__check_depth()
         self.__add_variables_filter()
         self.__check_columns()
-        # TODO replace with ParquetPathRetriever. probably move up to parent class as well
-        es_retriever = ParquetPathsEsRetriever(self.__parquet_name, self.__query_props).load_es_from_config(self.__es_config['es_url'], self.__es_config['es_index'], self.__es_config.get('es_port', 443))
-        self.__parquet_names = es_retriever.start()
-        return
+        aws_es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_config['es_index'], base_url=self.__es_config['es_url'], port=self.__es_config.get('es_port', 443))
+        # TODO astraction : how to convert to this dict from __query_props
+        query_dict = {
+            'provider': 'Florida State University, COAPS',
+            'project': 'SAMOS',
+            'platform': ','.join(['30', '31', '32']),
+            'startTime': '2017-01-25T09:00:00Z',
+            'endTime': '2018-10-24T09:00:00Z',
+            'bbox': ','.join([str(k) for k in [-180.0, -90, 179.38330739034632, 89.90]]),
+        }
+        es_retriever = ParquetPathRetriever(aws_es, self.__file_structure_setting, self.__parquet_name)
+        self.__parquet_names = es_retriever.start(query_dict)
+        return self
