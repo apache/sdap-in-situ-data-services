@@ -73,30 +73,7 @@ class ParquetQueryConditionManagementV4:
         self.__columns = val
         return
 
-    def __generate_time_partition_list(self, min_time, max_time):
-        if min_time.year == max_time.year: # same year
-            new_parquet_names = []
-            for each_month in range(min_time.month, max_time.month + 1):
-                new_parquet_names.extend([k.duplicate().set_year(min_time.year).set_month(each_month) for k in self.parquet_names])
-            self.parquet_names = new_parquet_names
-            return
-        # different year
-        new_parquet_names = []
-        for each_whole_year in range(min_time.year + 1, max_time.year):  # for whole years
-            new_parquet_names.extend([k.duplicate().set_year(each_whole_year) for k in self.parquet_names])
-        if min_time.month == 1:
-            new_parquet_names.extend([k.duplicate().set_year(min_time.year) for k in self.parquet_names])
-        else:
-            for each_month in range(min_time.month, 13):  # months for beginning year
-                new_parquet_names.extend([k.duplicate().set_year(min_time.year).set_month(each_month) for k in self.parquet_names])
-        if max_time.month == 12:
-            new_parquet_names.extend([k.duplicate().set_year(max_time.year) for k in self.parquet_names])
-        else:
-            for each_month in range(1, max_time.month + 1):  # months for ending year
-                new_parquet_names.extend([k.duplicate().set_year(max_time.year).set_month(each_month) for k in self.parquet_names])
-        self.parquet_names = new_parquet_names
-        return
-
+    # TODO: abstraction refactor removed __generate_time_partition_list method as it is not used anymore.
     def __check_time_range(self):
         if self.__query_props.min_datetime is None and self.__query_props.max_datetime is None:
             return None

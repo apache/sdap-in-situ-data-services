@@ -27,5 +27,5 @@ class ParquetPathRetriever:
         result = self.__es_mw.query_pages(es_dsl)
         # TODO add test case
         # TODO update PartitionedParquetPath
-        result = [PartitionedParquetPath(self.__base_path).load_from_es(k['_source']) for k in result['items']]
+        result = [PartitionedParquetPath(self.__base_path, self.__file_struct_setting.get_partitioning_columns()).load_from_es(k['_source']) for k in result['items']]
         return result

@@ -2,30 +2,46 @@ import unittest
 
 from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
 
+partitioning_column_example = [
+    "provider",
+    "project",
+    "platform_code",
+    "geo_spatial_interval",
+    "year",
+    "month",
+    "job_id"
+  ]
 
 class TestGeneralUtilsV3(unittest.TestCase):
+    def test_dummy(self):
+        return
     def test_01(self):
-        first = PartitionedParquetPath('my_base').set_provider('abc').set_project('def').set_platform('ghi').set_year('2001').set_month('02').set_lat_lon((3,4))
-        second = first.duplicate().set_year('2012').set_lat_lon((5,-8))
-        third = first.duplicate().set_platform(None)
-        self.assertEqual(first.generate_path(), 'my_base/provider=abc/project=def/platform_code=ghi/geo_spatial_interval=3_4/year=2001/month=02', 'wrong path')
-        self.assertEqual(second.generate_path(), 'my_base/provider=abc/project=def/platform_code=ghi/geo_spatial_interval=5_-8/year=2012/month=02', 'wrong path')
-        self.assertEqual(third.generate_path(), 'my_base/provider=abc/project=def', 'wrong path')
-        return
-
-    def test_02(self):
-        first = PartitionedParquetPath('my_base').set_provider('abc').set_project('def').set_platform('ghi').set_year('2001').set_month('02').set_lat_lon([3, 4])
-        second = first.duplicate().set_year('2012').set_lat_lon([5,-8])
-        third = first.duplicate().set_platform(None)
-        self.assertEqual(first.generate_path(), 'my_base/provider=abc/project=def/platform_code=ghi/geo_spatial_interval=3_4/year=2001/month=02', 'wrong path')
-        self.assertEqual(second.generate_path(), 'my_base/provider=abc/project=def/platform_code=ghi/geo_spatial_interval=5_-8/year=2012/month=02', 'wrong path')
-        self.assertEqual(third.generate_path(), 'my_base/provider=abc/project=def', 'wrong path')
-        return
-
-    def test_03(self):
-        first = PartitionedParquetPath('my_base').set_provider('abc').set_project('def').set_platform('ghi').set_year('2001').set_month('02').set_lat_lon('3_4')
-        second = first.duplicate().set_year('2012').set_lat_lon('5_-8')
-        third = first.duplicate().set_platform(None)
+        sample_es_1 = {
+            'geo_spatial_interval': '3_4',
+            'provider': 'abc',
+            'project': 'def',
+            'platform_code': 'ghi',
+            'year': '2001',
+            'month': '02',
+        }
+        sample_es_2 = {
+            'geo_spatial_interval': '5_-8',
+            'provider': 'abc',
+            'project': 'def',
+            'platform_code': 'ghi',
+            'year': '2012',
+            'month': '02',
+        }
+        sample_es_3 = {
+            'geo_spatial_interval': '5_-8',
+            'provider': 'abc',
+            'project': 'def',
+            'year': '2012',
+            'month': '02',
+        }
+        first = PartitionedParquetPath('my_base', partitioning_column_example).load_from_es(sample_es_1)
+        second = first.duplicate().load_from_es(sample_es_2)
+        third = first.duplicate().load_from_es(sample_es_3)
         self.assertEqual(first.generate_path(), 'my_base/provider=abc/project=def/platform_code=ghi/geo_spatial_interval=3_4/year=2001/month=02', 'wrong path')
         self.assertEqual(second.generate_path(), 'my_base/provider=abc/project=def/platform_code=ghi/geo_spatial_interval=5_-8/year=2012/month=02', 'wrong path')
         self.assertEqual(third.generate_path(), 'my_base/provider=abc/project=def', 'wrong path')
@@ -52,7 +68,7 @@ class TestGeneralUtilsV3(unittest.TestCase):
     "min_lon": 154.4868,
     "max_lon": 154.6771
   }
-        first = PartitionedParquetPath('my_base').load_from_es(es_result)
+        first = PartitionedParquetPath('my_base', partitioning_column_example).load_from_es(es_result)
         self.assertEqual(first.generate_path(), 'my_base/provider=Florida State University, COAPS/project=SAMOS/platform_code=30/geo_spatial_interval=-25_150/year=2017/month=6', 'wrong path')
         return
 

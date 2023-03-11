@@ -91,8 +91,9 @@ class QueryV4:
             each: PartitionedParquetPath = each
             try:
                 temp_df: DataFrame = spark.read.schema(cdms_spark_struct).parquet(each.generate_path())
-                for k, v in each.get_df_columns().items():
+                for k, v in each.generate_continuous_partitioned_dict().items():
                     temp_df: DataFrame = temp_df.withColumn(k, lit(v))
+                    # TODO : abstraction: remove columns that are not needed like year, month, lat_long
                 read_df_list.append(temp_df)
             except Exception as e:
                 LOGGER.exception(f'failed to retrieve data from spark for: {each.generate_path()}')
