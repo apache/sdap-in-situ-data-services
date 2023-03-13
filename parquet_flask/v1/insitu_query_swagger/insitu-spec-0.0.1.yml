@@ -83,9 +83,57 @@ paths:
 
         '500':
           description: 'Other unexpected error'
-
+   /sub_collection_statistics:
+     get:
+       summary: Retrieve data statistics
+       tags:
+        - Query
+       parameters:
+        - $ref: '#/components/parameters/providerParam'
+        - $ref: '#/components/parameters/projectParam'
+        - $ref: '#/components/parameters/platformParam'
+        - $ref: '#/components/parameters/startTimeParam'
+        - $ref: '#/components/parameters/endTimeParam'
+        - $ref: '#/components/parameters/minDepthParam'
+        - $ref: '#/components/parameters/maxDepthParam'
+        - $ref: '#/components/parameters/bboxParam'
+       responses:
+        '200':
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/string'
+        default:
+          description: 'Invalid query'
 components:
   schemas:
+    StatisticsResponse:
+      type: object
+      properties:
+        provider:
+          type: array
+          items:
+            type: object
+            properties:
+              provider:
+                type: string
+              projects:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    project:
+                      type: string
+                    platforms:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          platform:
+                            type: string
+                          statistics:
+                            type: object
     QueryResponse:
      type: object
      properties:

@@ -18,8 +18,15 @@ import logging
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
+from parquet_flask.aws.es_abstract import ESAbstract
+from parquet_flask.aws.es_factory import ESFactory
+from parquet_flask.insitu.get_query_transformer import GetQueryTransformer
+
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.io_logic.sub_collection_statistics import SubCollectionStatistics
+from parquet_flask.utils.config import Config
+from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.utils.time_utils import TimeUtils
 
@@ -39,17 +46,40 @@ query_model = api.model('sub_collection_statistics', {
 })
 
 
+class AA(object):
+
+    def __init__(self) -> None:
+        super().__init__()
+        config = Config()
+        self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(config.get_value(Config.in_situ_schema)), FileUtils.read_json(config.get_value(Config.file_structure_setting)))
+        self.query_model = None
+
+    def generate_endpoint(self):
+        self.__file_structure_setting.get_query_input_transformer_schema()
+        return self
+
+
 @api.route('', methods=["get", "post"], strict_slashes=False)
 @api.route('/', methods=["get", "post"], strict_slashes=False)
 class SubCollectionStatisticsEndpoint(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
+        config = Config()
+        self.__insitu_schema = FileUtils.read_json(config.get_value(Config.in_situ_schema))
+        self.__file_structure_setting = FileStructureSetting(self.__insitu_schema, FileUtils.read_json(config.get_value(Config.file_structure_setting)))
+        self.__aws_es: ESAbstract = ESFactory().get_instance('AWS', index='',
+                                                             base_url=config.get_value(Config.es_url),
+                                                             port=int(config.get_value(Config.es_port, '443')))
 
     @api.expect()
     def get(self):
         try:
+            # TODO where to get es_index
+
+
+            input_params = GetQueryTransformer(self.__file_structure_setting).transform_param(request.args)
             query_props = QueryProps()
-            sub_collection_stats_api = SubCollectionStatistics(query_props)
+            sub_collection_stats_api = SubCollectionStatistics(self.__aws_es, self.__insitu_schema, input_params, self.__file_structure_setting)
             if 'startTime' in request.args:
                 query_props.min_datetime = TimeUtils.get_datetime_obj(request.args.get('startTime')).timestamp()
             if 'endTime' in request.args:

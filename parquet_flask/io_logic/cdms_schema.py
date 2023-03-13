@@ -123,6 +123,7 @@ class CdmsSchema:
             'string': StringType(),
             'platform': MapType(StringType(), StringType()),
         }
+        # TODO. abstraction this needs to be removed.
         self.__default_columns = [
             StructField('time_obj', TimestampType(), True),
 
@@ -133,6 +134,7 @@ class CdmsSchema:
             StructField('month', IntegerType(), True),
             StructField('job_id', StringType(), True),
         ]
+        # TODO. abstraction this needs to be removed.
         self.__non_observation_columns = [
             'time_obj',
             'time',
@@ -173,8 +175,12 @@ class CdmsSchema:
             raise ValueError(f'missing properties in in_situ_schema["definitions"]["observation"]: {obs_defs}')
         return obs_defs['properties']
 
-    def get_observation_names(self, in_situ_schema: dict):
-        obs_names = [k for k in self.__get_obs_defs(in_situ_schema).keys() if k not in self.__non_observation_columns and not k.endswith('_quality')]
+    def get_observation_names(self, in_situ_schema: dict, non_data_columns: list=None):
+        # TODO abstraction: do not allow "optional" for non_data_columns. remove self.__non_observation_columns
+        # TODO abstraction: _quality is hardcoded.
+        if non_data_columns is None:
+            non_data_columns = self.__non_observation_columns
+        obs_names = [k for k in self.__get_obs_defs(in_situ_schema).keys() if k not in non_data_columns and not k.endswith('_quality')]
         return obs_names
 
     def get_schema_from_json(self, in_situ_schema: dict):

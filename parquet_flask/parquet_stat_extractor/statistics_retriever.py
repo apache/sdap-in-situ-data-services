@@ -70,11 +70,11 @@ class StatisticsRetriever:
                     self.__special_mapping[f'min({each_stat_dict["column"]})'] = each_stat_dict['special_data_type']
                     self.__special_mapping[f'max({each_stat_dict["column"]})'] = each_stat_dict['special_data_type']
             elif each_stat_dict['stat_type'] == 'record_count':
-                self.__result_keys['total'] = each_stat_dict["output_name"]
-                self.__stat_result['total'] = int(self.__input_dataset.count())
+                self.__result_keys['overall_totals'] = each_stat_dict["output_name"]
+                self.__stat_result['overall_totals'] = int(self.__input_dataset.count())
             elif each_stat_dict['stat_type'] == 'count':
-                self.__result_keys['observation_counts'] = each_stat_dict["output_name"]
-                self.__stat_result['observation_counts'] = self.__data_type_record_counts(each_stat_dict['columns'])
+                self.__result_keys['individual_data_totals'] = each_stat_dict["output_name"]
+                self.__stat_result['individual_data_totals'] = self.__data_type_record_counts(each_stat_dict['columns'])
 
         stats = self.__input_dataset.select(self.__querying_stat_list).collect()
         if len(stats) != 1:

@@ -54,6 +54,7 @@ QUERY_PROPS_SCHEMA = {
 
 class QueryProps:
     def __init__(self):
+        # TODO: abstraction : stop using this.
         self.__variable: list = []
         self.__marker_platform_code = None
         self.__quality_flag = False

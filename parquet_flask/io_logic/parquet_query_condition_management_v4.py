@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 class ParquetQueryConditionManagementV4:
     def __init__(self, parquet_name: str, missing_depth_value, es_config: dict, file_structure_setting: FileStructureSetting, props=QueryProps()):
+        # TODO abstraction : need abstraction here
         self.__file_structure_setting = file_structure_setting
         self.__conditions = []
         self.__parquet_name = parquet_name if not parquet_name.endswith('/') else parquet_name[:-1]

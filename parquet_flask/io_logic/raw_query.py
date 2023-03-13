@@ -70,6 +70,11 @@ class RawQueryProps:
 
 class RawQuery:
     def __init__(self, props: RawQueryProps=RawQueryProps()):
+        """
+        # TODO what is this?
+        This class needs to be removed as no one is using this.
+        :param props:
+        """
         self.__props = props
         config = Config()
         self.__app_name = config.get_spark_app_name()

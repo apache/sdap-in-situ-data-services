@@ -246,6 +246,36 @@
       }
     ]
   },
+  "query_statistics_instructions": {
+    "group_by": [
+      "provider",
+      "project",
+      "platform_code"
+    ],
+    "stats": {
+      "min": [
+        "min_datetime",
+        "min_depth",
+        "min_lat",
+        "min_lon"
+      ],
+      "max": [
+        "max_datetime",
+        "max_depth",
+        "max_lat",
+        "max_lon"
+      ],
+      "sum": [
+        "total"
+      ]
+    },
+    "include_data_stats": true,
+    "data_stats": {
+      "is_included": true,
+      "stats": "sum",
+      "data_prefix": "observation_counts."
+    }
+  },
   "es_index_schema_parquet_stats": {
     "settings": {
       "number_of_shards": 3,

@@ -17,7 +17,7 @@ from parquet_flask.utils.time_utils import TimeUtils
 
 LOGGER = logging.getLogger(__name__)
 
-
+# TODO abstraction: this is no longer needed. delete this
 class SubCollectionStatistics2:
     def __init__(self, es_mw: ESAbstract, in_situ_schema_file_path: str, in_situ_file_structure_config_file_path: str, query_object: dict):
         self.__es = es_mw

@@ -1,14 +1,14 @@
 import json
 import logging
 
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
+
+from parquet_flask.insitu.get_query_transformer import GetQueryTransformer
+
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
-from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.utils.file_utils import FileUtils
 
-from parquet_flask.io_logic.cdms_constants import CDMSConstants
-from parquet_flask.utils.config import Config
-
-from parquet_flask.aws.es_factory import ESFactory
+from parquet_flask.io_logic.cdms_constants import CDMSConstants  # This is done.
 
 from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.utils.time_utils import TimeUtils
@@ -17,27 +17,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SubCollectionStatistics:
-    def __init__(self, query_props: QueryProps):
-        config = Config()
-        self.__es: ESAbstract = ESFactory().get_instance('AWS',
-                                                         index=CDMSConstants.es_index_parquet_stats,
-                                                         base_url=config.get_value(Config.es_url),
-                                                         port=int(config.get_value(Config.es_port, '443')))
-        self.__query_props = query_props
-        self.__insitu_schema = FileUtils.read_json(Config().get_value(Config.in_situ_schema))
-        self.__cdms_obs_names = CdmsSchema().get_observation_names(self.__insitu_schema)
-
-    def with_provider(self, provider: str):
-        self.__provider = provider
-        return self
-
-    def with_project(self, project: str):
-        self.__project = project
-        return self
-
-    def with_platforms(self, platform_code: list):
-        self.__platform_codes = platform_code
-        return self
+    def __init__(self, es_mw: ESAbstract, insitu_schema: dict, query_dict: dict, file_struct_setting: FileStructureSetting):
+        self.__query_dict = query_dict
+        self.__file_struct_setting = file_struct_setting
+        self.__es: ESAbstract = es_mw
+        self.__insitu_schema = insitu_schema
+        self.__cdms_obs_names = CdmsSchema().get_observation_names(self.__insitu_schema, self.__file_struct_setting.get_non_data_columns())
 
     def __restructure_core_stats(self, core_stats: dict):
         """
@@ -173,117 +158,53 @@ class SubCollectionStatistics:
         LOGGER.debug(f'restructured_stats: {restructured_stats}')
         return restructured_stats
 
-    def __get_observation_agg_stmts(self):
-        agg_stmts = {k: {
-            'sum': {
-                'field': f'observation_counts.{k}'
+    def __get_data_stats(self):
+        data_stats = {}
+        data_stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()['data_stats']
+        if not data_stats_instructions['is_included']:
+            return data_stats
+        data_columns_prefix = data_stats_instructions['data_prefix'] if 'data_prefix' in data_stats_instructions else ''
+        for each_data_column in self.__cdms_obs_names:  # TODO need to rename
+            data_stats[each_data_column] = {
+                data_stats_instructions['stats']: {'field': f'{data_columns_prefix}{each_data_column}'}
             }
-        } for k in self.__cdms_obs_names}
-        return agg_stmts
+        return data_stats
 
-    def start(self):
-        es_terms = []
-        if self.__query_props.provider is not None:
-            es_terms.append({'term': {CDMSConstants.provider_col: self.__query_props.provider}})
-        if self.__query_props.project is not None:
-            es_terms.append({'term': {CDMSConstants.project_col: self.__query_props.project}})
-        if self.__query_props.platform_code is not None:
-            if isinstance(self.__query_props.platform_code, list):
-                es_terms.append({
-                    'bool': {
-                        'should': [
-                            {'term': {CDMSConstants.platform_code_col: k}} for k in self.__query_props.platform_code
-                        ]
-                    }
-                })
-            else:
-                es_terms.append({'term': {CDMSConstants.platform_code_col: self.__query_props.platform_code}})
-        if self.__query_props.min_depth is not None and self.__query_props.max_depth is not None:
-            es_terms.append({'range': {CDMSConstants.max_depth: {'gte': self.__query_props.min_depth}}})
-            es_terms.append({'range': {CDMSConstants.min_depth: {'lte': self.__query_props.max_depth}}})
+    def generate_dsl(self):
+        query_transformer = GetQueryTransformer(self.__file_struct_setting)
+        query_object = query_transformer.transform_param(self.__query_dict)
+        es_terms = query_transformer.generate_dsl_conditions(query_object)
 
-        if self.__query_props.min_datetime is not None and self.__query_props.max_datetime is not None:
-            es_terms.append({'range': {CDMSConstants.max_datetime: {'gte': self.__query_props.min_datetime}}})
-            es_terms.append({'range': {CDMSConstants.min_datetime: {'lte': self.__query_props.max_datetime}}})
-
-        if self.__query_props.min_lat_lon is not None and self.__query_props.max_lat_lon is not None:
-            es_terms.append({'range': {CDMSConstants.max_lat: {'gte': self.__query_props.min_lat_lon[0]}}})
-            es_terms.append({'range': {CDMSConstants.min_lat: {'lte': self.__query_props.max_lat_lon[0]}}})
-
-            es_terms.append({'range': {CDMSConstants.max_lon: {'gte': self.__query_props.min_lat_lon[1]}}})
-            es_terms.append({'range': {CDMSConstants.min_lon: {'lte': self.__query_props.max_lat_lon[1]}}})
-
-        normal_agg_stmts = {
-            "totals": {
-                "sum": {"field": "total"}}
-            ,
-            "max_datetime": {
-                "max": {
-                    "field": CDMSConstants.max_datetime
-                }
-            },
-            "max_depth": {
-                "max": {
-                    "field": CDMSConstants.max_depth
-                }
-            },
-            "max_lat": {
-                "max": {
-                    "field": CDMSConstants.max_lat
-                }
-            },
-            "max_lon": {
-                "max": {
-                    "field": CDMSConstants.max_lon
-                }
-            },
-            "min_datetime": {
-                "min": {
-                    "field": CDMSConstants.min_datetime
-                }
-            },
-            "min_depth": {
-                "min": {
-                    "field": CDMSConstants.min_depth
-                }
-            },
-            "min_lat": {
-                "min": {
-                    "field": CDMSConstants.min_lat
-                }
-            },
-            "min_lon": {
-                "min": {
-                    "field": CDMSConstants.min_lon
-                }
+        normal_stats = {}
+        stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
+        for agg_type, columns in stats_instructions['stats'].items():
+            for each_column in columns:
+                normal_stats[each_column] = {agg_type: {"field": each_column}}
+        aggregations_group_by = {}
+        current_agg_pointer = aggregations_group_by
+        for each_agg in stats_instructions['group_by']:
+            current_agg_pointer['aggs'] = {
+                each_agg: {'terms': {'field': each_agg}}
             }
+            current_agg_pointer = current_agg_pointer['aggs'][each_agg]
+        current_agg_pointer['aggs'] = {
+            **normal_stats,
+            **self.__get_data_stats(),
         }
         stats_dsl = {
-            "size": 0,
-            "query": {
-                'bool': {
-                    'must': es_terms
-                }
-            },
-            "aggs": {
-                "by_provider": {
-                    "terms": {
-                        "field": CDMSConstants.provider_col
-                    },
-                    "aggs": {
-                        "by_project": {
-                            "terms": {"field": CDMSConstants.project_col},
-                            "aggs": {
-                                "by_platform_code": {
-                                    "terms": {"field": CDMSConstants.platform_code_col},
-                                    "aggs": {**normal_agg_stmts, **self.__get_observation_agg_stmts()}
-                                }
-                            }
-                        }
+            **{
+                "size": 0,
+                "query": {
+                    'bool': {
+                        'must': es_terms
                     }
                 }
-            }
+            },
+            **aggregations_group_by
         }
+        return stats_dsl
+    def start(self):
+        stats_dsl = self.generate_dsl()
         LOGGER.warning(f'es_dsl: {json.dumps(stats_dsl)}')
         es_result = self.__es.query(stats_dsl, CDMSConstants.es_index_parquet_stats)
         # statistics = {k: v['value'] for k, v in es_result['aggregations'].items()}

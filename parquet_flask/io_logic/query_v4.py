@@ -38,6 +38,7 @@ LOGGER = logging.getLogger(__name__)
 
 class QueryV4:
     def __init__(self, props=QueryProps()):
+        # TODO : abstraction : big time here
         self.__props = props
         config = Config()
         self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(config.get_value(Config.in_situ_schema)), FileUtils.read_json(config.get_value(Config.file_structure_setting)))

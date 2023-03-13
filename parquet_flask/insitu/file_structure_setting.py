@@ -3,7 +3,9 @@ from parquet_flask.utils.parallel_json_validator import ParallelJsonValidator
 STRUCTURE_CONFIG = {
     "type": "object",
     "required": ["partitioning_columns", "non_data_columns", "derived_columns", "file_metadata_keys", "data_array_key",
-                 "data_stats", "query_input_metadata_search_instructions", "es_index_schema_parquet_stats", "query_input_transformer_schema"],
+                 "data_stats", "query_input_metadata_search_instructions", "es_index_schema_parquet_stats",
+                 "query_statistics_instructions",
+                 "query_input_transformer_schema"],
     "properties": {
         "data_array_key": {"type": "string"},
         "partitioning_columns": {"type": "array", "items": {"type": "string"}},
@@ -18,6 +20,32 @@ STRUCTURE_CONFIG = {
         "es_index_schema_parquet_stats": {"type": "object"},
         "query_input_metadata_search_instructions": {
             "type": "object"
+        },
+        "query_statistics_instructions": {
+            "type": "object",
+            "required": ["group_by", "stats", "data_stats"],
+            "properties": {
+                "group_by": {"type": "array", "items": {"type": "string"}},
+                "include_data_stats": {"type": "boolean"},
+                "data_stats": {
+                    "type": "object",
+                    "required": ["is_included", "stats", "data_prefix"],
+                    "properties": {
+                        "is_included": {"type": "boolean"},
+                        "stats": {"type": "string"},
+                        "data_prefix": {"type": "string"},
+                    }
+                },
+                "stats": {
+                    "type": "object",
+                    "required": ["min", "max", "sum"],
+                    "properties": {
+                        "min": {"type": "array", "items": {"type": "string"}},
+                        "max": {"type": "array", "items": {"type": "string"}},
+                        "sum": {"type": "array", "items": {"type": "string"}},
+                    }
+                },
+            }
         },
         "data_stats": {
             "type": "array",
@@ -70,6 +98,12 @@ class FileStructureSetting:
 
     def get_data_stats_config(self):
         return self.__structure_config['data_stats']
+
+    def get_non_data_columns(self):
+        return self.__structure_config['non_data_columns']
+
+    def get_query_statistics_instructions(self):
+        return self.__structure_config['query_statistics_instructions']
 
     def get_partitioning_columns(self):
         return self.__structure_config['partitioning_columns']

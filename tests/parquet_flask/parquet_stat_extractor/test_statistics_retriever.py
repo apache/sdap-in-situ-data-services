@@ -59,7 +59,15 @@ class TestStatisticsRetriever(TestCase):
         df = spark.createDataFrame(input_json)
         df = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))
         stats_retriever = StatisticsRetriever(df, file_structure_setting).start()
-        old_result = {'total': 5, 'min_datetime': 946684800.0, 'max_datetime': 946684803.0, 'min_depth': 0.0, 'max_depth': 3.0, 'min_lat': 0.0, 'max_lat': 3.0, 'min_lon': 0.0, 'max_lon': 3.0, 'observation_counts': {'air_pressure': 1, 'air_temperature': 0, 'dew_point_temperature': 0, 'downwelling_longwave_flux_in_air': 0, 'downwelling_longwave_radiance_in_air': 0, 'downwelling_shortwave_flux_in_air': 0, 'mass_concentration_of_chlorophyll_in_sea_water': 0, 'rainfall_rate': 0, 'relative_humidity': 0, 'sea_surface_salinity': 0, 'sea_surface_skin_temperature': 0, 'sea_surface_subskin_temperature': 0, 'sea_surface_temperature': 0, 'sea_water_density': 0, 'sea_water_electrical_conductivity': 0, 'sea_water_practical_salinity': 0, 'sea_water_salinity': 0, 'sea_water_temperature': 0, 'surface_downwelling_photosynthetic_photon_flux_in_air': 0, 'wet_bulb_temperature': 0, 'wind_speed': 0, 'wind_from_direction': 0, 'wind_to_direction': 0, 'eastward_wind': 0, 'northward_wind': 0}}
+        old_result = {'total': 5, 'min_datetime': 946684800.0, 'max_datetime': 946684803.0, 'min_depth': 0.0,
+                      'max_depth': 3.0, 'min_lat': 0.0, 'max_lat': 3.0, 'min_lon': 0.0, 'max_lon': 3.0,
+                      'observation_counts': {'air_pressure': 1, 'air_temperature': 0, 'dew_point_temperature': 0, 'downwelling_longwave_flux_in_air': 0,
+                                             'downwelling_longwave_radiance_in_air': 0, 'downwelling_shortwave_flux_in_air': 0, 'mass_concentration_of_chlorophyll_in_sea_water': 0,
+                                             'rainfall_rate': 0, 'relative_humidity': 0, 'sea_surface_salinity': 0, 'sea_surface_skin_temperature': 0,
+                                             'sea_surface_subskin_temperature': 0, 'sea_surface_temperature': 0, 'sea_water_density': 0, 'sea_water_electrical_conductivity': 0,
+                                             'sea_water_practical_salinity': 0, 'sea_water_salinity': 0, 'sea_water_temperature': 0,
+                                             'surface_downwelling_photosynthetic_photon_flux_in_air': 0, 'wet_bulb_temperature': 0, 'wind_speed': 0, 'wind_from_direction': 0,
+                                             'wind_to_direction': 0, 'eastward_wind': 0, 'northward_wind': 0}}
         print(json.dumps(old_result, sort_keys=True))
         print(json.dumps(stats_retriever.to_json(), sort_keys=True))
         self.assertEqual(json.dumps(old_result, sort_keys=True), json.dumps(stats_retriever.to_json(), sort_keys=True), 'backward compatibility failed')
