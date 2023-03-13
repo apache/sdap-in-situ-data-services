@@ -25,12 +25,12 @@ class AwsCred:
     __DEFAULT_REGION = 'us-west-2'
 
     def __init__(self):
-        self.__region = Config().get_value(Config.aws_region, AwsCred.__DEFAULT_REGION)
+        self.__region = Config(False).get_value(Config.aws_region, AwsCred.__DEFAULT_REGION)
         LOGGER.debug(f'using region: {self.__region}')
         self.__boto3_session = {'region_name': self.__region}
-        aws_access_key_id = Config().get_value(Config.aws_access_key_id, '')
-        aws_secret_access_key = Config().get_value(Config.aws_secret_access_key, '')
-        aws_session_token = Config().get_value(Config.aws_session_token, '')
+        aws_access_key_id = Config(False).get_value(Config.aws_access_key_id, '')
+        aws_secret_access_key = Config(False).get_value(Config.aws_secret_access_key, '')
+        aws_session_token = Config(False).get_value(Config.aws_session_token, '')
         if aws_access_key_id != '':
             LOGGER.debug('using aws_access_key_id as it is not empty')
             if aws_secret_access_key == '':
@@ -42,6 +42,18 @@ class AwsCred:
                 self.__boto3_session['aws_session_token'] = aws_session_token
         else:
             LOGGER.debug('using default session as there is  no aws_access_key_id')
+    @property
+    def region(self):
+        return self.__region
+
+    @region.setter
+    def region(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__region = val
+        return
 
     @property
     def boto3_session(self):
@@ -55,6 +67,9 @@ class AwsCred:
         """
         self.__boto3_session = val
         return
+
+    def get_session(self):
+        return boto3.Session(**self.boto3_session)
 
     def get_resource(self, service_name: str):
         return boto3.Session(**self.boto3_session).resource(service_name)

@@ -7,8 +7,9 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 
 class BenchMark:
     def __init__(self):
-        self.__cdms_domain = 'http://localhost:30801/insitu'
-        # self.__cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
+        # self.__cdms_domain = 'http://localhost:30801/insitu'
+        # self.__cdms_domain = 'http://localhost:8083/insitu'
+        self.__cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
         # self.__cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.__size = 100
         self.__start_index = 0
@@ -30,7 +31,6 @@ class BenchMark:
     def __execute_query(self):
         """
         time curl 'https://doms.jpl.nasa.gov/insitu?startIndex=3&itemsPerPage=20&minDepth=-99&variable=relative_humidity&columns=air_temperature&maxDepth=-1&startTime=2019-02-14T00:00:00Z&endTime=2021-02-16T00:00:00Z&platform=3B&bbox=-111,11,111,99'
-
         :return:
         """
         # rest_keyword = 'query_data_doms_custom_pagination'
@@ -54,7 +54,7 @@ class BenchMark:
                 f'{"" if self.__columns is None else f"&columns={self.__columns}"}'
                 f'&minDepth={self.__min_depth}&maxDepth={self.__max_depth}'
                 f'&startTime={self.__start_time}&endTime={self.__end_time}'
-                f'&bbox={self.__min_lat_lon[0]},{self.__min_lat_lon[1]},{self.__max_lat_lon[0]},{self.__max_lat_lon[1]}', verify=False
+                f'&bbox={self.__min_lat_lon[1]},{self.__min_lat_lon[0]},{self.__max_lat_lon[1]},{self.__max_lat_lon[0]}', verify=False
         )
         if response.status_code > 400:
             raise ValueError(f'wrong status code: {response.status_code}. details: {response.text}')
@@ -479,9 +479,13 @@ time: 2017-03-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- tota
 
         :return:
         """
-        self.__start_time = '2017-05-01T00:00:00Z'
-        self.__end_time = '2017-07-30T00:00:00Z'
-        self.__platform_code = '41'
+        self.__start_time = '2018-11-01T00:00:00Z'
+        self.__end_time = '2018-12-30T00:00:00Z'
+        self.__platform_code = '30'
+        self.__provider = 'Florida State University, COAPS'
+        self.__project = 'SAMOS'
+        self.__min_lat_lon = (9.9, -100.2)
+        self.__max_lat_lon = (39.99, 0)
         self.__variable = None
         self.__columns = None
 
@@ -502,17 +506,40 @@ time: 2017-03-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- tota
         return
 
     def custom_pagination_bench_mark(self):
-        self.__start_time = '2018-08-30T00:00:00Z'
-        self.__end_time = '2018-08-31T00:00:00Z'
+        self.__start_time = '2017-07-03T01:00:00Z'
+        self.__end_time = '2017-07-08T23:00:00Z'
         # self.__platform_code = '42,41,30,16,17'
-        self.__platform_code = '42'
-        self.__min_lat_lon = (-25.2, 168.8)
-        self.__max_lat_lon = (-25.1, 169.0)
+        # self.__platform_code = '42'
+        # self.__min_lat_lon = (-25.2, 168.8)
+        # self.__max_lat_lon = (-25.1, 169.0)
+
+        # self.__provider = 'Florida State University, COAPS'
+        # self.__project = 'SAMOS'
+        # self.__platform_code = '30,31,32'
+        # self.__start_time = '2017-01-25T09:00:00Z'
+        # self.__end_time = '2017-10-24T09:00:00Z'
+        # self.__min_lat_lon = (-44, 100.0)
+        # self.__max_lat_lon = (-25.0, 132.38330739034632)
 
         # self.__min_depth = -99
         # self.__max_depth = 0
         # self.__min_lat_lon = (-111, 11)
         # self.__max_lat_lon = (111, 99)
+        # self.__provider = 'Florida State University, COAPS'
+        # self.__project = 'SAMOS'
+        # self.__platform_code = '30'
+        # self.__platform_code = '42'
+        # self.__min_lat_lon = (-25.2, 168.8)
+        # self.__max_lat_lon = (-25.1, 169.0)
+
+        self.__provider = 'NCAR'
+        self.__project = 'ICOADS Release 3.0'
+        self.__platform_code = '30,41,42'
+
+        self.__min_depth = -10
+        self.__max_depth = 10
+        self.__min_lat_lon = (-80, -100)
+        self.__max_lat_lon = (20, 100)
         # self.__provider = 'Florida State University, COAPS'
         # self.__project = 'SAMOS'
         # self.__platform_code = '30'
@@ -523,7 +550,6 @@ time: 2017-03-01T00:00:00Z - 2017-04-30T00:00:00Z -- start_index: 120000 -- tota
         # self.__start_time = '2019-10-01T00:00:00Z'
         # self.__end_time = '2019-10-16T00:00:00Z'
         #
-
 
         self.__variable = None
         self.__columns = None

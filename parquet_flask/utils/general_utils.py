@@ -59,6 +59,14 @@ class GeneralUtils:
             return False
 
     @staticmethod
+    def floor_lat_long(latitude: float, longitude: float, interval: int = 5):
+        if interval == 0:
+            raise ValueError(f'interval cannot be 0')
+        interval_lat = divmod(latitude, interval)
+        interval_lon = divmod(longitude, interval)
+        return f'{latitude - interval_lat[1]}_{longitude - interval_lon[1]}'
+
+    @staticmethod
     def gen_float_list_from_comma_sep_str(input_val: str, expected_count: int):
         split_bbox_str = input_val.strip().split(',')
         if len(split_bbox_str) != expected_count:

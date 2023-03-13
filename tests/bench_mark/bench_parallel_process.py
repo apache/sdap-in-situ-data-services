@@ -10,8 +10,8 @@ from tests.bench_mark.func_exec_time_decorator import func_exec_time_decorator
 class InsituProps:
     def __init__(self):
         # self.cdms_domain = 'http://localhost:30801/insitu'
-        # self.cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
-        self.cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
+        self.cdms_domain = 'https://doms.jpl.nasa.gov/insitu'
+        # self.cdms_domain = 'https://a106a87ec5ba747c5915cc0ec23c149f-881305611.us-west-2.elb.amazonaws.com/insitu'
         self.size = 100
         self.start_index = 0
 
@@ -21,10 +21,10 @@ class InsituProps:
 
         self.variable = 'relative_humidity'
         self.columns = 'air_temperature'
-        self.start_time = '2017-01-01T00:00:00Z'
-        self.end_time = '2017-03-30T00:00:00Z'
-        self.min_depth = -99
-        self.max_depth = 0
+        self.start_time = '2015-07-05T12:00:00Z'
+        self.end_time = '2015-07-08T23:00:00Z'
+        self.min_depth = -10
+        self.max_depth = 10
         self.min_lat_lon = (-111, 11)
         self.max_lat_lon = (111, 99)
 
@@ -72,12 +72,12 @@ provider=NCAR&project=ICOADS%20Release%203.0&platform=42
         # insitu_props.project = 'ICOADS Release 3.0'
         # insitu_props.platform_code = '42'
 
-        insitu_props.provider = 'Florida State University, COAPS'
-        insitu_props.project = 'SAMOS'
-        insitu_props.platform_code = '30'
-
-        insitu_props.min_depth = -20.0
-        insitu_props.max_depth = 10.0
+        # insitu_props.provider = 'Florida State University, COAPS'
+        # insitu_props.project = 'SAMOS'
+        # insitu_props.platform_code = '30'
+        #
+        # insitu_props.min_depth = -20.0
+        # insitu_props.max_depth = 10.0
 
         insitu_props.columns = None
         insitu_props.variable = None
@@ -85,11 +85,11 @@ provider=NCAR&project=ICOADS%20Release%203.0&platform=42
         # insitu_props.min_lat_lon = (-29.884000009000008, 160.0)
         # insitu_props.max_lat_lon = (-25.0, 172.38330739034632)
 
-        insitu_props.min_lat_lon = (20, -100)
-        insitu_props.max_lat_lon = (30, -79)
+        # insitu_props.min_lat_lon = (20, -100)
+        # insitu_props.max_lat_lon = (30, -79)
 
-        insitu_props.start_time = '2017-01-01T09:00:00Z'
-        insitu_props.end_time = '2017-01-30T09:00:00Z'
+        # insitu_props.start_time = '2017-01-01T09:00:00Z'
+        # insitu_props.end_time = '2017-01-30T09:00:00Z'
         return insitu_props
 
     def __execute_insitu_query(self, month: str):

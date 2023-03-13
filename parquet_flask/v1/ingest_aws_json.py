@@ -18,10 +18,15 @@ import os
 import uuid
 from multiprocessing.context import Process
 
+from parquet_flask.aws.es_abstract import ESAbstract
+from parquet_flask.aws.es_factory import ESFactory
+from parquet_flask.io_logic.metadata_tbl_es import MetadataTblES
+
 from parquet_flask.aws.aws_s3 import AwsS3
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.ingest_new_file import IngestNewJsonFile
-from parquet_flask.io_logic.metadata_tbl_io import MetadataTblIO
+from parquet_flask.io_logic.metadata_tbl_interface import MetadataTblInterface
+from parquet_flask.utils.config import Config
 from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.utils.time_utils import TimeUtils
 
@@ -138,7 +143,11 @@ class IngestAwsJson:
         self.__file_sha512 = None
         self.__sha512_result = None
         self.__sha512_cause = None
-        self.__db_io = MetadataTblIO()
+        config = Config()
+        es_url = config.get_value(Config.es_url)
+        es_port = int(config.get_value(Config.es_port, '443'))
+        self.__es: ESAbstract = ESFactory().get_instance('AWS', index='', base_url=es_url, port=es_port)
+        self.__db_io: MetadataTblInterface = MetadataTblES(self.__es)
 
     def __get_s3_sha512(self):
         """
@@ -206,7 +215,7 @@ class IngestAwsJson:
             #     'job_id': self.__props.uuid,
             # })
         except Exception as e:
-            LOGGER.debug(f'deleting error file')
+            LOGGER.exception(f'deleting error file')
             FileUtils.del_file(self.__saved_file_name)
             return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500
         if self.__sha512_result is True:
@@ -253,6 +262,6 @@ class IngestAwsJson:
                 bg_process.start()
                 return {'message': 'ingesting. Not waiting.', 'job_id': self.__props.uuid}, 204
         except Exception as e:
-            LOGGER.debug(f'deleting error file')
+            LOGGER.exception(f'deleting error file')
             FileUtils.del_file(self.__saved_file_name)
             return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500

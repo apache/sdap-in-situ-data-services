@@ -65,12 +65,16 @@ spec:
             {{- end }}
             - name: parquet_metadata_tbl
               value: {{ .Values.flask_env.parquet_metadata_tbl }}
+            - name: es_url
+              value: {{ .Values.flask_env.es_url }}
             - name: spark_app_name
               value: {{ .Values.flask_env.spark_app_name }}
             - name: log_level
               value: {{ .Values.flask_env.log_level }}
             - name: spark_config_dict
               value: {{ .Values.flask_env.spark_config_dict | toJson | quote  }}
+            - name: geospatial_interval_by_project
+              value: {{ .Values.flask_env.geospatial_interval_by_project | toJson | quote }}
           {{- if .Values.extraEnvs }}
             {{- toYaml .Values.extraEnvs | nindent 12 }}
           {{- end }}

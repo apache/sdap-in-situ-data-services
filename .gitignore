@@ -14,5 +14,7 @@ secret.yml
 local.spark.cluster/aws-java-sdk-bundle*.jar
 .ipynb_checkpoints
 *.ipynb
+one_offs
 
 parquet.spark.helm.values.yaml
+parquet.spark.helm.values.local*

@@ -24,3 +24,10 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertRaises(ValueError, GeneralUtils.gen_float_list_from_comma_sep_str, '-99.34, 23, 44.8765, ', 4)
         self.assertRaises(ValueError, GeneralUtils.gen_float_list_from_comma_sep_str, '-99.34, 23', 3)
         return
+
+    def test_floor_lat_long(self):
+        self.assertEqual(GeneralUtils.floor_lat_long(-3, 5), '-5_5')
+        self.assertEqual(GeneralUtils.floor_lat_long(0, -0), '0_0')
+        self.assertEqual(GeneralUtils.floor_lat_long(22, -0), '20_0')
+        self.assertEqual(GeneralUtils.floor_lat_long(-2, 4, 3), '-3_3')
+        return

@@ -1,6 +1,8 @@
 import logging
 
+from parquet_flask.io_logic.ingest_new_file import GEOSPATIAL_INTERVAL
 from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
+from parquet_flask.utils.spatial_utils import SpatialUtils
 from parquet_flask.utils.time_utils import TimeUtils
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.query_v2 import QueryProps
@@ -168,6 +170,13 @@ class ParquetQueryConditionManagementV3:
         self.__generate_time_partition_list(min_time, max_time)
         return
 
+    def __generate_bbox_list(self, lat_lon_intervals: list):
+        new_parquet_names = []
+        for each_lat_lon in lat_lon_intervals:
+            new_parquet_names.extend([k.duplicate().set_lat_lon(each_lat_lon) for k in self.parquet_names])
+        self.parquet_names = new_parquet_names
+        return
+
     def __check_bbox(self):
         if self.__query_props.min_lat_lon is not None:
             LOGGER.debug(f'setting Lat-Lon min condition as sql: {self.__query_props.min_lat_lon}')
@@ -177,6 +186,12 @@ class ParquetQueryConditionManagementV3:
             LOGGER.debug(f'setting Lat-Lon max condition as sql: {self.__query_props.max_lat_lon}')
             self.__conditions.append(f"{CDMSConstants.lat_col} <= {self.__query_props.max_lat_lon[0]}")
             self.__conditions.append(f"{CDMSConstants.lon_col} <= {self.__query_props.max_lat_lon[1]}")
+
+        if self.__query_props.min_lat_lon is None or self.__query_props.max_lat_lon is None:
+            self.__is_extending_base = False
+            return
+        lat_lon_intervals = SpatialUtils.generate_lat_lon_intervals(tuple(self.__query_props.min_lat_lon), tuple(self.__query_props.max_lat_lon), GEOSPATIAL_INTERVAL)
+        self.__generate_bbox_list(lat_lon_intervals)
         return
 
     def __check_depth(self):
@@ -189,7 +204,7 @@ class ParquetQueryConditionManagementV3:
         if self.__query_props.max_depth is not None:
             LOGGER.debug(f'setting depth max condition: {self.__query_props.max_depth}')
             depth_conditions.append(f"{CDMSConstants.depth_col} <= {self.__query_props.max_depth}")
-        LOGGER.debug(f'has depth condition. adding missing depth conditon')
+        LOGGER.debug(f'has depth condition. adding missing depth condition')
         if len(depth_conditions) == 1:
             self.__conditions.append(f'({depth_conditions[0]} OR {CDMSConstants.depth_col} == {self.__missing_depth_value})')
             return
@@ -224,8 +239,8 @@ class ParquetQueryConditionManagementV3:
         self.__check_provider()
         self.__check_project()
         self.__check_platform()
-        self.__check_time_range()
         self.__check_bbox()
+        self.__check_time_range()
         self.__check_depth()
         self.__add_variables_filter()
         self.__check_columns()

@@ -29,6 +29,7 @@ class CDMSConstants:
     lat_col = 'latitude'
     lon_col = 'longitude'
     depth_col = 'depth'
+    geo_spatial_interval_col = 'geo_spatial_interval'
 
     s3_url_key = 's3_url'
     uuid_key = 'uuid'
@@ -41,4 +42,22 @@ class CDMSConstants:
     checksum_validation = 'checksum_validation'
     checksum_cause = 'checksum_cause'
 
-    missing_depth_value = -99999
+    missing_depth_value = -99999.0
+    config_key_flask_prefix = 'flask_prefix'
+
+    es_index_parquet_stats = 'parquet_stats_alias'
+    entry_file_records_index = 'entry_file_records_alias'
+
+    min_depth = 'min_depth'
+    max_depth = 'max_depth'
+
+    max_datetime = 'max_datetime'
+    min_datetime = 'min_datetime'
+
+    max_lat = 'max_lat'
+    min_lat = 'min_lat'
+
+    max_lon = 'max_lon'
+    min_lon = 'min_lon'
+
+    geospatial_interval_by_project = 'geospatial_interval_by_project'

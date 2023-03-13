@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import uuid
 
 from parquet_flask.utils.singleton import Singleton
 
@@ -33,10 +34,13 @@ class Config(metaclass=Singleton):
     missing_depth_value = 'missing_depth_value'
     authentication_type = 'authentication_type'
     authentication_key = 'authentication_key'
-    flask_prefix = 'flask_prefix'
+    es_url = 'es_url'
+    es_index = 'es_index'
+    es_port = 'es_port'
 
-    def __init__(self):
+    def __init__(self, validate_env: bool = True):
         self.__keys = [
+            Config.es_url,
             Config.master_spark_url,
             Config.spark_app_name,
             # Config.spark_config_dict,
@@ -52,7 +56,13 @@ class Config(metaclass=Singleton):
             Config.aws_secret_access_key,
             Config.aws_session_token,
         ]
-        self.__validate()
+        if validate_env:
+            self.__validate()
+        app_name_postfix = self.get_value('HOSTNAME', str(uuid.uuid4()))
+        self.__spark_app_name = f'{self.get_value(Config.spark_app_name)}___{app_name_postfix}'
+
+    def get_spark_app_name(self):
+        return self.__spark_app_name
 
     def __validate(self):
         missing_mandatory_keys = [k for k in self.__keys if k not in os.environ]

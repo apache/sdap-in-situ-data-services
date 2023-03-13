@@ -13,23 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class TimeUtils:
     @staticmethod
-    def get_current_time_str():
+    def get_current_time_str() -> str:
         return datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
     @staticmethod
-    def get_current_time_unix():
+    def get_current_time_unix() -> int:
         return int(datetime.utcnow().timestamp() * 1000)
 
     @staticmethod
-    def get_datetime_obj(dt_str, fmt='%Y-%m-%dT%H:%M:%SZ'):
-        return datetime.strptime(dt_str, fmt)
+    def get_datetime_obj(dt_str, fmt='%Y-%m-%dT%H:%M:%SZ') -> datetime:
+        return datetime.strptime(dt_str, fmt).replace(tzinfo=timezone.utc)
 
     @staticmethod
-    def get_time_str(unix_timestamp, fmt='%Y-%m-%dT%H:%M:%SZ', in_ms=True):
+    def get_time_str(unix_timestamp, fmt='%Y-%m-%dT%H:%M:%SZ', in_ms=True) -> str:
         converting_timestamp = unix_timestamp / 1000 if in_ms is True else unix_timestamp
         return datetime.utcfromtimestamp(converting_timestamp).strftime(fmt)

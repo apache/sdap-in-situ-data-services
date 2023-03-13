@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import logging
+import signal
 from copy import deepcopy
 
 from flask_restx import Resource, Namespace, fields
@@ -40,8 +41,21 @@ query_model = api.model('query_data_doms', {
     'project': fields.Integer(required=True, example=0),
     'columns': fields.String(required=False, example='latitudes, longitudes'),
     'variable': fields.String(required=False, example='air_pressure, relative_humidity'),
-    'bbox': fields.String(required=True, example='-45, 175, -30, 180'),  # west, south, east, north
+    'bbox': fields.String(required=True, example='-45, 175, -30, 180', description='west, south, east, north || min_lon, min_lat, max_lon, max_lat'),
 })
+
+
+class timeout:
+    def __init__(self, seconds=1, error_message='Timeout'):
+        self.seconds = seconds
+        self.error_message = error_message
+    def handle_timeout(self, signum, frame):
+        raise TimeoutError(self.error_message)
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.handle_timeout)
+        signal.alarm(self.seconds)
+    def __exit__(self, type, value, traceback):
+        signal.alarm(0)
 
 
 @api.route('', methods=["get", "post"], strict_slashes=False)
@@ -96,6 +110,8 @@ class IngestParquet(Resource):
         try:
             LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination calling QueryV4: {request.args}')
             query = QueryV4(QueryProps().from_json(payload))
+            # with timeout(seconds=20):
+            #     result_set = query.search()
             result_set = query.search()
             LOGGER.debug(f'search params: {payload}')
             # page_info = self.__calculate_4_ranges(result_set['total'])

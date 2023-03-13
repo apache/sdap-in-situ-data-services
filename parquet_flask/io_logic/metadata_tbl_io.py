@@ -54,5 +54,9 @@ class MetadataTblIO(MetadataTblInterface):
     def get_by_uuid(self, uuid):
         return self.__ddb.get_from_index(self.__uuid_index, {CDMSConstants.uuid_key: uuid})
 
+    def delete_by_s3_url(self, s3_url):
+        self.__ddb.delete_one_item(s3_url)
+        return self
+
     def query_by_date_range(self, start_time, end_time):
         raise NotImplementedError('cannot implement range query to the primary key in DDB')
