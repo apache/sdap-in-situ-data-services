@@ -1,0 +1,3 @@
+local.spark.cluster/
+k8s_spark/parquet.spark.helm/charts/
+.releaseignore
