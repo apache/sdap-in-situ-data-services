@@ -2,14 +2,9 @@ import json
 import logging
 
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
-
 from parquet_flask.insitu.get_query_transformer import GetQueryTransformer
-
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
-from parquet_flask.utils.file_utils import FileUtils
-
 from parquet_flask.io_logic.cdms_constants import CDMSConstants  # This is done.
-
 from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.utils.time_utils import TimeUtils
 
@@ -140,6 +135,19 @@ class SubCollectionStatistics:
         :param es_result:
         :return:
         """
+        stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
+        stats_result = {}
+        current_agg_pointer = stats_result
+        for each_agg in stats_instructions['group_by']:
+            current_agg_pointer['aggs'] = {
+                each_agg: {'terms': {'field': each_agg}}
+            }
+            current_agg_pointer[each_agg] = [
+                {
+                    each_agg: k['key'],
+                } for k in es_result[each_agg]['buckets']
+            ]
+
         restructured_stats = {
             "providers": [
                 {
