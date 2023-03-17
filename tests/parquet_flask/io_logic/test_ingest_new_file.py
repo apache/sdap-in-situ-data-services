@@ -22,14 +22,19 @@ from parquet_flask.io_logic.ingest_new_file import get_geospatial_interval
 
 class TestGeneralUtilsV3(TestCase):
     def test_get_geospatial_interval(self):
-        os.environ['geospatial_interval_by_project'] = json.dumps({
-            "ICOADS Release 3.0": 100,
-            "SAMOS": "50",
-            "t1": "7.5",
-            "SPURS": "75"
+        icoads_interval_by_platform = {
+            "0": "50",
+            "16": "7.5" 
+        }
+        samos_interval_by_platform = {
+            "0": "50",
+            "17": "7.5"
+        }
+        os.environ['geospatial_interval_by_platform'] = json.dumps({
+            "ICOADS Release 3.0": icoads_interval_by_platform,
+            "SAMOS": samos_interval_by_platform
         })
-        self.assertEqual(get_geospatial_interval('SAMOS'), 50, 'wrong for SAMOS')
-        self.assertEqual(get_geospatial_interval('SPURS'), 75, 'wrong for SPURS')
-        self.assertEqual(get_geospatial_interval('ICOADS Release 3.0'), 100, 'wrong for ICOADS Release 3.0')
-        self.assertEqual(get_geospatial_interval('t1'), 30, 'wrong for t1')
+        self.assertDictEqual(get_geospatial_interval('SAMOS'), samos_interval_by_platform, 'wrong for SAMOS')
+        self.assertDictEqual(get_geospatial_interval('ICOADS Release 3.0'), icoads_interval_by_platform, 'wrong for ICOADS Release 3.0')
+        self.assertEqual(get_geospatial_interval('t1'), {}, 'wrong for t1')
         return
