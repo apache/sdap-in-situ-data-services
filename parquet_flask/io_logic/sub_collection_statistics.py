@@ -71,6 +71,25 @@ class SubCollectionStatistics:
         LOGGER.debug(f'core_stats: {core_stats}')
         return core_stats
 
+    def __retrieve_raw_stats(self, es_result_agg: dict, group_by_list: list=None):
+        if group_by_list is None:
+            stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
+            group_by_list = stats_instructions['group_by']
+        if len(group_by_list) < 1:
+            stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
+            stat_result = {}
+            for agg_type, columns in stats_instructions['stats'].items():
+                for each_column in columns:
+                    stat_result[each_column] = es_result_agg[each_column]['value']
+            return stat_result
+        next_group_by = group_by_list[1:]
+        agg_result = []
+        for each_agg in es_result_agg[group_by_list[0]]['buckets']:
+            current_key = each_agg['key']
+            current_results = self.__retrieve_raw_stats(each_agg, next_group_by)
+            agg_result.append({current_key: current_results})
+        return agg_result
+
     def __restructure_stats(self, es_result: dict):
         """
         {
@@ -216,4 +235,4 @@ class SubCollectionStatistics:
         LOGGER.warning(f'es_dsl: {json.dumps(stats_dsl)}')
         es_result = self.__es.query(stats_dsl, CDMSConstants.es_index_parquet_stats)
         # statistics = {k: v['value'] for k, v in es_result['aggregations'].items()}
-        return self.__restructure_stats(es_result['aggregations'])
+        return self.__retrieve_raw_stats(es_result['aggregations'])
