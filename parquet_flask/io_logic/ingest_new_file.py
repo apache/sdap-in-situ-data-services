@@ -152,6 +152,7 @@ class IngestNewJsonFile:
                 raise ValueError('json file does not exist: {}'.format(abs_file_path))
             input_json = FileUtils.read_json(abs_file_path)
         for each_record in input_json[self.__file_structure_setting.get_data_array_key()]:
+            # TODO abstraction: why is this hardcoded?
             if 'depth' in each_record:
                 each_record['depth'] = float(each_record['depth'])
             if 'wind_from_direction' in each_record:
