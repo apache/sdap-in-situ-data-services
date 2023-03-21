@@ -72,25 +72,6 @@ class SubCollectionStatistics:
         return core_stats
 
     def __retrieve_raw_stats(self, es_result_agg: dict, group_by_list: list=None):
-        if group_by_list is None:
-            stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
-            group_by_list = stats_instructions['group_by']
-        if len(group_by_list) < 1:
-            stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
-            stat_result = {}
-            for agg_type, columns in stats_instructions['stats'].items():
-                for each_column in columns:
-                    stat_result[each_column] = es_result_agg[each_column]['value']
-            return stat_result
-        next_group_by = group_by_list[1:]
-        agg_result = []
-        for each_agg in es_result_agg[group_by_list[0]]['buckets']:
-            current_key = each_agg['key']
-            current_results = self.__retrieve_raw_stats(each_agg, next_group_by)
-            agg_result.append({current_key: current_results})
-        return agg_result
-
-    def __restructure_stats(self, es_result: dict):
         """
         {
             "by_provider": {
@@ -151,39 +132,28 @@ class SubCollectionStatistics:
                 ]
             }
         }
-        :param es_result:
+        :param es_result_agg:
+        :param group_by_list:
         :return:
         """
-        stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
-        stats_result = {}
-        current_agg_pointer = stats_result
-        for each_agg in stats_instructions['group_by']:
-            current_agg_pointer['aggs'] = {
-                each_agg: {'terms': {'field': each_agg}}
-            }
-            current_agg_pointer[each_agg] = [
-                {
-                    each_agg: k['key'],
-                } for k in es_result[each_agg]['buckets']
-            ]
-
-        restructured_stats = {
-            "providers": [
-                {
-                    "provider": m['key'],
-                    "projects": [
-                        {
-                            "project": l['key'],
-                            "platforms": [
-                                self.__restructure_core_stats(k) for k in l['by_platform_code']['buckets']
-                            ]
-                        } for l in m['by_project']['buckets']
-                    ]
-                } for m in es_result['by_provider']['buckets']
-            ]
-        }
-        LOGGER.debug(f'restructured_stats: {restructured_stats}')
-        return restructured_stats
+        if group_by_list is None:
+            stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
+            group_by_list = stats_instructions['group_by']
+        if len(group_by_list) < 1:
+            stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
+            stat_result = {}
+            for agg_type, columns in stats_instructions['stats'].items():
+                for each_column in columns:
+                    stat_result[each_column] = es_result_agg[each_column]['value']
+                    # TODO need backward compatibility
+            return stat_result
+        next_group_by = group_by_list[1:]
+        agg_result = []
+        for each_agg in es_result_agg[group_by_list[0]]['buckets']:
+            current_key = each_agg['key']
+            current_results = self.__retrieve_raw_stats(each_agg, next_group_by)
+            agg_result.append({current_key: current_results})
+        return agg_result
 
     def __get_data_stats(self):
         data_stats = {}
