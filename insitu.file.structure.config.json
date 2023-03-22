@@ -248,7 +248,8 @@
   },
   "query_input_column_filters": {
     "default_columns": ["time", "lat", "lon", "depth"],
-    "column_filter_key": ["variable", "columns"]
+    "mandatory_column_filter_key": "columns",
+    "additional_column_filter_key": "variable"
   },
   "query_input_parquet_conditions": {
     "startTime": {

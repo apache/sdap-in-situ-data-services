@@ -120,12 +120,13 @@ class GetQueryTransformer:
 
     def generate_retrieving_columns(self, query_object: dict):
         column_settings = self.__file_struct_setting.get_query_input_column_filters()
-        default_columns = column_settings['default_columns']
-        all_columns = deepcopy(default_columns)
-        for each_column_key in column_settings['column_filter_key']:
-            if each_column_key in query_object:
-                all_columns.extend(query_object[each_column_key])
-        return list(set(all_columns))
+        if column_settings['mandatory_column_filter_key'] not in query_object or len(query_object[column_settings['mandatory_column_filter_key']]) < 1:
+            return []
+        default_columns = deepcopy(column_settings['default_columns'])
+        default_columns.extend(query_object[column_settings['mandatory_column_filter_key']])
+        if column_settings['additional_column_filter_key'] in query_object:
+            default_columns.extend(query_object[column_settings['additional_column_filter_key']])
+        return list(set(default_columns))
 
     def generate_dsl_conditions(self, query_object: dict):
         """

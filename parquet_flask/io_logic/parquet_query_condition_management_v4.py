@@ -16,8 +16,8 @@ class ParquetQueryConditionManagementV4:
         # TODO abstraction : need abstraction here
         self.__file_structure_setting = file_structure_setting
         self.__conditions = []
-        self.__parquet_name = parquet_name if not parquet_name.endswith('/') else parquet_name[:-1]
         self.__columns = []
+        self.__parquet_name = parquet_name if not parquet_name.endswith('/') else parquet_name[:-1]
         self.__query_dict = query_dict
         self.__missing_depth_value = missing_depth_value
         self.__parquet_names: [PartitionedParquetPath] = []
@@ -82,9 +82,9 @@ class ParquetQueryConditionManagementV4:
         query_transformer = GetQueryTransformer(self.__file_structure_setting)
         query_object = query_transformer.transform_param(self.__query_dict)
 
-        self.__conditions = query_transformer.generate_parquet_conditions(query_object)
+        self.conditions = query_transformer.generate_parquet_conditions(query_object)
         self.columns = query_transformer.generate_retrieving_columns(query_object)
         aws_es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_config['es_index'], base_url=self.__es_config['es_url'], port=self.__es_config.get('es_port', 443))
         es_retriever = ParquetPathRetriever(aws_es, self.__file_structure_setting, self.__parquet_name)
-        self.__parquet_names = es_retriever.start(query_object)
+        self.parquet_names = es_retriever.start(query_object)
         return self

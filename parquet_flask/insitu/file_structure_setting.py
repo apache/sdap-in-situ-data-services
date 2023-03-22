@@ -20,10 +20,11 @@ STRUCTURE_CONFIG = {
         },
         "query_input_column_filters": {
             "type": "object",
-            "required": ["default_columns", "column_filter_key"],
+            "required": ["default_columns", "mandatory_column_filter_key", "additional_column_filter_key"],
             "properties": {
                 "default_columns": {"type": "array", "items": {"type": "string"}},
-                "column_filter_key": {"type": "array", "items": {"type": "string"}},
+                "mandatory_column_filter_key": {"type": "string"},
+                "additional_column_filter_key": {"type": "string"},
             }
         },
         "query_input_parquet_conditions": {"type": "object"},
