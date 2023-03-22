@@ -129,6 +129,7 @@ class QueryV4:
         return [query_result[k].asc() for k in self.__sorting_columns]
 
     def __get_nth_first_page(self, query_result: DataFrame):
+        # TODO: abstraction: replace self.__props.min_datetime with markerTime. More importantly. use json to prioritize markerTime over startTime if needed.
         result_head = query_result.where(f"{CDMSConstants.time_col} = '{self.__props.min_datetime}'").sort(self.__get_sorting_params(query_result)).collect()
         new_index = -1
         for i, each_row in enumerate(result_head):
