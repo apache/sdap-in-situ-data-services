@@ -5,6 +5,7 @@ STRUCTURE_CONFIG = {
     "required": ["partitioning_columns", "non_data_columns", "derived_columns", "file_metadata_keys", "data_array_key",
                  "data_stats", "query_input_metadata_search_instructions", "es_index_schema_parquet_stats",
                  "query_statistics_instructions",
+                 "query_input_parquet_conditions",
                  "query_input_transformer_schema"],
     "properties": {
         "data_array_key": {"type": "string"},
@@ -16,6 +17,7 @@ STRUCTURE_CONFIG = {
             "required": [],
             "properties": {}
         },
+        "query_input_parquet_conditions": {"type": "object"},
         "query_input_transformer_schema": {"type": "object"},
         "es_index_schema_parquet_stats": {"type": "object"},
         "query_input_metadata_search_instructions": {
@@ -92,6 +94,9 @@ class FileStructureSetting:
 
     def get_data_array_key(self):
         return self.__structure_config['data_array_key']
+
+    def get_query_input_parquet_conditions(self):
+        return self.__structure_config['query_input_parquet_conditions']
 
     def get_derived_columns(self):
         return self.__structure_config['derived_columns']

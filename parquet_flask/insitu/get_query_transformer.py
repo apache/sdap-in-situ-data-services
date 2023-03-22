@@ -7,6 +7,18 @@ from parquet_flask.utils.time_utils import TimeUtils
 class GetQueryTransformer:
     def __init__(self, file_struct_setting: FileStructureSetting):
         self.__file_struct_setting = file_struct_setting
+        self.__sql_comparator_signs = {
+            'lte': '<=',
+            'gte': '>=',
+            'lt': '<',
+            'gt': '>',
+            'dq': '=',
+            'includes': 'IS NOT NULL'
+        }
+        self.__sql_join_conditions = {
+            'should': 'OR',
+            'must': 'AND',
+        }
 
     def __transform_value(self, str_value: str, definition: dict):
         if 'type' not in definition:
@@ -49,7 +61,68 @@ class GetQueryTransformer:
             })
         return es_terms
 
+    def __transform_parquet_condition(self, parquet_clause, value):
+        """
+        example:
+        {
+            "type": "string",
+            "data_column": "time_obj",
+            "comparator": "lte"
+          }
+        :param parquet_clause:
+        :param value:
+        :return:
+        """
+        if parquet_clause['constraint'] == 'binary':
+            sql_condition_value = f'{value}'
+            if parquet_clause['type'] == 'string':
+                sql_condition_value = f"'{value}'"
+            return f" {parquet_clause['data_column']} {self.__sql_comparator_signs[parquet_clause['comparator']]} {sql_condition_value} "
+        if parquet_clause['constraint'] == 'unary':
+            return f" {value} {self.__sql_comparator_signs[parquet_clause['comparator']]} "
+        raise ValueError(f'unknown parquet_clause: {parquet_clause}')
+
+    def generate_parquet_conditions(self,  query_object: dict):
+        parquet_conditions = []
+        for k, v in self.__file_struct_setting.get_query_input_parquet_conditions().items():
+            if k not in query_object:
+                continue
+            input_value = query_object[k]
+            parquet_term = v['terms']
+            if v['relationship'] == '1:1':  # scalar to scalar condition
+                if isinstance(input_value, list) or isinstance(parquet_term, list):
+                    raise ValueError(f'value or term is a list: {input_value} v. {parquet_term}')
+                parquet_conditions.append(self.__transform_parquet_condition(parquet_term, input_value))
+                continue
+            if v['relationship'] == 'n:n':  # vector to vector condition mapping 1 to 1
+                if not isinstance(input_value, list) or not isinstance(parquet_term, list):
+                    raise ValueError(f'value or term is NOT a list: {input_value} v. {parquet_term}')
+                if len(parquet_term) != len(input_value):
+                    raise ValueError(f'mismatched length: {parquet_term} v. {input_value}')
+                temp_parquet_conditions = []
+                for each_pair in zip(parquet_term, input_value):
+                    temp_parquet_conditions.append(self.__transform_parquet_condition(each_pair[0], each_pair[1]))
+                temp_parquet_conditions = f" {self.__sql_join_conditions[v['condition']]} ".join(temp_parquet_conditions)
+                parquet_conditions.append(f'( {temp_parquet_conditions} )')
+                continue
+            if v['relationship'] == 'n:1':
+                if not isinstance(input_value, list) or isinstance(parquet_term, list):
+                    raise ValueError(f'value is NOT a list or term is a list: {input_value} v. {parquet_term}')
+                temp_parquet_conditions = []
+                for each_value in input_value:
+                    temp_parquet_conditions.append(self.__transform_parquet_condition(parquet_term, each_value))
+                temp_parquet_conditions = f" {self.__sql_join_conditions[v['condition']]} ".join(temp_parquet_conditions)
+                parquet_conditions.append(f'( {temp_parquet_conditions} )')
+                continue
+            raise ValueError(f'unknown parquet condition dict: {v} v. {input_value}')
+        return parquet_conditions
+
     def generate_dsl_conditions(self, query_object: dict):
+        """
+        TODO: abstraction - missing depth condition needs to be added.
+        :param query_object:
+        :return:
+        """
         es_terms = []
         for k, v in self.__file_struct_setting.query_input_metadata_search_instructions().items():
             if k not in query_object:

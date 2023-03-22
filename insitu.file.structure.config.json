@@ -246,6 +246,82 @@
       }
     ]
   },
+  "query_input_parquet_conditions": {
+    "startTime": {
+      "relationship": "1:1",
+      "terms": {
+        "constraint": "binary",
+        "type": "string",
+        "data_column": "time_obj",
+        "comparator": "gte"
+      }
+    },
+    "endTime": {
+      "relationship": "1:1",
+      "terms": {
+        "constraint": "binary",
+        "type": "string",
+        "data_column": "time_obj",
+        "comparator": "lte"
+      }
+    },
+    "bbox": {
+      "relationship": "n:n",
+            "condition": "must",
+"terms": [
+        {
+        "constraint": "binary",
+          "type": "float",
+          "data_column": "lat",
+          "comparator": "gte"
+        },
+        {
+        "constraint": "binary",
+          "type": "float",
+          "data_column": "lon",
+          "comparator": "gte"
+        },
+        {
+        "constraint": "binary",
+          "type": "float",
+          "data_column": "lat",
+          "comparator": "lte"
+        },
+        {
+        "constraint": "binary",
+          "type": "float",
+          "data_column": "lon",
+          "comparator": "lte"
+        }
+      ]
+    },
+    "minDepth": {
+       "relationship": "1:1",
+     "terms": {
+        "constraint": "binary",
+        "type": "float",
+        "data_column": "depth",
+        "comparator": "gte"
+      }
+    },
+    "maxDepth": {
+       "relationship": "1:1",
+      "terms": {
+        "constraint": "binary",
+        "type": "float",
+        "data_column": "depth",
+        "comparator": "lte"
+      }
+    },
+    "variable": {
+      "relationship": "n:1",
+      "condition": "should",
+      "terms": {
+        "constraint": "unary",
+        "comparator": "includes"
+      }
+    }
+  },
   "query_statistics_instructions": {
     "group_by": [
       "provider",
