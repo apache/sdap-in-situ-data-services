@@ -246,7 +246,14 @@
       }
     ]
   },
+  "query_sort_mechanism": {
+    "sorting_columns": ["time_obj", "platform_code", "depth", "lat", "lon"],
+    "page_size_key": "itemsPerPage",
+    "pagination_marker_key": "markerPlatform",
+    "pagination_marker_time": "markerTime"
+  },
   "query_input_column_filters": {
+    "removing_columns": ["time_obj", "month", "year"],
     "default_columns": ["time", "lat", "lon", "depth"],
     "mandatory_column_filter_key": "columns",
     "additional_column_filter_key": "variable"

@@ -15,7 +15,6 @@
 import logging
 from datetime import datetime
 
-import pyspark.sql.functions as F
 
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.utils.file_utils import FileUtils
@@ -23,12 +22,10 @@ from pyspark.sql.session import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import lit
 from pyspark.sql.types import Row
-from pyspark.sql.utils import AnalysisException
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
 from parquet_flask.io_logic.parquet_query_condition_management_v4 import ParquetQueryConditionManagementV4
 from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
-from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.general_utils import GeneralUtils
@@ -37,9 +34,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class QueryV4:
-    def __init__(self, props=QueryProps()):
+    def __init__(self, query_params_dict: dict):
         # TODO : abstraction : big time here
-        self.__props = props
+        self.__query_params_dict = query_params_dict
         config = Config()
         self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(config.get_value(Config.in_situ_schema)), FileUtils.read_json(config.get_value(Config.file_structure_setting)))
         self.__app_name = config.get_spark_app_name()
@@ -53,9 +50,23 @@ class QueryV4:
         self.__parquet_name = self.__parquet_name if not self.__parquet_name.endswith('/') else self.__parquet_name[:-1]
         self.__missing_depth_value = CDMSConstants.missing_depth_value
         self.__conditions = []
-        self.__sorting_columns = [CDMSConstants.time_col, CDMSConstants.platform_code_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col]
+        self.__sorting_columns = self.__file_structure_setting.get_query_sort_mechanism()['sorting_columns']
         self.__set_missing_depth_val()
+        self.__page_size = self.__get_size()
+        self.__page_marker = self.__get_page_marker()
+        
+    def __get_page_marker(self):
+        pagination_marker_key = self.__file_structure_setting.get_query_sort_mechanism()['pagination_marker_key']
+        if pagination_marker_key not in self.__query_params_dict:
+            return None
+        return self.__query_params_dict[pagination_marker_key]
 
+    def __get_size(self):
+        page_size_key = self.__file_structure_setting.get_query_sort_mechanism()['page_size_key']
+        if page_size_key not in self.__query_params_dict:
+            return 10  # TODO abstraction. this default value comes from setting
+        return int(self.__query_params_dict[page_size_key])
+    
     def __set_missing_depth_val(self):
         possible_missing_depth = Config().get_value(Config.missing_depth_value)
         if GeneralUtils.is_int(possible_missing_depth):
@@ -98,6 +109,7 @@ class QueryV4:
                 for k, v in each.generate_continuous_partitioned_dict().items():
                     temp_df: DataFrame = temp_df.withColumn(k, lit(v))
                     # TODO : abstraction: remove columns that are not needed like year, month, lat_long
+                    # TODO : abstraction - maybe that's not needed. It's defined in start() method
                 read_df_list.append(temp_df)
             except Exception as e:
                 LOGGER.exception(f'failed to retrieve data from spark for: {each.generate_path()}')
@@ -109,20 +121,9 @@ class QueryV4:
         return main_read_df
 
     def __get_paged_result(self, result_df: DataFrame, total_result: int):
-        remaining_size = total_result - self.__props.start_at
-        current_page_size = remaining_size if remaining_size < self.__props.size else self.__props.size
-        result = result_df.limit(self.__props.start_at + current_page_size).tail(current_page_size)
+        current_page_size = total_result if total_result < self.__page_size else self.__page_size
+        result = result_df.limit(current_page_size).tail(current_page_size)
         return result
-
-    def __get_paged_result_v2(self, result_df: DataFrame):
-        offset = self.__props.start_at + self.__props.size
-        limit = self.__props.size
-        df = result_df.withColumn('_id', F.monotonically_increasing_id())
-        df = df.where(F.col('_id').between(offset, offset + limit))
-        return df.collect()
-
-    def __is_in_old_page(self, current_item: dict) -> bool:
-        return current_item[CDMSConstants.time_col] == self.__props.min_datetime and current_item[CDMSConstants.platform_col]['code'] <= self.__props.marker_platform_code
 
     def __get_sorting_params(self, query_result: DataFrame):
         return [query_result[k].asc() for k in self.__sorting_columns]
@@ -133,32 +134,31 @@ class QueryV4:
         for i, each_row in enumerate(result_head):
             each_row: Row = each_row
             each_sha_256 = GeneralUtils.gen_sha_256_json_obj(each_row.asDict())
-            if each_sha_256 == self.__props.marker_platform_code:
+            if each_sha_256 == self.__page_marker:
                 new_index = i
                 break
         if new_index < 0:
-            LOGGER.warning(f'comparing sha256: {self.__props.marker_platform_code}')
+            LOGGER.warning(f'comparing sha256: {self.__page_marker}')
             for each_row in result_head:
                 each_row: Row = each_row
                 each_sha_256 = GeneralUtils.gen_sha_256_json_obj(each_row.asDict())
                 LOGGER.warning(f'each row: {str(each_row)}. each_sha_256: {each_sha_256}')
             raise ValueError(f'cannot find existing row. It should not happen.')
-        result_page = query_result.take(self.__props.size + new_index + 1)
+        result_page = query_result.take(self.__page_size + new_index + 1)
         result_tail = result_page[new_index + 1:]
         return result_tail
 
     def __get_page(self, query_result: DataFrame, total_result: int):
-        if self.__props.size == 0:
+        if self.__page_size == 0:
             return []
-        if self.__props.marker_platform_code is not None:  # pagination new logic
+        if self.__page_marker is not None:  # pagination new logic
             return self.__get_nth_first_page(query_result)
         if total_result < 0:
             raise ValueError('total_result is not calculated for old pagination logic. This should not happen. Something has horribly gone wrong')
-        # result = self.__get_paged_result_v2(query_result)
         return self.__get_paged_result(query_result, total_result)
 
     def __get_total_count(self, query_result: DataFrame):
-        if self.__props.marker_platform_code is not None:
+        if self.__page_marker is not None:
             LOGGER.debug(f'not counting total since this is an Nth page')
             return -1
         LOGGER.debug(f'counting total')
@@ -166,7 +166,7 @@ class QueryV4:
 
     def search(self, spark_session=None):
         LOGGER.debug(f'<delay_check> query_v4_search started')
-        condition_manager = ParquetQueryConditionManagementV4(self.__parquet_name, self.__missing_depth_value, self.__es_config, self.__file_structure_setting, self.__props)
+        condition_manager = ParquetQueryConditionManagementV4(self.__parquet_name, self.__missing_depth_value, self.__es_config, self.__file_structure_setting, self.__query_params_dict)
         condition_manager.manage_query_props()
 
         conditions = ' AND '.join(condition_manager.conditions)
@@ -191,16 +191,14 @@ class QueryV4:
         LOGGER.debug(f'<delay_check> total duration: {query_time - query_begin_time}')
         total_result = self.__get_total_count(query_result)
         LOGGER.debug(f'<delay_check> total calc count duration: {datetime.now() - query_time}')
-        if self.__props.size < 1:
+        if self.__page_size < 1:
             LOGGER.debug(f'returning only the size: {total_result}')
             return {
                 'total': total_result,
                 'results': [],
             }
         query_time = datetime.now()
-        # result = query_result.withColumn('_id', F.monotonically_increasing_id())
-        removing_cols = [CDMSConstants.time_obj_col, CDMSConstants.year_col, CDMSConstants.month_col]
-        # result = result.where(F.col('_id').between(self.__props.start_at, self.__props.start_at + self.__props.size)).drop(*removing_cols)
+        removing_cols = self.__file_structure_setting.get_query_input_column_filters()['removing_columns']
         if len(condition_manager.columns) > 0:
             query_result = query_result.select(condition_manager.columns)
         else:

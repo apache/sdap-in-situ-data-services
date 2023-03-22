@@ -6,6 +6,7 @@ STRUCTURE_CONFIG = {
                  "data_stats", "query_input_metadata_search_instructions", "es_index_schema_parquet_stats",
                  "query_statistics_instructions",
                  "query_input_column_filters",
+                 "query_sort_mechanism",
                  "query_input_parquet_conditions",
                  "query_input_transformer_schema"],
     "properties": {
@@ -20,11 +21,22 @@ STRUCTURE_CONFIG = {
         },
         "query_input_column_filters": {
             "type": "object",
-            "required": ["default_columns", "mandatory_column_filter_key", "additional_column_filter_key"],
+            "required": ["default_columns", "mandatory_column_filter_key", "additional_column_filter_key", "removing_columns"],
             "properties": {
+                "removing_columns": {"type": "array", "items": {"type": "string"}},
                 "default_columns": {"type": "array", "items": {"type": "string"}},
                 "mandatory_column_filter_key": {"type": "string"},
                 "additional_column_filter_key": {"type": "string"},
+            }
+        },
+        "query_sort_mechanism": {
+            "type": "object",
+            "required": ["sorting_columns", "page_size_key", "pagination_marker_key", "pagination_marker_time"],
+            "properties": {
+                "page_size_key": {"type": "string"},
+                "pagination_marker_key": {"type": "string"},
+                "pagination_marker_time": {"type": "string"},
+                "sorting_columns": {"type": "array", "items": {"type": "string"}}
             }
         },
         "query_input_parquet_conditions": {"type": "object"},
@@ -107,6 +119,10 @@ class FileStructureSetting:
 
     def get_query_input_column_filters(self):
         return self.__structure_config['query_input_column_filters']
+
+    def get_query_sort_mechanism(self):
+        return self.__structure_config['query_sort_mechanism']
+
     def get_query_input_parquet_conditions(self):
         return self.__structure_config['query_input_parquet_conditions']
 
