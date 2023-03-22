@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.utils.time_utils import TimeUtils
@@ -82,7 +83,7 @@ class GetQueryTransformer:
             return f" {value} {self.__sql_comparator_signs[parquet_clause['comparator']]} "
         raise ValueError(f'unknown parquet_clause: {parquet_clause}')
 
-    def generate_parquet_conditions(self,  query_object: dict):
+    def generate_parquet_conditions(self, query_object: dict):
         parquet_conditions = []
         for k, v in self.__file_struct_setting.get_query_input_parquet_conditions().items():
             if k not in query_object:
@@ -116,6 +117,15 @@ class GetQueryTransformer:
                 continue
             raise ValueError(f'unknown parquet condition dict: {v} v. {input_value}')
         return parquet_conditions
+
+    def generate_retrieving_columns(self, query_object: dict):
+        column_settings = self.__file_struct_setting.get_query_input_column_filters()
+        default_columns = column_settings['default_columns']
+        all_columns = deepcopy(default_columns)
+        for each_column_key in column_settings['column_filter_key']:
+            if each_column_key in query_object:
+                all_columns.extend(query_object[each_column_key])
+        return list(set(all_columns))
 
     def generate_dsl_conditions(self, query_object: dict):
         """

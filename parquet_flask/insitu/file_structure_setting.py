@@ -5,6 +5,7 @@ STRUCTURE_CONFIG = {
     "required": ["partitioning_columns", "non_data_columns", "derived_columns", "file_metadata_keys", "data_array_key",
                  "data_stats", "query_input_metadata_search_instructions", "es_index_schema_parquet_stats",
                  "query_statistics_instructions",
+                 "query_input_column_filters",
                  "query_input_parquet_conditions",
                  "query_input_transformer_schema"],
     "properties": {
@@ -16,6 +17,14 @@ STRUCTURE_CONFIG = {
             "type": "object",
             "required": [],
             "properties": {}
+        },
+        "query_input_column_filters": {
+            "type": "object",
+            "required": ["default_columns", "column_filter_key"],
+            "properties": {
+                "default_columns": {"type": "array", "items": {"type": "string"}},
+                "column_filter_key": {"type": "array", "items": {"type": "string"}},
+            }
         },
         "query_input_parquet_conditions": {"type": "object"},
         "query_input_transformer_schema": {"type": "object"},
@@ -95,6 +104,8 @@ class FileStructureSetting:
     def get_data_array_key(self):
         return self.__structure_config['data_array_key']
 
+    def get_query_input_column_filters(self):
+        return self.__structure_config['query_input_column_filters']
     def get_query_input_parquet_conditions(self):
         return self.__structure_config['query_input_parquet_conditions']
 

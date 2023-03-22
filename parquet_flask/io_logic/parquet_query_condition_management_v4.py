@@ -7,8 +7,6 @@ from parquet_flask.aws.es_factory import ESFactory
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.io_logic.parquet_path_retriever import ParquetPathRetriever
 from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
-from parquet_flask.io_logic.cdms_constants import CDMSConstants
-from parquet_flask.io_logic.query_v2 import QueryProps
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,7 +17,7 @@ class ParquetQueryConditionManagementV4:
         self.__file_structure_setting = file_structure_setting
         self.__conditions = []
         self.__parquet_name = parquet_name if not parquet_name.endswith('/') else parquet_name[:-1]
-        self.__columns = [CDMSConstants.time_col, CDMSConstants.depth_col, CDMSConstants.lat_col, CDMSConstants.lon_col]
+        self.__columns = []
         self.__query_dict = query_dict
         self.__missing_depth_value = missing_depth_value
         self.__parquet_names: [PartitionedParquetPath] = []
@@ -80,26 +78,12 @@ class ParquetQueryConditionManagementV4:
         self.__columns = val
         return
 
-    # TODO: abstraction refactor removed __generate_time_partition_list method as it is not used anymore.
-    def __check_columns(self):
-        if len(self.__query_props.columns) < 1:
-            self.__columns = []
-            return
-        variable_columns = []
-        for each in self.__query_props.variable:
-            variable_columns.append(each)
-            if self.__query_props.quality_flag is True:
-                LOGGER.debug(f'adding quality flag for : {each}')
-                variable_columns.append(f'{each}_quality')
-        self.__columns = self.__query_props.columns + variable_columns + self.__columns
-        return
-
     def manage_query_props(self):
         query_transformer = GetQueryTransformer(self.__file_structure_setting)
         query_object = query_transformer.transform_param(self.__query_dict)
 
         self.__conditions = query_transformer.generate_parquet_conditions(query_object)
-        self.__check_columns()
+        self.columns = query_transformer.generate_retrieving_columns(query_object)
         aws_es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_config['es_index'], base_url=self.__es_config['es_url'], port=self.__es_config.get('es_port', 443))
         es_retriever = ParquetPathRetriever(aws_es, self.__file_structure_setting, self.__parquet_name)
         self.__parquet_names = es_retriever.start(query_object)
