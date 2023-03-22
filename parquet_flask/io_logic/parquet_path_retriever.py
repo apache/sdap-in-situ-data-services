@@ -12,8 +12,7 @@ class ParquetPathRetriever:
 
     def start(self, query_dict) -> [PartitionedParquetPath]:
         query_transformer = GetQueryTransformer(self.__file_struct_setting)
-        query_object = query_transformer.transform_param(query_dict)
-        es_terms = query_transformer.generate_dsl_conditions(query_object)
+        es_terms = query_transformer.generate_dsl_conditions(query_dict)
         es_dsl = {
             'query': {
                 'bool': {

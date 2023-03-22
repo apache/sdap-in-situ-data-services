@@ -1,6 +1,8 @@
 import os
 from unittest import TestCase
 
+from parquet_flask.insitu.get_query_transformer import GetQueryTransformer
+
 from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.aws.es_factory import ESFactory
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
@@ -26,6 +28,8 @@ class TestParquetPathRetriever(TestCase):
             'endTime': '2018-10-24T09:00:00Z',
             'bbox': ','.join([str(k) for k in [-180.0, -90, 179.38330739034632, 89.90]]),
         }
-        ppp_list = ParquetPathRetriever(aws_es, file_struct_setting, '').start(query_dict)
+        query_transformer = GetQueryTransformer(file_struct_setting)
+        query_object = query_transformer.transform_param(query_dict)
+        ppp_list = ParquetPathRetriever(aws_es, file_struct_setting, '').start(query_object)
         self.assertTrue(isinstance(ppp_list[0], PartitionedParquetPath), 'result not PartitionedParquetPath type')
         return
