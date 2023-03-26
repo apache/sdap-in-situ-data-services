@@ -26,6 +26,7 @@ class CdmsSchema:
             if isinstance(temp_type, list):
                 return temp_type[0]
             raise ValueError(f'unknown datatype: {datetype_name}: {datatype_def}')
+        # TODO : abstraction - quality and platform hardcoded here
         if datetype_name.endswith('_quality'):
             return 'long'
         if datetype_name == 'platform':  # special case
@@ -56,25 +57,6 @@ class CdmsSchema:
             StructField('month', IntegerType(), True),
             StructField('job_id', StringType(), True),
         ]
-        # TODO. abstraction this needs to be removed.
-        self.__non_observation_columns = [
-            'time_obj',
-            'time',
-
-            'provider',
-            'project',
-            'platform_code',
-            'platform',
-            'year',
-            'month',
-            'job_id',
-
-            'device',
-
-            'latitude',
-            'longitude',
-            'depth',
-        ]
 
     def __get_pandas_type(self, json_type: str):
         if json_type not in self.__json_to_pandas_data_type:
@@ -87,6 +69,7 @@ class CdmsSchema:
         return self.__json_to_spark_data_types[json_type]
 
     def __get_obs_defs(self, in_situ_schema: dict):
+        # TODO : abstraction - some hardcoded key names here
         if 'definitions' not in in_situ_schema:
             raise ValueError(f'missing definitions in in_situ_schema: {in_situ_schema}')
         base_defs = in_situ_schema['definitions']
@@ -96,14 +79,6 @@ class CdmsSchema:
         if 'properties' not in obs_defs:
             raise ValueError(f'missing properties in in_situ_schema["definitions"]["observation"]: {obs_defs}')
         return obs_defs['properties']
-
-    def get_observation_names(self, in_situ_schema: dict, non_data_columns: list=None):
-        # TODO abstraction: do not allow "optional" for non_data_columns. remove self.__non_observation_columns
-        # TODO abstraction: _quality is hardcoded.
-        if non_data_columns is None:
-            non_data_columns = self.__non_observation_columns
-        obs_names = [k for k in self.__get_obs_defs(in_situ_schema).keys() if k not in non_data_columns and not k.endswith('_quality')]
-        return obs_names
 
     def get_schema_from_json(self, in_situ_schema: dict):
         dynamic_columns = [StructField(k, self.__get_spark_type(self.__get_json_datatype(k, v)), True) for k, v in self.__get_obs_defs(in_situ_schema).items()]

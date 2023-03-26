@@ -32,7 +32,7 @@ class SubCollectionStatistics:
         self.__file_struct_setting = file_struct_setting
         self.__es: ESAbstract = es_mw
         self.__insitu_schema = insitu_schema
-        self.__cdms_obs_names = CdmsSchema().get_observation_names(self.__insitu_schema, self.__file_struct_setting.get_non_data_columns())
+        self.__cdms_obs_names = self.__file_struct_setting.get_data_columns()
 
     def __restructure_core_stats(self, core_stats: dict):
         """

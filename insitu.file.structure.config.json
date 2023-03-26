@@ -1,5 +1,8 @@
 {
   "data_array_key": "observations",
+  "data_dict_key": "observation",
+  "has_data_quality": true,
+  "quality_key_postfix": "_quality",
   "file_metadata_keys": [
     "provider",
     "project"
