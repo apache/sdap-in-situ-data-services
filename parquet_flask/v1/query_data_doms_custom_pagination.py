@@ -22,7 +22,6 @@ from flask import request
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
-from parquet_flask.io_logic.query_v2 import QueryProps, QUERY_PROPS_SCHEMA
 from parquet_flask.io_logic.query_v4 import QueryV4
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.file_utils import FileUtils

@@ -36,6 +36,8 @@ LOGGER = logging.getLogger(__name__)
 class QueryV4:
     def __init__(self, query_params_dict: dict):
         # TODO : abstraction : big time here
+        # TODO : abstraction : might have dropped quality flag logic. to include it mentioned
+        # TODO : abstraction : might have dropped device logic. to include it mentioned
         self.__query_params_dict = query_params_dict
         config = Config()
         self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(config.get_value(Config.in_situ_schema)), FileUtils.read_json(config.get_value(Config.file_structure_setting)))
