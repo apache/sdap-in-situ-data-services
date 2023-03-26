@@ -151,9 +151,18 @@ class GetQueryTransformer:
             es_terms.extend(self.__generate_dsl_stmt(v['dsl_terms'], input_value, v['type']))
         return es_terms
 
+    def __replace_pagination_time(self, query_param_dict_copy: dict):
+        # TODO : 2023-03-26 : William : This maybe a hack, and not extendable. Re-think this if have time.
+        sort_mechanism = self.__file_struct_setting.get_query_sort_mechanism()
+        if sort_mechanism['pagination_marker_time'] in query_param_dict_copy and sort_mechanism['original_time'] in query_param_dict_copy:
+            query_param_dict_copy[sort_mechanism['original_time']] = query_param_dict_copy[sort_mechanism['pagination_marker_time']]
+        return self
+
     def transform_param(self, query_param_dict: dict):
+        query_param_dict_copy = deepcopy(query_param_dict)
+        self.__replace_pagination_time(query_param_dict_copy)
         transformed_dict = {
-            k: self.__transform_value(query_param_dict[k], v) for k, v in self.__file_struct_setting.get_query_input_transformer_schema()['properties'].items()
-            if k in query_param_dict
+            k: self.__transform_value(query_param_dict_copy[k], v) for k, v in self.__file_struct_setting.get_query_input_transformer_schema()['properties'].items()
+            if k in query_param_dict_copy
         }
         return transformed_dict

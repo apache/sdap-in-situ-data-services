@@ -250,7 +250,8 @@
     "sorting_columns": ["time_obj", "platform_code", "depth", "lat", "lon"],
     "page_size_key": "itemsPerPage",
     "pagination_marker_key": "markerPlatform",
-    "pagination_marker_time": "markerTime"
+    "pagination_marker_time": "markerTime",
+    "original_time": "startTime"
   },
   "query_input_column_filters": {
     "removing_columns": ["time_obj", "month", "year"],

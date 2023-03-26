@@ -41,6 +41,40 @@ class TestGetQueryTransformer(TestCase):
         self.assertEqual(transformed_query_param_dict, mock_transformed_query_param_dict)
         return
 
+    def test_011_transform_param(self):
+        data_json_schema = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json')
+        structure_config = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json')
+        file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
+        transformer = GetQueryTransformer(file_struct_setting)
+        query_param_dict = {
+            'provider': 'sample_provider',
+            'project': 'sample_project',
+            'platform': '1,2,3,4',
+            'startTime': '2023-01-01T00:00:00Z',
+            'markerTime': '2023-01-01T01:00:00Z',
+            'endTime': '2023-01-01T00:00:00Z',
+            'minDepth': '-120.12',
+            'maxDepth': '-10.102',
+            'bbox': '-100.1, -50.2, 22.3, 2.4',
+            'variable': 'a1,a2,a3',
+            'columns': 'c1, c2, c3'
+        }
+        transformed_query_param_dict = transformer.transform_param(query_param_dict=query_param_dict)
+        mock_transformed_query_param_dict = {
+            'provider': 'sample_provider',
+            'project': 'sample_project',
+            'platform': '1,2,3,4'.split(','),
+            'startTime': '2023-01-01T01:00:00Z',
+            'endTime': '2023-01-01T00:00:00Z',
+            'minDepth': -120.12,
+            'maxDepth': -10.102,
+            'bbox': [-100.1, -50.2, 22.3, 2.4],
+            'variable': 'a1,a2,a3'.split(','),
+            'columns': 'c1,c2,c3'.split(',')
+        }
+        self.assertEqual(transformed_query_param_dict, mock_transformed_query_param_dict)
+        return
+
     def test_02_transform_param(self):
         data_json_schema = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json')
         structure_config = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json')
