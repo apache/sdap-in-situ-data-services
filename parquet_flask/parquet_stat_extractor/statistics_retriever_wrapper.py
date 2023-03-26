@@ -36,7 +36,7 @@ class StatisticsRetrieverWrapper:
         self.__parquet_name = config.get_value(Config.parquet_file_name)
         self.__parquet_name = self.__parquet_name if not self.__parquet_name.endswith('/') else self.__parquet_name[:-1]
         in_situ_file_structure_config_file_path = config.get_value(Config.file_structure_setting)
-        self.__file_structure_setting = FileStructureSetting({}, FileUtils.read_json(in_situ_file_structure_config_file_path))
+        self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(config.get_value(Config.in_situ_schema)), FileUtils.read_json(in_situ_file_structure_config_file_path))
 
     def start(self, parquet_path):
         from parquet_flask.io_logic.retrieve_spark_session import RetrieveSparkSession
@@ -44,8 +44,7 @@ class StatisticsRetrieverWrapper:
         full_parquet_path = f"{self.__parquet_name}/{parquet_path}"
         LOGGER.debug(f'searching for full_parquet_path: {full_parquet_path}')
         try:
-            insitu_schema = FileUtils.read_json(Config().get_value(Config.in_situ_schema))
-            cdms_spark_struct = CdmsSchema().get_schema_from_json(insitu_schema)
+            cdms_spark_struct = CdmsSchema(self.__file_structure_setting).get_schema_from_json()
             read_df: DataFrame = spark.read.schema(cdms_spark_struct).parquet(full_parquet_path)
         except AnalysisException as analysis_exception:
             if analysis_exception.desc is not None and analysis_exception.desc.startswith('Path does not exist'):

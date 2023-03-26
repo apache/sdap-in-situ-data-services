@@ -16,6 +16,7 @@
 import unittest
 import os
 
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from pyspark.sql.types import StructField, StringType, DoubleType, LongType, IntegerType, TimestampType, MapType, \
     StructType
 
@@ -33,7 +34,10 @@ from parquet_flask.io_logic.cdms_schema import CdmsSchema
 
 class TestGeneralUtilsV3(unittest.TestCase):
     def test_01(self):
-        cdms_schema = CdmsSchema()
+        data_json_schema = FileUtils.read_json('../../../in_situ_schema.json')
+        structure_config = FileUtils.read_json('../../../insitu.file.structure.config.json')
+        file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
+        cdms_schema = CdmsSchema(file_struct_setting)
         ALL_SCHEMA = StructType([
             StructField('depth', DoubleType(), True),
             StructField('latitude', DoubleType(), True),
@@ -126,13 +130,16 @@ class TestGeneralUtilsV3(unittest.TestCase):
 
             StructField('device', StringType(), True),
         ])
-        new_struct = cdms_schema.get_schema_from_json(FileUtils.read_json('../../../in_situ_schema.json'))
+        new_struct = cdms_schema.get_schema_from_json()
         self.assertEqual(sorted(str(ALL_SCHEMA)), sorted(str(new_struct)), f'not equal old_struct = {ALL_SCHEMA}. new_struct = {new_struct}')
         return
 
     def test_02(self):
-        cdms_schema = CdmsSchema()
-        new_struct = cdms_schema.get_pandas_schema_from_json(FileUtils.read_json('../../../in_situ_schema.json'))
+        data_json_schema = FileUtils.read_json('../../../in_situ_schema.json')
+        structure_config = FileUtils.read_json('../../../insitu.file.structure.config.json')
+        file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
+        cdms_schema = CdmsSchema(file_struct_setting)
+        new_struct = cdms_schema.get_pandas_schema_from_json()
         print(new_struct)
         self.assertTrue(isinstance(new_struct, dict), f'wrong type: {new_struct}')
         return

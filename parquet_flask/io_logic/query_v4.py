@@ -96,7 +96,7 @@ class QueryV4:
         return distinct_list
 
     def get_unioned_read_df(self, condition_manager: ParquetQueryConditionManagementV4, spark: SparkSession) -> DataFrame:
-        cdms_spark_struct = CdmsSchema().get_schema_from_json(FileUtils.read_json(Config().get_value(Config.in_situ_schema)))
+        cdms_spark_struct = CdmsSchema(self.__file_structure_setting).get_schema_from_json()
         if len(condition_manager.parquet_names) < 1:
             LOGGER.fatal(f'cannot find any in ES. returning None instead of searching entire parquet directory for now. ')
             return None

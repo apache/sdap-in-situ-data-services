@@ -7,8 +7,8 @@ from parquet_flask.utils.file_utils import FileUtils
 
 class TestFileStructureSetting(TestCase):
     def test_01(self):
-        data_json_schema = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json')
-        structure_config = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json')
+        data_json_schema = FileUtils.read_json('../../../in_situ_schema.json')
+        structure_config = FileUtils.read_json('../../../insitu.file.structure.config.json')
         file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
         data_columns = file_struct_setting.get_data_columns()
         expected_data_columns = [

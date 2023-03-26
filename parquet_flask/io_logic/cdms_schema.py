@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from pyspark.sql.types import StructType, StructField, DoubleType, StringType, MapType, LongType, TimestampType, \
     IntegerType
 
@@ -27,13 +27,14 @@ class CdmsSchema:
                 return temp_type[0]
             raise ValueError(f'unknown datatype: {datetype_name}: {datatype_def}')
         # TODO : abstraction - quality and platform hardcoded here
-        if datetype_name.endswith('_quality'):
+        if datetype_name.endswith(self.__file_structure_setting.get_quality_postfix()):
             return 'long'
         if datetype_name == 'platform':  # special case
             return 'platform'
         raise ValueError(f'unknown datatype: {datetype_name}: {datatype_def}')
 
-    def __init__(self):
+    def __init__(self, file_structure_setting: FileStructureSetting = None):
+        self.__file_structure_setting = file_structure_setting
         self.__json_to_pandas_data_type = {
             'number': 'double',
             'long': 'int64',
@@ -68,22 +69,16 @@ class CdmsSchema:
             raise ValueError(f'unknown json type. cannot convert to spark type: {json_type}')
         return self.__json_to_spark_data_types[json_type]
 
-    def __get_obs_defs(self, in_situ_schema: dict):
-        # TODO : abstraction - some hardcoded key names here
-        if 'definitions' not in in_situ_schema:
-            raise ValueError(f'missing definitions in in_situ_schema: {in_situ_schema}')
-        base_defs = in_situ_schema['definitions']
-        if 'observation' not in base_defs:
-            raise ValueError(f'missing observation in in_situ_schema["definitions"]: {base_defs}')
-        obs_defs = base_defs['observation']
-        if 'properties' not in obs_defs:
-            raise ValueError(f'missing properties in in_situ_schema["definitions"]["observation"]: {obs_defs}')
-        return obs_defs['properties']
-
-    def get_schema_from_json(self, in_situ_schema: dict):
-        dynamic_columns = [StructField(k, self.__get_spark_type(self.__get_json_datatype(k, v)), True) for k, v in self.__get_obs_defs(in_situ_schema).items()]
+    def get_schema_from_json(self):
+        if self.__file_structure_setting is None:
+            raise ValueError('pls load FileStructureSetting to continue')
+        data_column_definitions = self.__file_structure_setting.get_data_column_definitions()
+        dynamic_columns = [StructField(k, self.__get_spark_type(self.__get_json_datatype(k, v)), True) for k, v in data_column_definitions.items()]
         return StructType(dynamic_columns + self.__default_columns)
 
-    def get_pandas_schema_from_json(self, in_situ_schema: dict):
-        dynamic_columns = {k: self.__get_pandas_type(self.__get_json_datatype(k, v)) for k, v in self.__get_obs_defs(in_situ_schema).items()}
+    def get_pandas_schema_from_json(self):
+        if self.__file_structure_setting is None:
+            raise ValueError('pls load FileStructureSetting to continue')
+        data_column_definitions = self.__file_structure_setting.get_data_column_definitions()
+        dynamic_columns = {k: self.__get_pandas_type(self.__get_json_datatype(k, v)) for k, v in data_column_definitions.items()}
         return dynamic_columns

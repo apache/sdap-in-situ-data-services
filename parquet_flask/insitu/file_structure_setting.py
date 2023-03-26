@@ -107,6 +107,11 @@ class FileStructureSetting:
         if result is False:
             raise ValueError(f'invalid structure_config: {message}')
 
+    def get_quality_postfix(self):
+        return self.__structure_config['quality_key_postfix']
+    def get_data_json_schema(self):
+        return self.__data_json_schema
+
     def get_data_column_definitions(self):
         if 'definitions' not in self.__data_json_schema:
             raise ValueError(f'missing definitions in in_situ_schema: {self.__data_json_schema}')

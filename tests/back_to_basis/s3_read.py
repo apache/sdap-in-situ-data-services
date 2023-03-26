@@ -16,6 +16,7 @@
 from datetime import datetime
 
 import findspark
+from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 
 from parquet_flask.utils.file_utils import FileUtils
 
@@ -30,8 +31,11 @@ import pyspark.sql.functions as pyspark_functions
 parquet_name = 's3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet/provider=NCAR/project=ICOADS Release 3.0/platform_code=41/year=2017/month=1'
 config = Config()
 spark = RetrieveSparkSession().retrieve_spark_session('Test1', config.get_value('master_spark_url'))
-cdms_schema = CdmsSchema()
-new_struct = cdms_schema.get_schema_from_json(FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json'))
+data_json_schema = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json')
+structure_config = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json')
+file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
+cdms_schema = CdmsSchema(file_struct_setting)
+new_struct = cdms_schema.get_schema_from_json()
 read_df: DataFrame = spark.read.schema(new_struct).parquet(parquet_name)
 
 stats = read_df.select(pyspark_functions.min('latitude'), pyspark_functions.max('latitude'), pyspark_functions.min('longitude'), pyspark_functions.max('longitude'), pyspark_functions.min('depth'), pyspark_functions.max('depth'), pyspark_functions.min('time_obj'), pyspark_functions.max('time_obj')).collect()

@@ -33,13 +33,12 @@ class LocalStatisticsRetriever:
     def __init__(self, local_parquet_file_path: str, in_situ_schema_file_path: str, in_situ_file_structure_config_file_path: str):
         self.__local_parquet_file_path = local_parquet_file_path
         self.__in_situ_schema_file_path = in_situ_schema_file_path
-        self.__file_structure_setting = FileStructureSetting({}, FileUtils.read_json(in_situ_file_structure_config_file_path))
+        self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(in_situ_schema_file_path), FileUtils.read_json(in_situ_file_structure_config_file_path))
 
     def start(self):
         spark: SparkSession = LocalSparkSession().get_spark_session()
         try:
-            insitu_schema = FileUtils.read_json(self.__in_situ_schema_file_path)
-            cdms_spark_struct = CdmsSchema().get_schema_from_json(insitu_schema)
+            cdms_spark_struct = CdmsSchema(self.__file_structure_setting).get_schema_from_json()
             read_df: DataFrame = spark.read.schema(cdms_spark_struct).parquet(self.__local_parquet_file_path)
         except AnalysisException as analysis_exception:
             if analysis_exception.desc is not None and analysis_exception.desc.startswith('Path does not exist'):
