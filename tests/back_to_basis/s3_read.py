@@ -16,6 +16,9 @@
 from datetime import datetime
 
 import findspark
+
+from parquet_flask.utils.file_utils import FileUtils
+
 findspark.init()
 
 from pyspark.sql import DataFrame
@@ -27,7 +30,9 @@ import pyspark.sql.functions as pyspark_functions
 parquet_name = 's3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet/provider=NCAR/project=ICOADS Release 3.0/platform_code=41/year=2017/month=1'
 config = Config()
 spark = RetrieveSparkSession().retrieve_spark_session('Test1', config.get_value('master_spark_url'))
-read_df: DataFrame = spark.read.schema(CdmsSchema.ALL_SCHEMA).parquet(parquet_name)
+cdms_schema = CdmsSchema()
+new_struct = cdms_schema.get_schema_from_json(FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json'))
+read_df: DataFrame = spark.read.schema(new_struct).parquet(parquet_name)
 
 stats = read_df.select(pyspark_functions.min('latitude'), pyspark_functions.max('latitude'), pyspark_functions.min('longitude'), pyspark_functions.max('longitude'), pyspark_functions.min('depth'), pyspark_functions.max('depth'), pyspark_functions.min('time_obj'), pyspark_functions.max('time_obj')).collect()
 stats = stats[0].asDict()
