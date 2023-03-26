@@ -47,17 +47,14 @@ class CdmsSchema:
             'string': StringType(),
             'platform': MapType(StringType(), StringType()),
         }
-        # TODO. abstraction this needs to be removed.
-        self.__default_columns = [
-            StructField('time_obj', TimestampType(), True),
-
-            StructField('provider', StringType(), True),
-            StructField('project', StringType(), True),
-            StructField('platform_code', IntegerType(), True),
-            StructField('year', IntegerType(), True),
-            StructField('month', IntegerType(), True),
-            StructField('job_id', StringType(), True),
-        ]
+        self.__derived_spark_data_types = {
+            'time': TimestampType(),
+            'year': IntegerType(),
+            'month': IntegerType(),
+            'literal': StringType(),
+            'column': StringType(),
+            'insitu_geo_spatial': StringType(),
+        }
 
     def __get_pandas_type(self, json_type: str):
         if json_type not in self.__json_to_pandas_data_type:
@@ -72,9 +69,10 @@ class CdmsSchema:
     def get_schema_from_json(self):
         if self.__file_structure_setting is None:
             raise ValueError('pls load FileStructureSetting to continue')
+        derived_structs = [StructField(k, self.__derived_spark_data_types[v['updated_type']], True) for k, v in self.__file_structure_setting.get_derived_columns().items()]
         data_column_definitions = self.__file_structure_setting.get_data_column_definitions()
         dynamic_columns = [StructField(k, self.__get_spark_type(self.__get_json_datatype(k, v)), True) for k, v in data_column_definitions.items()]
-        return StructType(dynamic_columns + self.__default_columns)
+        return StructType(dynamic_columns + derived_structs)
 
     def get_pandas_schema_from_json(self):
         if self.__file_structure_setting is None:

@@ -39,6 +39,7 @@ class TestGeneralUtilsV3(unittest.TestCase):
         file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
         cdms_schema = CdmsSchema(file_struct_setting)
         ALL_SCHEMA = StructType([
+            StructField('geo_spatial_interval', StringType(), True),  # TODO this is a new column. possible backward compatiblility issue
             StructField('depth', DoubleType(), True),
             StructField('latitude', DoubleType(), True),
             StructField('longitude', DoubleType(), True),
@@ -50,7 +51,7 @@ class TestGeneralUtilsV3(unittest.TestCase):
 
             StructField('provider', StringType(), True),
             StructField('project', StringType(), True),
-            StructField('platform_code', IntegerType(), True),
+            StructField('platform_code', StringType(), True),  # TODO this used to be IntegerType. possible backward compatiblility issue
             StructField('year', IntegerType(), True),
             StructField('month', IntegerType(), True),
             StructField('job_id', StringType(), True),
