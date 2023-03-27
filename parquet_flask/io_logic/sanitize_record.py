@@ -30,7 +30,7 @@ class SanitizeRecord:
         if not FileUtils.file_exist(json_schema_path):
             raise ValueError('json_schema file does not exist: {}'.format(json_schema_path))
         self.__json_schema = FileUtils.read_json(json_schema_path)
-        self.__schema_key_values = {k: v for k, v in self.__json_schema['definitions']['observation']['properties'].items()}  # TODO assuming json schema s
+        self.__schema_key_values = {k: v for k, v in self.__file_structure_setting.get_data_column_definitions().items()}
         self.__parallel_json_validator = ParallelJsonValidator()
 
     def __sanitize_record(self, data_blk):

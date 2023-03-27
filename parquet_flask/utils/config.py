@@ -35,6 +35,7 @@ class Config(metaclass=Singleton):
     missing_depth_value = 'missing_depth_value'
     authentication_type = 'authentication_type'
     authentication_key = 'authentication_key'
+    default_page_size = 'default_page_size'
     es_url = 'es_url'
     es_index = 'es_index'
     es_port = 'es_port'

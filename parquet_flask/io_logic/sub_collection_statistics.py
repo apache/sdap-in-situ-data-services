@@ -32,7 +32,7 @@ class SubCollectionStatistics:
         self.__file_struct_setting = file_struct_setting
         self.__es: ESAbstract = es_mw
         self.__insitu_schema = insitu_schema
-        self.__cdms_obs_names = self.__file_struct_setting.get_data_columns()
+        self.__data_column_names = self.__file_struct_setting.get_data_columns()
 
     def __restructure_core_stats(self, core_stats: dict):
         """
@@ -80,7 +80,7 @@ class SubCollectionStatistics:
                 "max_depth": core_stats['max_depth']['value'],
                 "min_datetime": TimeUtils.get_time_str(int(core_stats['min_datetime']['value']), in_ms=False),
                 "max_datetime": TimeUtils.get_time_str(int(core_stats['max_datetime']['value']), in_ms=False),
-                'observation_counts': {k: core_stats[k]['value'] for k in self.__cdms_obs_names}
+                'observation_counts': {k: core_stats[k]['value'] for k in self.__data_column_names}
             }
         }
         LOGGER.debug(f'core_stats: {core_stats}')
@@ -160,7 +160,7 @@ class SubCollectionStatistics:
             for agg_type, columns in stats_instructions['stats'].items():
                 for each_column in columns:
                     stat_result[each_column] = es_result_agg[each_column]['value']
-                    # TODO need backward compatibility
+                    # TODO: need backward compatibility. (punted on 2023-03-26. This is the result of statistics which other applications may depend, but new format is more standardized.)
             return stat_result
         next_group_by = group_by_list[1:]
         agg_result = []
@@ -176,7 +176,7 @@ class SubCollectionStatistics:
         if not data_stats_instructions['is_included']:
             return data_stats
         data_columns_prefix = data_stats_instructions['data_prefix'] if 'data_prefix' in data_stats_instructions else ''
-        for each_data_column in self.__cdms_obs_names:  # TODO need to rename
+        for each_data_column in self.__data_column_names:
             data_stats[each_data_column] = {
                 data_stats_instructions['stats']: {'field': f'{data_columns_prefix}{each_data_column}'}
             }

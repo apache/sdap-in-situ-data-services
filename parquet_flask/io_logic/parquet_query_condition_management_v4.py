@@ -28,7 +28,6 @@ LOGGER = logging.getLogger(__name__)
 
 class ParquetQueryConditionManagementV4:
     def __init__(self, parquet_name: str, missing_depth_value, es_config: dict, file_structure_setting: FileStructureSetting, query_dict: dict):
-        # TODO abstraction : need abstraction here
         self.__file_structure_setting = file_structure_setting
         self.__conditions = []
         self.__columns = []

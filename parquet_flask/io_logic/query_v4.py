@@ -35,19 +35,19 @@ LOGGER = logging.getLogger(__name__)
 
 class QueryV4:
     def __init__(self, query_params_dict: dict):
-        # TODO : abstraction : big time here
+        # TODO : abstraction : test abstraction
         # TODO : abstraction : might have dropped quality flag logic. to include it mentioned
         # TODO : abstraction : might have dropped device logic. to include it mentioned
         self.__query_params_dict = query_params_dict
-        config = Config()
-        self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(config.get_value(Config.in_situ_schema)), FileUtils.read_json(config.get_value(Config.file_structure_setting)))
-        self.__app_name = config.get_spark_app_name()
-        self.__master_spark = config.get_value(Config.master_spark_url)
-        self.__parquet_name = config.get_value(Config.parquet_file_name)
+        self.__config = Config()
+        self.__file_structure_setting = FileStructureSetting(FileUtils.read_json(self.__config.get_value(Config.in_situ_schema)), FileUtils.read_json(self.__config.get_value(Config.file_structure_setting)))
+        self.__app_name = self.__config.get_spark_app_name()
+        self.__master_spark = self.__config.get_value(Config.master_spark_url)
+        self.__parquet_name = self.__config.get_value(Config.parquet_file_name)
         self.__es_config = {
-            'es_url': config.get_value(Config.es_url),
+            'es_url': self.__config.get_value(Config.es_url),
             'es_index': CDMSConstants.es_index_parquet_stats,
-            'es_port': int(config.get_value(Config.es_port, '443')),
+            'es_port': int(self.__config.get_value(Config.es_port, '443')),
         }
         self.__parquet_name = self.__parquet_name if not self.__parquet_name.endswith('/') else self.__parquet_name[:-1]
         self.__missing_depth_value = CDMSConstants.missing_depth_value
@@ -66,7 +66,7 @@ class QueryV4:
     def __get_size(self):
         page_size_key = self.__file_structure_setting.get_query_sort_mechanism()['page_size_key']
         if page_size_key not in self.__query_params_dict:
-            return 10  # TODO abstraction. this default value comes from setting
+            return int(self.__config.get_value(Config.default_page_size, 10))
         return int(self.__query_params_dict[page_size_key])
     
     def __set_missing_depth_val(self):
@@ -131,8 +131,9 @@ class QueryV4:
         return [query_result[k].asc() for k in self.__sorting_columns]
 
     def __get_nth_first_page(self, query_result: DataFrame):
-        # TODO: abstraction: replace self.__props.min_datetime with markerTime. More importantly. use json to prioritize markerTime over startTime if needed.
-        result_head = query_result.where(f"{CDMSConstants.time_col} = '{self.__props.min_datetime}'").sort(self.__get_sorting_params(query_result)).collect()
+        sort_mechanism = self.__file_structure_setting.get_query_sort_mechanism()
+        min_datetime = self.__query_params_dict[sort_mechanism['pagination_marker_time']] if sort_mechanism['pagination_marker_time'] in self.__query_params_dict else self.__query_params_dict[sort_mechanism['original_time']]
+        result_head = query_result.where(f"{CDMSConstants.time_col} = '{min_datetime}'").sort(self.__get_sorting_params(query_result)).collect()
         new_index = -1
         for i, each_row in enumerate(result_head):
             each_row: Row = each_row

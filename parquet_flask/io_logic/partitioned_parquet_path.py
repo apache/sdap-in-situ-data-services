@@ -44,5 +44,5 @@ class PartitionedParquetPath:
         for k, v in zip(self.__partitioned_columns, self.__partitioned_values):
             if v is None:
                 return parquet_path
-            parquet_path = f'{parquet_path}/{k}={v}'  # TODO abstraction This assumes lat_lon (if exists) is already a string split by `_`
+            parquet_path = f'{parquet_path}/{k}={v}'  # This assumes lat_lon (if exists) is already a string split by `_`
         return parquet_path

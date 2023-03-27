@@ -38,8 +38,9 @@ class ParquetFileEsIndexer:
         self.__es_url = os.environ.get(CdmsLambdaConstants.es_url, None)
         self.__es_index = os.environ.get(CdmsLambdaConstants.es_index, None)
         self.__es_port = int(os.environ.get(CdmsLambdaConstants.es_port, '443'))
-        self.__file_structure_json = os.environ.get(CdmsLambdaConstants.file_structure_setting_json, None)  # TODO update setting
-        if any([k is None for k in [self.__es_url, self.__es_index, self.__file_structure_json]]):
+        self.__insitu_schema_file = os.environ.get(CdmsLambdaConstants.insitu_schema_file, None)  # path to json file
+        self.__file_structure_json = os.environ.get(CdmsLambdaConstants.file_structure_setting_json, None)  # path to json file
+        if any([k is None for k in [self.__es_url, self.__es_index, self.__insitu_schema_file, self.__file_structure_json]]):
             raise ValueError(f'invalid env. must have {[CdmsLambdaConstants.es_url, CdmsLambdaConstants.es_index]}')
         self.__es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_index, base_url=self.__es_url, port=self.__es_port)
 
@@ -63,7 +64,7 @@ class ParquetFileEsIndexer:
     def ingest_file(self):
         if self.__s3_url is None:
             raise ValueError('s3 url is null. Set it first')
-        file_structure_setting = FileStructureSetting({}, json.loads(self.__file_structure_json))
+        file_structure_setting = FileStructureSetting(FileUtils.read_json(self.__insitu_schema_file), FileUtils.read_json(self.__file_structure_json))
         stat_extractor = ParquetFilePathStatExtractor(file_structure_setting, self.__s3_url, 'bucket', 'name', 's3_url').start()
         stat_extractor_json = stat_extractor.to_json()
         LOGGER.debug(f'file_path_stat: {stat_extractor_json}')

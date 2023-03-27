@@ -12,7 +12,7 @@ class TestFileStructureSetting(TestCase):
         file_struct_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
         data_columns = file_struct_setting.get_data_columns()
         expected_data_columns = [
-            "meta",  # TODO abstraction : is included which might not be backward compatible.
+            "meta",  # TODO abstraction : is included which might not be backward compatible. (need to solve)
             "air_pressure",
             "air_temperature",
             "dew_point_temperature",

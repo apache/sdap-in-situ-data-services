@@ -26,9 +26,9 @@ class CdmsSchema:
             if isinstance(temp_type, list):
                 return temp_type[0]
             raise ValueError(f'unknown datatype: {datetype_name}: {datatype_def}')
-        # TODO : abstraction - quality and platform hardcoded here
         if datetype_name.endswith(self.__file_structure_setting.get_quality_postfix()):
             return 'long'
+        # TODO : abstraction - platform hardcoded here
         if datetype_name == 'platform':  # special case
             return 'platform'
         raise ValueError(f'unknown datatype: {datetype_name}: {datatype_def}')

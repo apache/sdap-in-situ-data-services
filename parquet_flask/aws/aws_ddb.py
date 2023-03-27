@@ -118,7 +118,7 @@ class AwsDdb(AwsCred):
             tbl_details = self._ddb_client.describe_table(TableName=self.__props.tbl_name)
             return tbl_details
         except Exception as e:
-            # TODO should check if exception is this one "ResourceNotFoundException". if not, throw the error
+            # should check if exception is this one "ResourceNotFoundException". if not, throw the error (punted: 2023-03-026. no longer using DDB).
             return None
 
     def create_table(self, gsi_list=[]):
@@ -163,8 +163,8 @@ class AwsDdb(AwsCred):
             'TableName': self.__props.tbl_name,
             'AttributeDefinitions': attribute_definitions,
             'KeySchema': key_schema,
-            'BillingMode': 'PAY_PER_REQUEST',  # TODO setting it to on-demand. might need to re-visit later
-            'SSESpecification': {'Enabled': False}  # TODO had to disable it since it does not support 'AES256' yet.
+            'BillingMode': 'PAY_PER_REQUEST',  # setting it to on-demand. might need to re-visit later (punted on 2023-03-26. no longer using DDB)
+            'SSESpecification': {'Enabled': False}  # had to disable it since it does not support 'AES256' yet. (punted on 2023-03-26. no longer using DDB)
         }
         if len(gsi_list) > 0:
             create_tbl_params['GlobalSecondaryIndexes'] = gsi_list
@@ -260,7 +260,7 @@ class AwsDdb(AwsCred):
         """
         {'ResponseMetadata': {'RequestId': '49876A3IFHPMRFIEUMANGFAO8VVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Mon, 08 Mar 2021 17:58:08 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '2', 'connection': 'keep-alive', 'x-amzn-requestid': '49876A3IFHPMRFIEUMANGFAO8VVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '2745614147'}, 'RetryAttempts': 0}}
         """
-        # TODO check result
+        # check result (punted on 2023-03-26. no longer using DDB).
         return
 
     def scan_tbl(self, conditions_dict):

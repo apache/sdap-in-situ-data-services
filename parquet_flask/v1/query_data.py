@@ -43,11 +43,10 @@ query_model = api.model('query_data', {
 class IngestParquet(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
-        self.__saved_dir = '/tmp'  # TODO update this
 
     @api.expect()
     def get(self):
-        return {'message': 'no longer available. Pls use query_data_doms'}, 410
+        return {'message': 'moved permanently to query_data_doms_custom_pagination', 'details': 'deprecated'}, 410
 
     @api.expect()
     def post(self):
@@ -56,4 +55,4 @@ class IngestParquet(Resource):
 
         :return:
         """
-        return {'message': 'no longer available. Pls use query_data_doms'}, 410
+        return {'message': 'moved permanently to query_data_doms_custom_pagination', 'details': 'deprecated'}, 410
