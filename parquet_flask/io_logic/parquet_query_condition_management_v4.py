@@ -137,19 +137,22 @@ class ParquetQueryConditionManagementV4:
 
     def __check_depth(self):
         if self.__query_props.min_depth is None and self.__query_props.max_depth is None:
-            return None
+            return
         depth_conditions = []
+        include_subsurface = None
         if self.__query_props.min_depth is not None:
             LOGGER.debug(f'setting depth min condition: {self.__query_props.min_depth}')
             depth_conditions.append(f"{CDMSConstants.depth_col} >= {self.__query_props.min_depth}")
+            include_subsurface = True if self.__query_props.min_depth <= 0 else False
         if self.__query_props.max_depth is not None:
             LOGGER.debug(f'setting depth max condition: {self.__query_props.max_depth}')
             depth_conditions.append(f"{CDMSConstants.depth_col} <= {self.__query_props.max_depth}")
-        LOGGER.debug(f'has depth condition. adding missing depth condition')
-        if len(depth_conditions) == 1:
-            self.__conditions.append(f'({depth_conditions[0]} OR {CDMSConstants.depth_col} == {self.__missing_depth_value})')
-            return
-        self.__conditions.append(f"(({' AND '.join(depth_conditions) }) OR {CDMSConstants.depth_col} == {self.__missing_depth_value})")
+            if include_subsurface is None or include_subsurface is True:
+                include_subsurface = True if self.__query_props.max_depth >= 0 else False
+        append_conditions = f"({' AND '.join(depth_conditions) })"
+        if include_subsurface is True:
+            append_conditions = f"( {append_conditions} OR {CDMSConstants.depth_col} == {self.__missing_depth_value} )"
+        self.__conditions.append(append_conditions)
         return
 
     def __add_variables_filter(self):
