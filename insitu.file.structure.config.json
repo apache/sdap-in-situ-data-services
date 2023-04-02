@@ -240,7 +240,7 @@
         "dsl_terms": [
           {
             "range": {
-              "min_lat": {
+              "min_lon": {
                 "lte": "repr_value"
               }
             }

@@ -1,7 +1,10 @@
+import logging
+
 from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.insitu.get_query_transformer import GetQueryTransformer
 from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
+LOGGER = logging.getLogger(__name__)
 
 
 class ParquetPathRetriever:
@@ -23,6 +26,7 @@ class ParquetPathRetriever:
                 {k: {'order': 'asc'}} for k in self.__file_struct_setting.get_es_index_schema_parquet_stats()['mappings']['properties'].keys()
             ]
         }
+        LOGGER.debug(f'es_dsl: {es_dsl}')
         result = self.__es_mw.query_pages(es_dsl)
         result = [PartitionedParquetPath(self.__base_path, self.__file_struct_setting.get_partitioning_columns()).load_from_es(k['_source']) for k in result['items']]
         return result

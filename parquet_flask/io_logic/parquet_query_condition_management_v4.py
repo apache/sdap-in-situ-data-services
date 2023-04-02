@@ -95,9 +95,11 @@ class ParquetQueryConditionManagementV4:
     def manage_query_props(self):
         query_transformer = GetQueryTransformer(self.__file_structure_setting)
         query_object = query_transformer.transform_param(self.__query_dict)
-
+        LOGGER.debug(f'query_object: {query_object}')
         self.conditions = query_transformer.generate_parquet_conditions(query_object)
+        LOGGER.debug(f'conditions: {self.conditions}')
         self.columns = query_transformer.generate_retrieving_columns(query_object)
+        LOGGER.debug(f'columns: {self.columns}')
         aws_es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_config['es_index'], base_url=self.__es_config['es_url'], port=self.__es_config.get('es_port', 443))
         es_retriever = ParquetPathRetriever(aws_es, self.__file_structure_setting, self.__parquet_name)
         self.parquet_names = es_retriever.start(query_object)
