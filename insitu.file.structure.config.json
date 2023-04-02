@@ -204,18 +204,6 @@
         "dsl_terms": [
           {
             "range": {
-              "max_lat": {
-                "gte": "repr_value"
-              }
-            }
-          }
-        ]
-      },
-      {
-        "type": "float",
-        "dsl_terms": [
-          {
-            "range": {
               "max_lon": {
                 "gte": "repr_value"
               }
@@ -228,8 +216,8 @@
         "dsl_terms": [
           {
             "range": {
-              "min_lat": {
-                "lte": "repr_value"
+              "max_lat": {
+                "gte": "repr_value"
               }
             }
           }
@@ -241,6 +229,18 @@
           {
             "range": {
               "min_lon": {
+                "lte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "float",
+        "dsl_terms": [
+          {
+            "range": {
+              "min_lat": {
                 "lte": "repr_value"
               }
             }

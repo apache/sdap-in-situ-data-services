@@ -117,7 +117,7 @@ class TestGetQueryTransformer(TestCase):
             'endTime': '2023-01-01T00:00:00Z',
             'minDepth': -120.12,
             'maxDepth': -10.102,
-            'bbox': [-100.1, -50.2, 22.3, 2.4],
+            'bbox': [-100.1, -50.2, 22.3, 2.4],  # {west_aka_min_lon},{south_aka_min_lat},{east_aka_max_long},{north_aka_max_lat}
             'variable': 'a1,a2,a3'.split(','),
             'columns': 'c1,c2,c3'.split(',')
         }
@@ -189,21 +189,21 @@ class TestGetQueryTransformer(TestCase):
             },
             {
                 "range": {
-                    "max_lat": {
+                    "max_lon": {
                         "gte": -100.1
                     }
                 }
             },
             {
                 "range": {
-                    "max_lon": {
+                    "max_lat": {
                         "gte": -50.2
                     }
                 }
             },
             {
                 "range": {
-                    "min_lat": {
+                    "min_lon": {
                         "lte": 22.3
                     }
                 }
