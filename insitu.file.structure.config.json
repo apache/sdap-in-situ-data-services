@@ -303,25 +303,25 @@
         {
           "constraint": "binary",
           "type": "float",
-          "data_column": "lat",
+          "data_column": "longitude",
           "comparator": "gte"
         },
         {
           "constraint": "binary",
           "type": "float",
-          "data_column": "lon",
+          "data_column": "latitude",
           "comparator": "gte"
         },
         {
           "constraint": "binary",
           "type": "float",
-          "data_column": "lat",
+          "data_column": "longitude",
           "comparator": "lte"
         },
         {
           "constraint": "binary",
           "type": "float",
-          "data_column": "lon",
+          "data_column": "latitude",
           "comparator": "lte"
         }
       ]
