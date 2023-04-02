@@ -31,6 +31,7 @@ ENV authentication_type 'FILE'
 COPY parquet_flask /usr/app/parquet_flask
 
 COPY in_situ_schema.json /usr/app
+COPY insitu.file.structure.config.json /usr/app
 ENV in_situ_schema=/usr/app/in_situ_schema.json
 ENV file_structure_setting=/usr/app/insitu.file.structure.config.json
 
