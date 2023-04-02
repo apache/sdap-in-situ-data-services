@@ -13,7 +13,7 @@ class GetQueryTransformer:
             'gte': '>=',
             'lt': '<',
             'gt': '>',
-            'dq': '=',
+            'eq': '=',
             'includes': 'IS NOT NULL'
         }
         self.__sql_join_conditions = {
@@ -81,6 +81,12 @@ class GetQueryTransformer:
             return f" {parquet_clause['data_column']} {self.__sql_comparator_signs[parquet_clause['comparator']]} {sql_condition_value} "
         if parquet_clause['constraint'] == 'unary':
             return f" {value} {self.__sql_comparator_signs[parquet_clause['comparator']]} "
+        if parquet_clause['constraint'] == 'binary_constant':
+            sql_condition_value = parquet_clause['constant']
+            if parquet_clause['type'] == 'string':
+                sql_condition_value = f"'{value}'"
+            return f" {parquet_clause['data_column']} {self.__sql_comparator_signs[parquet_clause['comparator']]} {sql_condition_value} "
+
         raise ValueError(f'unknown parquet_clause: {parquet_clause}')
 
     def generate_parquet_conditions(self, query_object: dict):
@@ -115,6 +121,15 @@ class GetQueryTransformer:
                 temp_parquet_conditions = f" {self.__sql_join_conditions[v['condition']]} ".join(temp_parquet_conditions)
                 parquet_conditions.append(f'( {temp_parquet_conditions} )')
                 continue
+            if v['relationship'] == '1:n':
+                if not isinstance(parquet_term, list):
+                    raise ValueError(f'term is NOT a list: {parquet_term}')
+                temp_parquet_conditions = []
+                for each_term in parquet_term:
+                    temp_parquet_conditions.append(self.__transform_parquet_condition(each_term, input_value))
+                temp_parquet_conditions = f" {self.__sql_join_conditions[v['condition']]} ".join(temp_parquet_conditions)
+                parquet_conditions.append(f'( {temp_parquet_conditions} )')
+                continue
             raise ValueError(f'unknown parquet condition dict: {v} v. {input_value}')
         return parquet_conditions
 
@@ -130,7 +145,6 @@ class GetQueryTransformer:
 
     def generate_dsl_conditions(self, query_object: dict):
         """
-        TODO: abstraction - missing depth condition needs to be added.
         :param query_object:
         :return:
         """

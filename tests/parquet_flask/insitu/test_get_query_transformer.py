@@ -311,7 +311,7 @@ class TestGetQueryTransformer(TestCase):
         mocked_partitions = [" time_obj >= '2023-01-01T00:00:00Z' ",
                              " time_obj <= '2023-01-01T00:00:00Z' ",
                              '(  lat >= -100.1  AND  lon >= -50.2  AND  lat <= 22.3  AND  lon <= 2.4  )',
-                             ' depth >= -120.12 ', ' depth <= -10.102 ',
+                             '(  depth >= -120.12  OR  depth = -99999.0  )', ' depth <= -10.102 ',
                              '(  a1 IS NOT NULL  OR  a2 IS NOT NULL  OR  a3 IS NOT NULL  )']
         self.assertEqual(json.dumps(mocked_partitions, sort_keys=True), json.dumps(parquet_conditions, sort_keys=True), f'wrong parquet_conditions: {parquet_conditions}')
         print(parquet_conditions)

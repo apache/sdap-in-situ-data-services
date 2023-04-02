@@ -250,15 +250,30 @@
     ]
   },
   "query_sort_mechanism": {
-    "sorting_columns": ["time_obj", "platform_code", "depth", "lat", "lon"],
+    "sorting_columns": [
+      "time_obj",
+      "platform_code",
+      "depth",
+      "lat",
+      "lon"
+    ],
     "page_size_key": "itemsPerPage",
     "pagination_marker_key": "markerPlatform",
     "pagination_marker_time": "markerTime",
     "original_time": "startTime"
   },
   "query_input_column_filters": {
-    "removing_columns": ["time_obj", "month", "year"],
-    "default_columns": ["time", "lat", "lon", "depth"],
+    "removing_columns": [
+      "time_obj",
+      "month",
+      "year"
+    ],
+    "default_columns": [
+      "time",
+      "lat",
+      "lon",
+      "depth"
+    ],
     "mandatory_column_filter_key": "columns",
     "additional_column_filter_key": "variable"
   },
@@ -283,28 +298,28 @@
     },
     "bbox": {
       "relationship": "n:n",
-            "condition": "must",
-"terms": [
+      "condition": "must",
+      "terms": [
         {
-        "constraint": "binary",
+          "constraint": "binary",
           "type": "float",
           "data_column": "lat",
           "comparator": "gte"
         },
         {
-        "constraint": "binary",
+          "constraint": "binary",
           "type": "float",
           "data_column": "lon",
           "comparator": "gte"
         },
         {
-        "constraint": "binary",
+          "constraint": "binary",
           "type": "float",
           "data_column": "lat",
           "comparator": "lte"
         },
         {
-        "constraint": "binary",
+          "constraint": "binary",
           "type": "float",
           "data_column": "lon",
           "comparator": "lte"
@@ -312,16 +327,26 @@
       ]
     },
     "minDepth": {
-       "relationship": "1:1",
-     "terms": {
-        "constraint": "binary",
-        "type": "float",
-        "data_column": "depth",
-        "comparator": "gte"
-      }
+      "relationship": "1:n",
+      "condition": "should",
+      "terms": [
+        {
+          "constraint": "binary",
+          "type": "float",
+          "data_column": "depth",
+          "comparator": "gte"
+        },
+        {
+          "constraint": "binary_constant",
+          "type": "float",
+          "data_column": "depth",
+          "comparator": "eq",
+          "constant": -99999.0
+        }
+      ]
     },
     "maxDepth": {
-       "relationship": "1:1",
+      "relationship": "1:1",
       "terms": {
         "constraint": "binary",
         "type": "float",
