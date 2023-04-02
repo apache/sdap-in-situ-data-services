@@ -54,5 +54,7 @@ ENV PYTHONPATH="${PYTHONPATH}:/usr/app/"
 COPY parquet_flask /usr/app/parquet_flask
 
 COPY in_situ_schema.json /etc
+COPY insitu.file.structure.config.json /etc
 ENV insitu_schema_file=/etc/in_situ_schema.json
+ENV file_structure_setting=/etc/insitu.file.structure.config.json
 CMD ["parquet_flask.cdms_lambda_func.index_to_es.execute_lambda.execute_code"]
