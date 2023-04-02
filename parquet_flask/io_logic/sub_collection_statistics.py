@@ -161,6 +161,12 @@ class SubCollectionStatistics:
                 for each_column in columns:
                     stat_result[each_column] = es_result_agg[each_column]['value']
                     # TODO: need backward compatibility. (punted on 2023-03-26. This is the result of statistics which other applications may depend, but new format is more standardized.)
+            data_stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()['data_stats']
+            if data_stats_instructions['is_included']:
+                data_stats = {}
+                for each_data_column in self.__data_column_names:
+                    data_stats[each_data_column] = es_result_agg[each_data_column]['value']
+                stat_result['data_stats'] = data_stats
             return stat_result
         next_group_by = group_by_list[1:]
         agg_result = []
@@ -217,7 +223,7 @@ class SubCollectionStatistics:
         return stats_dsl
     def start(self):
         stats_dsl = self.generate_dsl()
-        LOGGER.warning(f'es_dsl: {json.dumps(stats_dsl)}')
+        LOGGER.debug(f'es_dsl: {json.dumps(stats_dsl)}')
         es_result = self.__es.query(stats_dsl, CDMSConstants.es_index_parquet_stats)
         # statistics = {k: v['value'] for k, v in es_result['aggregations'].items()}
         return self.__retrieve_raw_stats(es_result['aggregations'])
