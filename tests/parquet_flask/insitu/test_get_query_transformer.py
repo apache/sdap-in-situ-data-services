@@ -333,11 +333,11 @@ class TestGetQueryTransformer(TestCase):
             'maxDepth': '-10.102',
             'bbox': '-100.1, -50.2, 22.3, 2.4',
             'variable': 'a1,a2,a3',
-            'columns': 'c1, c2, c3,lat'
+            'columns': 'c1, c2, c3,latitude'
         }
         transformed_query_param_dict = transformer.transform_param(query_param_dict=query_param_dict)
         columns = transformer.generate_retrieving_columns(transformed_query_param_dict)
-        mocked_columns = ["a1", 'a2', 'a3', "time", "lat", "lon", "depth", 'c1', 'c2', 'c3']
+        mocked_columns = ["a1", 'a2', 'a3', "time", "latitude", "longitude", "depth", 'c1', 'c2', 'c3']
         self.assertEqual(sorted(mocked_columns), sorted(columns), f'wrong generated columns')
         return
 
@@ -356,11 +356,11 @@ class TestGetQueryTransformer(TestCase):
             'minDepth': '-120.12',
             'maxDepth': '-10.102',
             'bbox': '-100.1, -50.2, 22.3, 2.4',
-            'columns': 'c1, c2, c3,lat'
+            'columns': 'c1, c2, c3,latitude'
         }
         transformed_query_param_dict = transformer.transform_param(query_param_dict=query_param_dict)
         columns = transformer.generate_retrieving_columns(transformed_query_param_dict)
-        mocked_columns = ["time", "lat", "lon", "depth", 'c1', 'c2', 'c3']
+        mocked_columns = ["time", "latitude", "longitude", "depth", 'c1', 'c2', 'c3']
         self.assertEqual(sorted(mocked_columns), sorted(columns), f'wrong generated columns')
         return
 

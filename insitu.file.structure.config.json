@@ -254,8 +254,8 @@
       "time_obj",
       "platform_code",
       "depth",
-      "lat",
-      "lon"
+      "latitude",
+      "longitude"
     ],
     "page_size_key": "itemsPerPage",
     "pagination_marker_key": "markerPlatform",
@@ -270,8 +270,8 @@
     ],
     "default_columns": [
       "time",
-      "lat",
-      "lon",
+      "latitude",
+      "longitude",
       "depth"
     ],
     "mandatory_column_filter_key": "columns",
