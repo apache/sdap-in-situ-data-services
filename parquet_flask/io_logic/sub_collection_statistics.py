@@ -193,8 +193,7 @@ class SubCollectionStatistics:
 
     def generate_dsl(self):
         query_transformer = GetQueryTransformer(self.__file_struct_setting)
-        query_object = query_transformer.transform_param(self.__query_dict)
-        es_terms = query_transformer.generate_dsl_conditions(query_object)
+        es_terms = query_transformer.generate_dsl_conditions(self.__query_dict)
 
         normal_stats = {}
         stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
