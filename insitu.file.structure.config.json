@@ -266,7 +266,8 @@
     "removing_columns": [
       "time_obj",
       "month",
-      "year"
+      "year",
+      "geo_spatial_interval"
     ],
     "default_columns": [
       "time",

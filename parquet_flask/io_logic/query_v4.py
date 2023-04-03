@@ -35,7 +35,6 @@ LOGGER = logging.getLogger(__name__)
 
 class QueryV4:
     def __init__(self, query_params_dict: dict):
-        # TODO : abstraction : test abstraction
         # TODO : abstraction : might have dropped quality flag logic. to include it mentioned
         # TODO : abstraction : might have dropped device logic. to include it mentioned
         self.__query_params_dict = query_params_dict
@@ -110,8 +109,6 @@ class QueryV4:
                 temp_df: DataFrame = spark.read.schema(cdms_spark_struct).parquet(each.generate_path())
                 for k, v in each.generate_continuous_partitioned_dict().items():
                     temp_df: DataFrame = temp_df.withColumn(k, lit(v))
-                    # TODO : abstraction: remove columns that are not needed like year, month, lat_long
-                    # TODO : abstraction - maybe that's not needed. It's defined in start() method
                 read_df_list.append(temp_df)
             except Exception as e:
                 LOGGER.exception(f'failed to retrieve data from spark for: {each.generate_path()}')
