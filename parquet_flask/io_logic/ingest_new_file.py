@@ -153,6 +153,13 @@ class IngestNewJsonFile:
             input_json = FileUtils.read_json(abs_file_path)
         for each_record in input_json[self.__file_structure_setting.get_data_array_key()]:
             # TODO abstraction: why is this hardcoded?
+            # this is because of JSON schema limitation
+            # in json schema, "float" is validated using the type "number".
+            # both integers and floats are valid for "number".
+            # result is sometimes ints are part of raw data (usually missing values flag like -99999).
+            # easier solution is to use pandas / numpy to force the numbers to float.
+            # But that means 1 more conversion layer which might cause more discrepancies from original data.
+            # current approach is to manually forcing the type record by record which is pretty slow.
             if 'depth' in each_record:
                 each_record['depth'] = float(each_record['depth'])
             if 'wind_from_direction' in each_record:
