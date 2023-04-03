@@ -26,26 +26,27 @@ class CdmsSchema:
             if isinstance(temp_type, list):
                 return temp_type[0]
             raise ValueError(f'unknown datatype: {datetype_name}: {datatype_def}')
-        if datetype_name.endswith(self.__file_structure_setting.get_quality_postfix()):
-            return 'long'
-        # TODO : abstraction - platform hardcoded here
-        if datetype_name == 'platform':  # special case
-            return 'platform'
+        if '$ref' in datatype_def:
+            return self.__get_json_datatype(datetype_name, self.__get_datatype_def_from_ref(datatype_def['$ref']))
         raise ValueError(f'unknown datatype: {datetype_name}: {datatype_def}')
 
     def __init__(self, file_structure_setting: FileStructureSetting = None):
         self.__file_structure_setting = file_structure_setting
+        # TODO : abstraction - integer & long has some types?. object is mapped to Map(String, String).
+
         self.__json_to_pandas_data_type = {
             'number': 'double',
             'long': 'int64',
+            'integer': 'int64',
             'string': 'object',
-            'platform': 'object',
+            'object': 'object',
         }
         self.__json_to_spark_data_types = {
             'number': DoubleType(),
             'long': LongType(),
+            'integer': LongType(),
             'string': StringType(),
-            'platform': MapType(StringType(), StringType()),
+            'object': MapType(StringType(), StringType()),
         }
         self.__derived_spark_data_types = {
             'time': TimestampType(),
@@ -55,6 +56,20 @@ class CdmsSchema:
             'column': StringType(),
             'insitu_geo_spatial': StringType(),
         }
+
+        self.__independent_definitions = {}
+
+    def __get_datatype_def_from_ref(self, def_path: str):
+        if def_path in self.__independent_definitions:
+            return self.__independent_definitions[def_path]
+        def_paths = def_path.split('/')[1:]
+        current_pointer = self.__file_structure_setting.get_data_json_schema()
+        for each_path in def_paths:
+            if each_path not in current_pointer:
+                raise ValueError(f'missing {each_path} while searching {def_path}')
+            current_pointer = current_pointer[each_path]
+        self.__independent_definitions[def_path] = current_pointer
+        return current_pointer
 
     def __get_pandas_type(self, json_type: str):
         if json_type not in self.__json_to_pandas_data_type:

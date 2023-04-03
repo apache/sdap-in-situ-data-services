@@ -32,7 +32,7 @@ from parquet_flask.utils.file_utils import FileUtils
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
 
 
-class TestGeneralUtilsV3(unittest.TestCase):
+class TestCdmsSchema(unittest.TestCase):
     def test_01(self):
         data_json_schema = FileUtils.read_json('../../../in_situ_schema.json')
         structure_config = FileUtils.read_json('../../../insitu.file.structure.config.json')
