@@ -173,7 +173,10 @@ class SubCollectionStatistics:
         for each_agg in es_result_agg[group_by_list[0]]['buckets']:
             current_key = each_agg['key']
             current_results = self.__retrieve_raw_stats(each_agg, next_group_by)
-            agg_result.append({current_key: current_results})
+            agg_result.append({
+                group_by_list[0]: current_key,
+                f'{group_by_list[0]}_stats': current_results
+            })
         return agg_result
 
     def __get_data_stats(self):

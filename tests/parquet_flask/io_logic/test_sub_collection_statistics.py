@@ -236,5 +236,6 @@ class TestSubCollectionStatistics(TestCase):
         result = scs.start()
         expected_result = {}
         # TODO abstraction test: need to update expected_result
+        print(json.dumps(result, indent=4))
         self.assertEqual(json.dumps(expected_result, sort_keys=True), json.dumps(result, sort_keys=True), f'mismatch query_dict vs result')
         return
