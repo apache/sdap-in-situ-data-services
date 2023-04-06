@@ -61,7 +61,7 @@ class StatisticsRetriever:
 
     def start(self):
         self.__stat_result = {}
-        for each_stat_dict in self.__file_structure_setting.get_data_stats_config():
+        for each_stat_dict in self.__file_structure_setting.get_parquet_file_data_stats_config():
             if each_stat_dict['stat_type'] == 'minmax':
                 self.__result_keys[f'min({each_stat_dict["column"]})'] = f'min_{each_stat_dict["output_name"]}'
                 self.__result_keys[f'max({each_stat_dict["column"]})'] = f'max_{each_stat_dict["output_name"]}'
@@ -74,7 +74,7 @@ class StatisticsRetriever:
                 else:
                     self.__querying_stat_list.append(pyspark_functions.min(each_stat_dict['column']))
                 if 'max_excluded' in each_stat_dict:
-                    self.__stat_result[f'min({each_stat_dict["column"]})'] = self.__excluded_min_max_count(
+                    self.__stat_result[f'max({each_stat_dict["column"]})'] = self.__excluded_min_max_count(
                         each_stat_dict['column'],
                         each_stat_dict['max_excluded'],
                         False

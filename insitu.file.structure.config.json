@@ -458,7 +458,7 @@
       }
     }
   },
-  "data_stats": [
+  "parquet_file_data_stats": [
     {
       "output_name": "depth",
       "column": "depth",

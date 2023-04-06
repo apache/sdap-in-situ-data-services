@@ -4,7 +4,7 @@ STRUCTURE_CONFIG = {
     "type": "object",
     "required": ["partitioning_columns", "non_data_columns", "derived_columns", "file_metadata_keys",
                  "data_array_key", "data_dict_key", "has_data_quality", "quality_key_postfix",
-                 "data_stats", "query_input_metadata_search_instructions", "es_index_schema_parquet_stats",
+                 "parquet_file_data_stats", "query_input_metadata_search_instructions", "es_index_schema_parquet_stats",
                  "query_statistics_instructions",
                  "query_input_column_filters",
                  "query_sort_mechanism",
@@ -75,7 +75,7 @@ STRUCTURE_CONFIG = {
                 },
             }
         },
-        "data_stats": {
+        "parquet_file_data_stats": {
             "type": "array",
             "items": {
                 "type": "object",
@@ -143,7 +143,7 @@ class FileStructureSetting:
     def get_data_array_key(self):
         return self.__structure_config['data_array_key']
 
-    def get_query_input_column_filters(self):
+    def get_query_input_column_filters(self):  # TODO: column filter - does it work if there are no columns at all?
         return self.__structure_config['query_input_column_filters']
 
     def get_query_sort_mechanism(self):
@@ -155,8 +155,8 @@ class FileStructureSetting:
     def get_derived_columns(self):
         return self.__structure_config['derived_columns']
 
-    def get_data_stats_config(self):
-        return self.__structure_config['data_stats']
+    def get_parquet_file_data_stats_config(self):
+        return self.__structure_config['parquet_file_data_stats']
 
     def get_non_data_columns(self):
         return self.__structure_config['non_data_columns']
@@ -167,3 +167,6 @@ class FileStructureSetting:
     def get_partitioning_columns(self):
         return self.__structure_config['partitioning_columns']
 
+# TODO: documentation on structure json
+# TODO: ingestion end to end test
+# TODO # TODO not hardcoded output_name columns
