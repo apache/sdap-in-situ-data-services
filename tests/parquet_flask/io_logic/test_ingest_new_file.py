@@ -85,49 +85,481 @@ lsmd_json_schema = {
   }
 }
 lsmd_structure_setting = {
-  "data_array_key": "RECORDS",
-  "file_metadata_keys": [
-    "MISSION",
-    "SPACECRAFT",
-    "VENUE",
-    "VENUE_NUMBER",
+  "data_schema_config": {
+    "data_array_key": "RECORDS",
+    "data_dict_key": "observation",
+    "has_data_quality": False,
+    "quality_key_postfix": ""
+  },
+  "parquet_ingestion_config": {
+    "file_metadata_keys": [
+        "MISSION",
+        "SPACECRAFT",
+        "VENUE",
+        "VENUE_NUMBER",
+    ],
+    "time_columns": [
+      "SCET"
+    ],
+    "partitioning_columns": [
+        "MISSION", "SPACECRAFT", "VENUE", "VENUE_NUMBER", "channel", "year", "month", "job_id"
+    ],
+    "non_data_columns": [
+    ],
+    "derived_columns": {
+        "SCET_obj": {
+            "original_column": "SCET",
+            "updated_type": "time"
+        },
+        "year": {
+            "original_column": "SCET",
+            "updated_type": "year"
+        },
+        "month": {
+            "original_column": "SCET",
+            "updated_type": "month"
+        },
+        "MISSION": {
+            "original_column": "MISSION",
+            "updated_type": "literal"
+        },
+        "SPACECRAFT": {
+            "original_column": "SPACECRAFT",
+            "updated_type": "literal"
+        },
+        "VENUE": {
+            "original_column": "VENUE",
+            "updated_type": "literal"
+        },
+        "VENUE_NUMBER": {
+            "original_column": "VENUE_NUMBER",
+            "updated_type": "literal"
+        },
+        "job_id": {
+            "original_column": "job_id",
+            "updated_type": "literal"
+        },
+    }
+  },
+  "parquet_file_metadata_extraction_config": [
+    {
+      "output_name": "depth",
+      "column": "depth",
+      "stat_type": "minmax",
+      "min_excluded": -99999.0
+    },
+    {
+      "output_name": "lat",
+      "column": "latitude",
+      "stat_type": "minmax"
+    },
+    {
+      "output_name": "lon",
+      "column": "longitude",
+      "stat_type": "minmax"
+    },
+    {
+      "output_name": "datetime",
+      "column": "time_obj",
+      "stat_type": "minmax",
+      "special_data_type": "timestamp"
+    },
+    {
+      "output_name": "observation_counts",
+      "stat_type": "data_type_record_count"
+    },
+    {
+      "output_name": "total",
+      "stat_type": "record_count"
+    }
   ],
-  "time_columns": ["SCET"],
-  "partitioning_columns": ["MISSION", "SPACECRAFT", "VENUE", "VENUE_NUMBER", "channel", "year", "month", "job_id"],
-  "non_data_columns": [],
-  "derived_columns": {
-    "SCET_obj": {
-      "original_column": "SCET",
-      "updated_type": "time"
+  "query_statistics_instructions_config": {
+    "group_by": [
+      "provider",
+      "project",
+      "platform_code"
+    ],
+    "stats": {
+      "min": [
+        "min_datetime",
+        "min_depth",
+        "min_lat",
+        "min_lon"
+      ],
+      "max": [
+        "max_datetime",
+        "max_depth",
+        "max_lat",
+        "max_lon"
+      ],
+      "sum": [
+        "total"
+      ]
     },
-    "year": {
-      "original_column": "SCET",
-      "updated_type": "year"
+    "include_data_stats": True,
+    "data_stats": {
+      "is_included": True,
+      "stats": "sum",
+      "data_prefix": "observation_counts."
+    }
+  },
+  "data_query_config": {
+    "input_parameter_transformer_schema": {
+    "type": "object",
+    "properties": {
+      "provider": {
+        "type": "string"
+      },
+      "project": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "startTime": {
+        "type": "string"
+      },
+      "endTime": {
+        "type": "string"
+      },
+      "minDepth": {
+        "type": "number"
+      },
+      "maxDepth": {
+        "type": "number"
+      },
+      "bbox": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        }
+      },
+      "variable": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "columns": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+    "metadata_search_instruction_config": {
+      "provider": {
+        "type": "string",
+        "dsl_terms": [
+          {
+            "term": {
+              "provider": "repr_value"
+            }
+          }
+        ]
+      },
+      "project": {
+        "type": "string",
+        "dsl_terms": [
+          {
+            "term": {
+              "project": "repr_value"
+            }
+          }
+        ]
+      },
+      "platform": {
+        "type": "string",
+        "dsl_terms": [
+          {
+            "term": {
+              "platform_code": "repr_value"
+            }
+          }
+        ]
+      },
+      "minDepth": {
+        "type": "float",
+        "dsl_terms": [
+          {
+            "range": {
+              "max_depth": {
+                "gte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      "maxDepth": {
+        "type": "float",
+        "dsl_terms": [
+          {
+            "range": {
+              "min_depth": {
+                "lte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      "startTime": {
+        "type": "datetime",
+        "dsl_terms": [
+          {
+            "range": {
+              "max_datetime": {
+                "gte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      "endTime": {
+        "type": "datetime",
+        "dsl_terms": [
+          {
+            "range": {
+              "min_datetime": {
+                "lte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      "bbox": [
+        {
+          "type": "float",
+          "dsl_terms": [
+            {
+              "range": {
+                "max_lon": {
+                  "gte": "repr_value"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "float",
+          "dsl_terms": [
+            {
+              "range": {
+                "max_lat": {
+                  "gte": "repr_value"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "float",
+          "dsl_terms": [
+            {
+              "range": {
+                "min_lon": {
+                  "lte": "repr_value"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "float",
+          "dsl_terms": [
+            {
+              "range": {
+                "min_lat": {
+                  "lte": "repr_value"
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
-    "month": {
-      "original_column": "SCET",
-      "updated_type": "month"
+    "sort_mechanism_config": {
+      "sorting_columns": [
+        "time_obj",
+        "platform_code",
+        "depth",
+        "latitude",
+        "longitude"
+      ],
+      "page_size_key": "itemsPerPage",
+      "pagination_marker_key": "markerPlatform",
+      "pagination_marker_time": "markerTime",
+      "original_time": "startTime"
     },
-    "MISSION": {
-      "original_column": "MISSION",
-      "updated_type": "literal"
+    "column_filters_config": {
+      "removing_columns": [
+        "time_obj",
+        "month",
+        "year",
+        "geo_spatial_interval"
+      ],
+      "default_columns": [
+        "time",
+        "latitude",
+        "longitude",
+        "depth"
+      ],
+      "mandatory_column_filter_key": "columns",
+      "additional_column_filter_key": "variable"
     },
-    "SPACECRAFT": {
-      "original_column": "SPACECRAFT",
-      "updated_type": "literal"
+    "parquet_conditions_config": {
+    "startTime": {
+      "relationship": "1:1",
+      "terms": {
+        "constraint": "binary",
+        "type": "string",
+        "data_column": "time_obj",
+        "comparator": "gte"
+      }
     },
-    "VENUE": {
-      "original_column": "VENUE",
-      "updated_type": "literal"
+    "endTime": {
+      "relationship": "1:1",
+      "terms": {
+        "constraint": "binary",
+        "type": "string",
+        "data_column": "time_obj",
+        "comparator": "lte"
+      }
     },
-    "VENUE_NUMBER": {
-      "original_column": "VENUE_NUMBER",
-      "updated_type": "literal"
+    "bbox": {
+      "relationship": "n:n",
+      "condition": "must",
+      "terms": [
+        {
+          "constraint": "binary",
+          "type": "float",
+          "data_column": "longitude",
+          "comparator": "gte"
+        },
+        {
+          "constraint": "binary",
+          "type": "float",
+          "data_column": "latitude",
+          "comparator": "gte"
+        },
+        {
+          "constraint": "binary",
+          "type": "float",
+          "data_column": "longitude",
+          "comparator": "lte"
+        },
+        {
+          "constraint": "binary",
+          "type": "float",
+          "data_column": "latitude",
+          "comparator": "lte"
+        }
+      ]
     },
-    "job_id": {
-      "original_column": "job_id",
-      "updated_type": "literal"
+    "minDepth": {
+      "relationship": "1:n",
+      "condition": "should",
+      "terms": [
+        {
+          "constraint": "binary",
+          "type": "float",
+          "data_column": "depth",
+          "comparator": "gte"
+        },
+        {
+          "constraint": "binary_constant",
+          "type": "float",
+          "data_column": "depth",
+          "comparator": "eq",
+          "constant": -99999.0
+        }
+      ]
     },
+    "maxDepth": {
+      "relationship": "1:1",
+      "terms": {
+        "constraint": "binary",
+        "type": "float",
+        "data_column": "depth",
+        "comparator": "lte"
+      }
+    },
+    "variable": {
+      "relationship": "n:1",
+      "condition": "should",
+      "terms": {
+        "constraint": "unary",
+        "comparator": "includes"
+      }
+    }
+  },
+    "statics_es_index_schema": {
+      "settings": {
+        "number_of_shards": 3,
+        "number_of_replicas": 1
+      },
+      "mappings": {
+        "properties": {
+          "min_datetime": {
+            "type": "double"
+          },
+          "max_datetime": {
+            "type": "double"
+          },
+          "min_lat": {
+            "type": "double"
+          },
+          "max_lat": {
+            "type": "double"
+          },
+          "min_lon": {
+            "type": "double"
+          },
+          "max_lon": {
+            "type": "double"
+          },
+          "platform_code": {
+            "type": "keyword"
+          },
+          "s3_url": {
+            "type": "keyword"
+          },
+          "bucket": {
+            "type": "keyword"
+          },
+          "geo_spatial_interval": {
+            "type": "keyword"
+          },
+          "month": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "keyword"
+          },
+          "project": {
+            "type": "keyword"
+          },
+          "provider": {
+            "type": "keyword"
+          },
+          "year": {
+            "type": "keyword"
+          },
+          "total": {
+            "type": "long"
+          },
+          "min_depth": {
+            "type": "double"
+          },
+          "max_depth": {
+            "type": "double"
+          }
+        }
+      }
+    }
   }
 }
 lsmd_sample_data = {

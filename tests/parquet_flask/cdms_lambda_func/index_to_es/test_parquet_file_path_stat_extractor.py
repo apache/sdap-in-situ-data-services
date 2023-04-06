@@ -3,60 +3,14 @@ from unittest import TestCase
 
 from parquet_flask.insitu.file_structure_setting import FileStructureSetting
 from parquet_flask.cdms_lambda_func.index_to_es.parquet_file_path_stat_extractor import ParquetFilePathStatExtractor
-
-
-sample_structure_setting_json = {
-            "data_array_key": "observations",
-            "file_metadata_keys": [
-                "provider",
-                "project"
-            ],
-            "time_columns": ["time"],
-            "partitioning_columns": ["provider", "project", "platform_code", "geo_spatial_interval", "year", "month",
-                                     "job_id"],
-            "non_data_columns": ["time_obj", "time", "provider", "project", "platform_code", "platform", "year",
-                                 "month", "job_id", "device", "latitude", "longitude", "depth"],
-            "derived_columns": {
-                "time_obj": {
-                    "original_column": "time",
-                    "updated_type": "time"
-                },
-                "year": {
-                    "original_column": "time",
-                    "updated_type": "year"
-                },
-                "month": {
-                    "original_column": "time",
-                    "updated_type": "month"
-                },
-                "platform_code": {
-                    "original_column": "platform.code",
-                    "updated_type": "column"
-                },
-                "project": {
-                    "original_column": "project",
-                    "updated_type": "literal"
-                },
-                "provider": {
-                    "original_column": "provider",
-                    "updated_type": "literal"
-                },
-                "job_id": {
-                    "original_column": "job_id",
-                    "updated_type": "literal"
-                },
-                "geo_spatial_interval": {
-                    "original_column": ["latitude", "longitude"],
-                    "split_interval_key": "project",
-                    "updated_type": "insitu_geo_spatial"
-                }
-            }
-        }
+from parquet_flask.utils.file_utils import FileUtils
 
 
 class TestParquetFilePathStatExtractor(TestCase):
     def test_01(self):
-        file_structure_setting = FileStructureSetting({}, sample_structure_setting_json)
+        data_json_schema = FileUtils.read_json('../../../../in_situ_schema.json')
+        structure_config = FileUtils.read_json('../../../../insitu.file.structure.config.json')
+        file_structure_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
         abs_file_path = 's3://cdms-dev-in-situ-parquet/CDMS_insitu.geo2.parquet/provider=Florida State University, COAPS/project=SAMOS/platform_code=30/geo_spatial_interval=-10_-35/year=2018/month=2/job_id=24054823-eed4-4f44-8138-ee7a39985484/part-00000-cfe9510a-8c31-44b6-aafd-048af0feced3.c000.gz.parquet'
         stat_extractor = ParquetFilePathStatExtractor(file_structure_setting, abs_file_path)
 
@@ -76,7 +30,9 @@ class TestParquetFilePathStatExtractor(TestCase):
         return
 
     def test_backward_compatible_01(self):
-        file_structure_setting = FileStructureSetting({}, sample_structure_setting_json)
+        data_json_schema = FileUtils.read_json('../../../../in_situ_schema.json')
+        structure_config = FileUtils.read_json('../../../../insitu.file.structure.config.json')
+        file_structure_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
         abs_file_path = 's3://cdms-dev-in-situ-parquet/CDMS_insitu.geo2.parquet/provider=Florida State University, COAPS/project=SAMOS/platform_code=30/geo_spatial_interval=-10_-35/year=2018/month=2/job_id=24054823-eed4-4f44-8138-ee7a39985484/part-00000-cfe9510a-8c31-44b6-aafd-048af0feced3.c000.gz.parquet'
         stat_extractor = ParquetFilePathStatExtractor(file_structure_setting, abs_file_path, 'bucket', 'name', 's3_url')
         mock_output = {
@@ -95,7 +51,9 @@ class TestParquetFilePathStatExtractor(TestCase):
         return
 
     def test_02(self):
-        file_structure_setting = FileStructureSetting({}, sample_structure_setting_json)
+        data_json_schema = FileUtils.read_json('../../../../in_situ_schema.json')
+        structure_config = FileUtils.read_json('../../../../insitu.file.structure.config.json')
+        file_structure_setting = FileStructureSetting(data_json_schema=data_json_schema, structure_config=structure_config)
         abs_file_path = 's3://cdms-dev-in-situ-parquet/CDMS_insitu.geo2.parquet/provider=Florida State University, COAPS/project=SAMOS/platform_code=30/year=2018/month=2/job_id=24054823-eed4-4f44-8138-ee7a39985484/part-00000-cfe9510a-8c31-44b6-aafd-048af0feced3.c000.gz.parquet'
         stat_extractor = ParquetFilePathStatExtractor(file_structure_setting, abs_file_path)
 
