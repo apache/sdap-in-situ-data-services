@@ -84,7 +84,7 @@ STRUCTURE_CONFIG = {
                     "output_name": {"type": "string"},
                     "stat_type": {
                         "type": "string",
-                        "enum": ["minmax", "count", "record_count"]
+                        "enum": ["minmax", "data_type_record_count", "record_count"]
                     },
                     "special_data_type": {
                         "type": "string",

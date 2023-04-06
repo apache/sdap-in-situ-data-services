@@ -483,34 +483,7 @@
     },
     {
       "output_name": "observation_counts",
-      "columns": [
-        "air_pressure",
-        "air_temperature",
-        "dew_point_temperature",
-        "downwelling_longwave_flux_in_air",
-        "downwelling_longwave_radiance_in_air",
-        "downwelling_shortwave_flux_in_air",
-        "mass_concentration_of_chlorophyll_in_sea_water",
-        "rainfall_rate",
-        "relative_humidity",
-        "sea_surface_salinity",
-        "sea_surface_skin_temperature",
-        "sea_surface_subskin_temperature",
-        "sea_surface_temperature",
-        "sea_water_density",
-        "sea_water_electrical_conductivity",
-        "sea_water_practical_salinity",
-        "sea_water_salinity",
-        "sea_water_temperature",
-        "surface_downwelling_photosynthetic_photon_flux_in_air",
-        "wet_bulb_temperature",
-        "wind_speed",
-        "wind_from_direction",
-        "wind_to_direction",
-        "eastward_wind",
-        "northward_wind"
-      ],
-      "stat_type": "count"
+      "stat_type": "data_type_record_count"
     },
     {
       "output_name": "total",

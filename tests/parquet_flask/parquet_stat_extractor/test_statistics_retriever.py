@@ -61,9 +61,10 @@ class TestStatisticsRetriever(TestCase):
             },
 
         ]
+        data_json_schema = FileUtils.read_json('/Users/wphyo/Projects/access/parquet_test_1/in_situ_schema.json')
         file_structure_config_file = '/Users/wphyo/Projects/access/parquet_test_1/insitu.file.structure.config.json'
         file_structure_config_file = FileUtils.read_json(file_structure_config_file)
-        file_structure_setting = FileStructureSetting({}, file_structure_config_file)
+        file_structure_setting = FileStructureSetting(data_json_schema, file_structure_config_file)
         spark = SparkSession.builder \
             .master("local") \
             .appName('TestAppName') \
@@ -79,7 +80,7 @@ class TestStatisticsRetriever(TestCase):
                                              'sea_surface_subskin_temperature': 0, 'sea_surface_temperature': 0, 'sea_water_density': 0, 'sea_water_electrical_conductivity': 0,
                                              'sea_water_practical_salinity': 0, 'sea_water_salinity': 0, 'sea_water_temperature': 0,
                                              'surface_downwelling_photosynthetic_photon_flux_in_air': 0, 'wet_bulb_temperature': 0, 'wind_speed': 0, 'wind_from_direction': 0,
-                                             'wind_to_direction': 0, 'eastward_wind': 0, 'northward_wind': 0}}
+                                             'wind_to_direction': 0, 'eastward_wind': 0, 'meta': 0, 'northward_wind': 0}}
         print(json.dumps(old_result, sort_keys=True))
         print(json.dumps(stats_retriever.to_json(), sort_keys=True))
         self.assertEqual(json.dumps(old_result, sort_keys=True), json.dumps(stats_retriever.to_json(), sort_keys=True), 'backward compatibility failed')

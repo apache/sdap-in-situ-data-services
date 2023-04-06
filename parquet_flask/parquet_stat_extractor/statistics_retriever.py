@@ -37,7 +37,8 @@ class StatisticsRetriever:
         """
         return self.__stat_result
 
-    def __data_type_record_counts(self, data_columns):
+    def __data_type_record_counts(self):
+        data_columns = self.__file_structure_setting.get_data_columns()
         data_type_counts = {}
         for each_data_key in data_columns:
             try:
@@ -60,6 +61,7 @@ class StatisticsRetriever:
         return stats[f'{"min" if is_min_stat else "max"}({column_name})']
 
     def start(self):
+        # TODO abstraction - meta is part of data columns now. remove it?
         self.__stat_result = {}
         for each_stat_dict in self.__file_structure_setting.get_parquet_file_data_stats_config():
             if each_stat_dict['stat_type'] == 'minmax':
@@ -87,9 +89,9 @@ class StatisticsRetriever:
             elif each_stat_dict['stat_type'] == 'record_count':
                 self.__result_keys['overall_totals'] = each_stat_dict["output_name"]
                 self.__stat_result['overall_totals'] = int(self.__input_dataset.count())
-            elif each_stat_dict['stat_type'] == 'count':
+            elif each_stat_dict['stat_type'] == 'data_type_record_count':
                 self.__result_keys['individual_data_totals'] = each_stat_dict["output_name"]
-                self.__stat_result['individual_data_totals'] = self.__data_type_record_counts(each_stat_dict['columns'])
+                self.__stat_result['individual_data_totals'] = self.__data_type_record_counts()
 
         stats = self.__input_dataset.select(self.__querying_stat_list).collect()
         if len(stats) != 1:
