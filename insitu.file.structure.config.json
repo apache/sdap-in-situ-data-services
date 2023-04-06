@@ -1,78 +1,145 @@
 {
-  "data_array_key": "observations",
-  "data_dict_key": "observation",
-  "has_data_quality": true,
-  "quality_key_postfix": "_quality",
-  "file_metadata_keys": [
-    "provider",
-    "project"
-  ],
-  "time_columns": [
-    "time"
-  ],
-  "partitioning_columns": [
-    "provider",
-    "project",
-    "platform_code",
-    "geo_spatial_interval",
-    "year",
-    "month",
-    "job_id"
-  ],
-  "non_data_columns": [
-    "time_obj",
-    "time",
-    "provider",
-    "project",
-    "platform_code",
-    "platform",
-    "year",
-    "month",
-    "job_id",
-    "device",
-    "latitude",
-    "longitude",
-    "depth"
-  ],
-  "derived_columns": {
-    "time_obj": {
-      "original_column": "time",
-      "updated_type": "time"
-    },
-    "year": {
-      "original_column": "time",
-      "updated_type": "year"
-    },
-    "month": {
-      "original_column": "time",
-      "updated_type": "month"
-    },
-    "platform_code": {
-      "original_column": "platform.code",
-      "updated_type": "column"
-    },
-    "project": {
-      "original_column": "project",
-      "updated_type": "literal"
-    },
-    "provider": {
-      "original_column": "provider",
-      "updated_type": "literal"
-    },
-    "job_id": {
-      "original_column": "job_id",
-      "updated_type": "literal"
-    },
-    "geo_spatial_interval": {
-      "original_column": [
-        "latitude",
-        "longitude"
-      ],
-      "split_interval_key": "project",
-      "updated_type": "insitu_geo_spatial"
+  "data_schema_config": {
+    "data_array_key": "observations",
+    "data_dict_key": "observation",
+    "has_data_quality": true,
+    "quality_key_postfix": "_quality"
+  },
+  "parquet_ingestion_config": {
+    "file_metadata_keys": [
+      "provider",
+      "project"
+    ],
+    "time_columns": [
+      "time"
+    ],
+    "partitioning_columns": [
+      "provider",
+      "project",
+      "platform_code",
+      "geo_spatial_interval",
+      "year",
+      "month",
+      "job_id"
+    ],
+    "non_data_columns": [
+      "time_obj",
+      "time",
+      "provider",
+      "project",
+      "platform_code",
+      "platform",
+      "year",
+      "month",
+      "job_id",
+      "device",
+      "latitude",
+      "longitude",
+      "depth"
+    ],
+    "derived_columns": {
+      "time_obj": {
+        "original_column": "time",
+        "updated_type": "time"
+      },
+      "year": {
+        "original_column": "time",
+        "updated_type": "year"
+      },
+      "month": {
+        "original_column": "time",
+        "updated_type": "month"
+      },
+      "platform_code": {
+        "original_column": "platform.code",
+        "updated_type": "column"
+      },
+      "project": {
+        "original_column": "project",
+        "updated_type": "literal"
+      },
+      "provider": {
+        "original_column": "provider",
+        "updated_type": "literal"
+      },
+      "job_id": {
+        "original_column": "job_id",
+        "updated_type": "literal"
+      },
+      "geo_spatial_interval": {
+        "original_column": [
+          "latitude",
+          "longitude"
+        ],
+        "split_interval_key": "project",
+        "updated_type": "insitu_geo_spatial"
+      }
     }
   },
-  "query_input_transformer_schema": {
+  "parquet_file_metadata_extraction_config": [
+    {
+      "output_name": "depth",
+      "column": "depth",
+      "stat_type": "minmax",
+      "min_excluded": -99999.0
+    },
+    {
+      "output_name": "lat",
+      "column": "latitude",
+      "stat_type": "minmax"
+    },
+    {
+      "output_name": "lon",
+      "column": "longitude",
+      "stat_type": "minmax"
+    },
+    {
+      "output_name": "datetime",
+      "column": "time_obj",
+      "stat_type": "minmax",
+      "special_data_type": "timestamp"
+    },
+    {
+      "output_name": "observation_counts",
+      "stat_type": "data_type_record_count"
+    },
+    {
+      "output_name": "total",
+      "stat_type": "record_count"
+    }
+  ],
+  "query_statistics_instructions_config": {
+    "group_by": [
+      "provider",
+      "project",
+      "platform_code"
+    ],
+    "stats": {
+      "min": [
+        "min_datetime",
+        "min_depth",
+        "min_lat",
+        "min_lon"
+      ],
+      "max": [
+        "max_datetime",
+        "max_depth",
+        "max_lat",
+        "max_lon"
+      ],
+      "sum": [
+        "total"
+      ]
+    },
+    "include_data_stats": true,
+    "data_stats": {
+      "is_included": true,
+      "stats": "sum",
+      "data_prefix": "observation_counts."
+    }
+  },
+  "data_query_config": {
+    "input_parameter_transformer_schema": {
     "type": "object",
     "properties": {
       "provider": {
@@ -119,166 +186,166 @@
       }
     }
   },
-  "query_input_metadata_search_instructions": {
-    "provider": {
-      "type": "string",
-      "dsl_terms": [
-        {
-          "term": {
-            "provider": "repr_value"
-          }
-        }
-      ]
-    },
-    "project": {
-      "type": "string",
-      "dsl_terms": [
-        {
-          "term": {
-            "project": "repr_value"
-          }
-        }
-      ]
-    },
-    "platform": {
-      "type": "string",
-      "dsl_terms": [
-        {
-          "term": {
-            "platform_code": "repr_value"
-          }
-        }
-      ]
-    },
-    "minDepth": {
-      "type": "float",
-      "dsl_terms": [
-        {
-          "range": {
-            "max_depth": {
-              "gte": "repr_value"
+    "metadata_search_instruction_config": {
+      "provider": {
+        "type": "string",
+        "dsl_terms": [
+          {
+            "term": {
+              "provider": "repr_value"
             }
           }
-        }
-      ]
-    },
-    "maxDepth": {
-      "type": "float",
-      "dsl_terms": [
-        {
-          "range": {
-            "min_depth": {
-              "lte": "repr_value"
+        ]
+      },
+      "project": {
+        "type": "string",
+        "dsl_terms": [
+          {
+            "term": {
+              "project": "repr_value"
             }
           }
-        }
-      ]
-    },
-    "startTime": {
-      "type": "datetime",
-      "dsl_terms": [
-        {
-          "range": {
-            "max_datetime": {
-              "gte": "repr_value"
+        ]
+      },
+      "platform": {
+        "type": "string",
+        "dsl_terms": [
+          {
+            "term": {
+              "platform_code": "repr_value"
             }
           }
-        }
-      ]
-    },
-    "endTime": {
-      "type": "datetime",
-      "dsl_terms": [
-        {
-          "range": {
-            "min_datetime": {
-              "lte": "repr_value"
-            }
-          }
-        }
-      ]
-    },
-    "bbox": [
-      {
+        ]
+      },
+      "minDepth": {
         "type": "float",
         "dsl_terms": [
           {
             "range": {
-              "max_lon": {
+              "max_depth": {
                 "gte": "repr_value"
               }
             }
           }
         ]
       },
-      {
+      "maxDepth": {
         "type": "float",
         "dsl_terms": [
           {
             "range": {
-              "max_lat": {
+              "min_depth": {
+                "lte": "repr_value"
+              }
+            }
+          }
+        ]
+      },
+      "startTime": {
+        "type": "datetime",
+        "dsl_terms": [
+          {
+            "range": {
+              "max_datetime": {
                 "gte": "repr_value"
               }
             }
           }
         ]
       },
-      {
-        "type": "float",
+      "endTime": {
+        "type": "datetime",
         "dsl_terms": [
           {
             "range": {
-              "min_lon": {
+              "min_datetime": {
                 "lte": "repr_value"
               }
             }
           }
         ]
       },
-      {
-        "type": "float",
-        "dsl_terms": [
-          {
-            "range": {
-              "min_lat": {
-                "lte": "repr_value"
+      "bbox": [
+        {
+          "type": "float",
+          "dsl_terms": [
+            {
+              "range": {
+                "max_lon": {
+                  "gte": "repr_value"
+                }
               }
             }
-          }
-        ]
-      }
-    ]
-  },
-  "query_sort_mechanism": {
-    "sorting_columns": [
-      "time_obj",
-      "platform_code",
-      "depth",
-      "latitude",
-      "longitude"
-    ],
-    "page_size_key": "itemsPerPage",
-    "pagination_marker_key": "markerPlatform",
-    "pagination_marker_time": "markerTime",
-    "original_time": "startTime"
-  },
-  "query_input_column_filters": {
-    "removing_columns": [
-      "time_obj",
-      "month",
-      "year",
-      "geo_spatial_interval"
-    ],
-    "default_columns": [
-      "time",
-      "latitude",
-      "longitude",
-      "depth"
-    ],
-    "mandatory_column_filter_key": "columns",
-    "additional_column_filter_key": "variable"
-  },
-  "query_input_parquet_conditions": {
+          ]
+        },
+        {
+          "type": "float",
+          "dsl_terms": [
+            {
+              "range": {
+                "max_lat": {
+                  "gte": "repr_value"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "float",
+          "dsl_terms": [
+            {
+              "range": {
+                "min_lon": {
+                  "lte": "repr_value"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "float",
+          "dsl_terms": [
+            {
+              "range": {
+                "min_lat": {
+                  "lte": "repr_value"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "sort_mechanism_config": {
+      "sorting_columns": [
+        "time_obj",
+        "platform_code",
+        "depth",
+        "latitude",
+        "longitude"
+      ],
+      "page_size_key": "itemsPerPage",
+      "pagination_marker_key": "markerPlatform",
+      "pagination_marker_time": "markerTime",
+      "original_time": "startTime"
+    },
+    "column_filters_config": {
+      "removing_columns": [
+        "time_obj",
+        "month",
+        "year",
+        "geo_spatial_interval"
+      ],
+      "default_columns": [
+        "time",
+        "latitude",
+        "longitude",
+        "depth"
+      ],
+      "mandatory_column_filter_key": "columns",
+      "additional_column_filter_key": "variable"
+    },
+    "parquet_conditions_config": {
     "startTime": {
       "relationship": "1:1",
       "terms": {
@@ -364,130 +431,69 @@
       }
     }
   },
-  "query_statistics_instructions": {
-    "group_by": [
-      "provider",
-      "project",
-      "platform_code"
-    ],
-    "stats": {
-      "min": [
-        "min_datetime",
-        "min_depth",
-        "min_lat",
-        "min_lon"
-      ],
-      "max": [
-        "max_datetime",
-        "max_depth",
-        "max_lat",
-        "max_lon"
-      ],
-      "sum": [
-        "total"
-      ]
-    },
-    "include_data_stats": true,
-    "data_stats": {
-      "is_included": true,
-      "stats": "sum",
-      "data_prefix": "observation_counts."
-    }
-  },
-  "es_index_schema_parquet_stats": {
-    "settings": {
-      "number_of_shards": 3,
-      "number_of_replicas": 1
-    },
-    "mappings": {
-      "properties": {
-        "min_datetime": {
-          "type": "double"
-        },
-        "max_datetime": {
-          "type": "double"
-        },
-        "min_lat": {
-          "type": "double"
-        },
-        "max_lat": {
-          "type": "double"
-        },
-        "min_lon": {
-          "type": "double"
-        },
-        "max_lon": {
-          "type": "double"
-        },
-        "platform_code": {
-          "type": "keyword"
-        },
-        "s3_url": {
-          "type": "keyword"
-        },
-        "bucket": {
-          "type": "keyword"
-        },
-        "geo_spatial_interval": {
-          "type": "keyword"
-        },
-        "month": {
-          "type": "keyword"
-        },
-        "name": {
-          "type": "keyword"
-        },
-        "project": {
-          "type": "keyword"
-        },
-        "provider": {
-          "type": "keyword"
-        },
-        "year": {
-          "type": "keyword"
-        },
-        "total": {
-          "type": "long"
-        },
-        "min_depth": {
-          "type": "double"
-        },
-        "max_depth": {
-          "type": "double"
+    "statics_es_index_schema": {
+      "settings": {
+        "number_of_shards": 3,
+        "number_of_replicas": 1
+      },
+      "mappings": {
+        "properties": {
+          "min_datetime": {
+            "type": "double"
+          },
+          "max_datetime": {
+            "type": "double"
+          },
+          "min_lat": {
+            "type": "double"
+          },
+          "max_lat": {
+            "type": "double"
+          },
+          "min_lon": {
+            "type": "double"
+          },
+          "max_lon": {
+            "type": "double"
+          },
+          "platform_code": {
+            "type": "keyword"
+          },
+          "s3_url": {
+            "type": "keyword"
+          },
+          "bucket": {
+            "type": "keyword"
+          },
+          "geo_spatial_interval": {
+            "type": "keyword"
+          },
+          "month": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "keyword"
+          },
+          "project": {
+            "type": "keyword"
+          },
+          "provider": {
+            "type": "keyword"
+          },
+          "year": {
+            "type": "keyword"
+          },
+          "total": {
+            "type": "long"
+          },
+          "min_depth": {
+            "type": "double"
+          },
+          "max_depth": {
+            "type": "double"
+          }
         }
       }
     }
-  },
-  "parquet_file_data_stats": [
-    {
-      "output_name": "depth",
-      "column": "depth",
-      "stat_type": "minmax",
-      "min_excluded": -99999.0
-    },
-    {
-      "output_name": "lat",
-      "column": "latitude",
-      "stat_type": "minmax"
-    },
-    {
-      "output_name": "lon",
-      "column": "longitude",
-      "stat_type": "minmax"
-    },
-    {
-      "output_name": "datetime",
-      "column": "time_obj",
-      "stat_type": "minmax",
-      "special_data_type": "timestamp"
-    },
-    {
-      "output_name": "observation_counts",
-      "stat_type": "data_type_record_count"
-    },
-    {
-      "output_name": "total",
-      "stat_type": "record_count"
-    }
-  ]
+  }
 }
