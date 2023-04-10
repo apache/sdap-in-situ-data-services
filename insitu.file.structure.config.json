@@ -131,7 +131,6 @@
         "total"
       ]
     },
-    "include_data_stats": true,
     "data_stats": {
       "is_included": true,
       "stats": "sum",

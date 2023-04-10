@@ -70,7 +70,6 @@ STRUCTURE_CONFIG = {
             "required": ["group_by", "stats", "data_stats"],
             "properties": {
                 "group_by": {"type": "array", "items": {"type": "string"}},
-                "include_data_stats": {"type": "boolean"},
                 "data_stats": {
                     "type": "object",
                     "required": ["is_included", "stats", "data_prefix"],
@@ -188,7 +187,7 @@ class FileStructureSetting:
         return self.__structure_config['parquet_ingestion_config']['derived_columns']
 
     def get_parquet_file_data_stats_config(self):
-        return self.__structure_config['query_statistics_instructions_config']
+        return self.__structure_config['parquet_file_metadata_extraction_config']
 
     def get_non_data_columns(self):
         return self.__structure_config['parquet_ingestion_config']['non_data_columns']

@@ -83,9 +83,13 @@ For the other 4 sections, they system expects a [insitu.file.structure.config.js
 The system has some predefined data types that is used such as "time", "year", "month", "column", "literal", "insitu_geo_spatial"
 
         {
-            "file_metadata_keys": "an array of file / project level metadata keys. Example: provider, project in CDMS system. mission, spacecraft, venue in spacecaraft engineering system.",
-            "time_columns": "an array of data keys which are timestamps. Example: time in CDMS system. spacecraft_event_time, earth_received_time in spacecaraft engineering system.",
-            
+            "file_metadata_keys": [  // an array of file / project level metadata keys. Example: mission, spacecraft, venue in spacecaraft engineering system.
+                "provider",
+                "project"
+            ],
+            "time_columns": [  // an array of data keys which are timestamps. Example: spacecraft_event_time, earth_received_time in spacecaraft engineering system.
+                "time"
+            ],           
             "derived_columns": {  // some system columsn are needed for partitioning and to query the data. 
                 "time_obj": {  // there should be a '_obj' column for all time keys so that it can be queried by that time column
                     "original_column": "time",  // the original data key from data JSON file
@@ -150,7 +154,7 @@ The system has some predefined data types that is used such as "time", "year", "
             ],
         }
 ### Metadata Ingestion
-'insitu.file.structure.config.json' has `parquet_ingestion_config` section so that it knows how to extract statistics from each parquet data block to store them in metadata DB.
+'insitu.file.structure.config.json' has `parquet_file_metadata_extraction_config` section so that it knows how to extract statistics from each parquet data block to store them in metadata DB.
 The allowed statistics types are "minmax", "data_type_record_count", "record_count".
 
         [  // It will be an array of configuration what and how to extract required metadata of statistics and data query
@@ -187,6 +191,38 @@ The allowed statistics types are "minmax", "data_type_record_count", "record_cou
             }
         ]
 ### Data Statistics Query
-TODO
+'insitu.file.structure.config.json' has `query_statistics_instructions_config` section so that it knows how to query statistics from metadata DB.
+This is created based on Elasticsearch / Opensearch. 
+
+        {
+            "group_by": [  // in ES, this is a nested aggregations. Other databases should have similar strategies. 
+                        // this config results in grouping each provider. In each provider, group by each project. In each project, group by each platform_code. and so on.
+                "provider",
+                "project",
+                "platform_code"
+            ],
+            "stats": {  // for each statistics, what types of statistics will be queried? 
+                "min": [  // this says query the "min" of the following columns.
+                    "min_datetime",
+                    "min_depth",
+                    "min_lat",
+                    "min_lon"
+                ],
+                "max": [  // this says query the "max" of the following columns. 
+                    "max_datetime",
+                    "max_depth",
+                    "max_lat",
+                    "max_lon"
+                ],
+                "sum": [  // this says make a summation of the values of following columns. 
+                    "total"
+                ]
+            },
+            "data_stats": {  // this is a special keys checking if statistics needs to be included for measurements / data points
+                "is_included": true,  // boolean to say if it needs to be included. 
+                "stats": "sum",  // same as statistics type. 
+                "data_prefix": "observation_counts."  // this is to find the prefix of data columns. This needs to match #/parquet_file_metadata_extraction_config/[-2]/output_name
+            }
+        }
 ### Data Query
 TODO

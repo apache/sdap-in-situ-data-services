@@ -196,7 +196,6 @@ lsmd_structure_setting = {
         "total"
       ]
     },
-    "include_data_stats": True,
     "data_stats": {
       "is_included": True,
       "stats": "sum",
