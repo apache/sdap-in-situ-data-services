@@ -104,24 +104,24 @@ The system has some predefined data types that is used such as "time", "year", "
                     "updated_type": "column"  // since there may be different value for each data row, Spark data type would be the column. 
                 },
                 "project": {  // this is pulling down a file / project level metadata so that users can query against it. It will be a part of data query. It can also be used for partitions. 
-                "original_column": "project",
-                "updated_type": "literal"  // since the value is fixed for entire data file, it is a literal. 
+                    "original_column": "project",
+                    "updated_type": "literal"  // since the value is fixed for entire data file, it is a literal. 
                 },
                 "provider": {  // same as 'project'
-                "original_column": "provider",
-                "updated_type": "literal"
+                    "original_column": "provider",
+                    "updated_type": "literal"
                 },
                 "job_id": {  // this is an external literal value to differentiate each job. 
-                "original_column": "job_id",  // original_column is endpoint parameter key. 
-                "updated_type": "literal"
+                    "original_column": "job_id",  // original_column is endpoint parameter key. 
+                    "updated_type": "literal"
                 },
                 "geo_spatial_interval": {  // this is a special column to combine latitude and longitude to form  NxN grids for partitioning. 
-                "original_column": [  // the original_column is an array of 2 which sould be latitude and longitude columns 
-                    "latitude",
-                    "longitude"
-                ],
-                "split_interval_key": "project",  // the value is the environment key to find which N is used in NxN. More details in https://github.com/wphyojpl/incubator-sdap-in-situ-data-services/pull/3
-                "updated_type": "insitu_geo_spatial"  // special data type only for this system. 
+                    "original_column": [  // the original_column is an array of 2 which sould be latitude and longitude columns 
+                        "latitude",
+                        "longitude"
+                    ],
+                    "split_interval_key": "project",  // the value is the environment key to find which N is used in NxN. More details in https://github.com/wphyojpl/incubator-sdap-in-situ-data-services/pull/3
+                    "updated_type": "insitu_geo_spatial"  // special data type only for this system. 
                 }
             },
             "partitioning_columns": [  // an array of column names which is used to partition the data in Parquet. A partition is created in the same order. 
@@ -150,7 +150,42 @@ The system has some predefined data types that is used such as "time", "year", "
             ],
         }
 ### Metadata Ingestion
-TODO
+'insitu.file.structure.config.json' has `parquet_ingestion_config` section so that it knows how to extract statistics from each parquet data block to store them in metadata DB.
+The allowed statistics types are "minmax", "data_type_record_count", "record_count".
+
+        [  // It will be an array of configuration what and how to extract required metadata of statistics and data query
+            {
+                "output_name": "depth",  // dabase column named to store this statistics
+                "column": "depth",  // parquet data column to extract the data. 
+                "stat_type": "minmax",  // statistics type. minmax will generate 2 outputs min_<output_name> and max_<output_name>
+                "min_excluded": -99999.0  // a value to exclude when calculating min max.
+                "max_excluded": 99999.0  // a value to exclude when calculating min max.
+            },
+            {
+                "output_name": "lat",  // same as above
+                "column": "latitude",
+                "stat_type": "minmax"
+            },
+            {
+                "output_name": "lon",  // same as above
+                "column": "longitude",
+                "stat_type": "minmax"
+            },
+            {
+                "output_name": "datetime",  // same as above
+                "column": "time_obj",
+                "stat_type": "minmax",
+                "special_data_type": "timestamp"  // this is needed when parquet column is not basic data types like string, float, int. 
+            },
+            {
+                "output_name": "observation_counts",  // dabase column named to store this statistics. This name becomes a key to group all measurements / data points statistics
+                "stat_type": "data_type_record_count"  // a special type where it will count how many points for each measurement / data points. It will extract data / measurement columns based on #/parquet_ingestion_config/non_data_columns
+            },
+            {
+                "output_name": "total",  // dabase column named to store this statistics
+                "stat_type": "record_count"  // statistics type to count how many records in a single Parquet data block
+            }
+        ]
 ### Data Statistics Query
 TODO
 ### Data Query
