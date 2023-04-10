@@ -174,7 +174,7 @@ class FileStructureSetting:
     def get_data_array_key(self):
         return self.__structure_config['data_schema_config']['data_array_key']
 
-    def get_query_input_column_filters(self):  # TODO: column filter - does it work if there are no columns at all?
+    def get_query_input_column_filters(self):
         return self.__structure_config['data_query_config']['column_filters_config']
 
     def get_query_sort_mechanism(self):
@@ -197,8 +197,3 @@ class FileStructureSetting:
 
     def get_partitioning_columns(self):
         return self.__structure_config['parquet_ingestion_config']['partitioning_columns']
-
-# TODO: documentation on structure json
-# TODO: ingestion end to end test
-# TODO # TODO not hardcoded output_name columns
-# TODO: put limits on bbox in input_param

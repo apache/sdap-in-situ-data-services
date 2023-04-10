@@ -1,4 +1,5 @@
-This document describes how to create a new data system. 
+## How to create a new data system
+This document describes how to create a new data system. Please note that this is just a reference. For the latest configuration, pls use the actual configuration JSON files. 
 This system is split into 5 different sections.
 - Data
 - Data Ingestion
@@ -503,6 +504,7 @@ Once the metadata is queried to verify there is data and which section of Parque
     - `eq`: `=`
     - `includes`: `IS NOT NULL`
 
+        
         {
             "startTime": {  // key name from input parameters. the names need to match. 
                 "relationship": "1:1",
