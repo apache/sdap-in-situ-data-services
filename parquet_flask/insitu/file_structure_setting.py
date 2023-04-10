@@ -201,3 +201,4 @@ class FileStructureSetting:
 # TODO: documentation on structure json
 # TODO: ingestion end to end test
 # TODO # TODO not hardcoded output_name columns
+# TODO: put limits on bbox in input_param

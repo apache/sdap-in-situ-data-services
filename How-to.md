@@ -192,7 +192,7 @@ The allowed statistics types are "minmax", "data_type_record_count", "record_cou
         ]
 ### Data Statistics Query
 'insitu.file.structure.config.json' has `query_statistics_instructions_config` section so that it knows how to query statistics from metadata DB.
-This is created based on Elasticsearch / Opensearch. 
+- This is created based on Elasticsearch / Opensearch. 
 
         {
             "group_by": [  // in ES, this is a nested aggregations. Other databases should have similar strategies. 
@@ -225,4 +225,367 @@ This is created based on Elasticsearch / Opensearch.
             }
         }
 ### Data Query
-TODO
+'insitu.file.structure.config.json' has `data_query_config` section so that it knows how to query parquet data. 
+- There are several steps to query the data. all the instructions / config in the above dictionary. 
+#### Input (Query) Parameters
+`data_query_config` section has `input_parameter_transformer_schema` section which describes how to validate incoming parameters. 
+
+        {  // this is a JSON schema to valid incoming key-value pairs.
+            "type": "object",
+            "properties": {
+                "provider": {
+                    "type": "string"
+                },
+                "project": {
+                    "type": "string"
+                },
+                "platform": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "minDepth": {
+                    "type": "number"
+                },
+                "maxDepth": {
+                    "type": "number"
+                },
+                "bbox": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "variable": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "columns": {
+                    "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+            }
+        }
+#### Metadata Table Structure
+`data_query_config` section has `statics_es_index_schema` section which describes the table / index structure 
+
+        {  // currently this is a Elasticsearch index structure. 
+           // this should match some of keys from parquet_file_metadata_extraction_config and query_statistics_instructions_config
+            "settings": {
+                "number_of_shards": 3,
+                "number_of_replicas": 1
+            },
+            "mappings": {
+            "properties": {
+                "min_datetime": {
+                "type": "double"
+                },
+                "max_datetime": {
+                "type": "double"
+                },
+                "min_lat": {
+                "type": "double"
+                },
+                "max_lat": {
+                "type": "double"
+                },
+                "min_lon": {
+                "type": "double"
+                },
+                "max_lon": {
+                "type": "double"
+                },
+                "platform_code": {
+                "type": "keyword"
+                },
+                "s3_url": {
+                "type": "keyword"
+                },
+                "bucket": {
+                "type": "keyword"
+                },
+                "geo_spatial_interval": {
+                "type": "keyword"
+                },
+                "month": {
+                "type": "keyword"
+                },
+                "name": {
+                "type": "keyword"
+                },
+                "project": {
+                "type": "keyword"
+                },
+                "provider": {
+                "type": "keyword"
+                },
+                "year": {
+                "type": "keyword"
+                },
+                "total": {
+                "type": "long"
+                },
+                "min_depth": {
+                "type": "double"
+                },
+                "max_depth": {
+                "type": "double"
+                }
+            }
+            }
+        }
+#### Querying metadata in data query
+Before querying the actual Parquet data structure, it is helpful to see if there is any relevant data block by querying metadata first. 
+`data_query_config` section has `metadata_search_instruction_config` section which describes what to query from metadata. 
+
+        {
+            "provider": {  // key name from input parameters. the names need to match. 
+                "type": "string",  // datatype of the value that DB is expecting in the query. 
+                "dsl_terms": [  // ES DSL query
+                {
+                    "term": {
+                    "provider": "repr_value"  // they key: "provider" needs to match #/data_query_config/statics_es_index_schema
+                                              // the value: "repr_value" will be replaced with the actual value. 
+                    }
+                }
+                ]
+            },
+            "project": {  // same as above
+                "type": "string",
+                "dsl_terms": [
+                {
+                    "term": {
+                    "project": "repr_value"
+                    }
+                }
+                ]
+            },
+            "platform": {  // same as above
+                "type": "string",
+                "dsl_terms": [
+                {
+                    "term": {
+                    "platform_code": "repr_value"
+                    }
+                }
+                ]
+            },
+            "minDepth": {  // same as above
+                "type": "float",
+                "dsl_terms": [
+                {
+                    "range": {  // range DSL instead of term DSL
+                    "max_depth": {
+                        "gte": "repr_value"
+                    }
+                    }
+                }
+                ]
+            },
+            "maxDepth": {  // same as above
+                "type": "float",
+                "dsl_terms": [
+                {
+                    "range": {
+                    "min_depth": {
+                        "lte": "repr_value"
+                    }
+                    }
+                }
+                ]
+            },
+            "startTime": {  // same as above
+                "type": "datetime",  // a special datatype to match the "max_datetime" datatype in 
+                                     // #/data_query_config/statics_es_index_schema/properties/max_datetime aka UNIX time
+                "dsl_terms": [
+                {
+                    "range": {
+                    "max_datetime": {
+                        "gte": "repr_value"
+                    }
+                    }
+                }
+                ]
+            },
+            "endTime": {  // same as above
+                "type": "datetime",
+                "dsl_terms": [
+                {
+                    "range": {
+                    "min_datetime": {
+                        "lte": "repr_value"
+                    }
+                    }
+                }
+                ]
+            },
+            "bbox": [  // input is an array of 4 values. Each of them needs to match each conditions. 
+                       // the length of this array needs to match #/data_query_config/input_parameter_transformer_schema/properties/bbox
+                {
+                "type": "float",
+                "dsl_terms": [
+                    {
+                    "range": {
+                        "max_lon": {
+                        "gte": "repr_value"
+                        }
+                    }
+                    }
+                ]
+                },
+                {
+                "type": "float",
+                "dsl_terms": [
+                    {
+                    "range": {
+                        "max_lat": {
+                        "gte": "repr_value"
+                        }
+                    }
+                    }
+                ]
+                },
+                {
+                "type": "float",
+                "dsl_terms": [
+                    {
+                    "range": {
+                        "min_lon": {
+                        "lte": "repr_value"
+                        }
+                    }
+                    }
+                ]
+                },
+                {
+                "type": "float",
+                "dsl_terms": [
+                    {
+                    "range": {
+                        "min_lat": {
+                        "lte": "repr_value"
+                        }
+                    }
+                    }
+                ]
+                }
+            ]
+        }
+#### Querying Parquet for Data
+Once the metadata is queried to verify there is data and which section of Parquet has relevant data, those data blocks will be retrieved to perform actual query. 
+`data_query_config` section has `parquet_conditions_config` section which describes what to query from metadata. 
+- there is a `relationship` keyword how to map input to query term(s).
+    - `1:1`: 1 to 1. There is only 1 query term, and the input value is a scalar. 
+    - `1:n`: 1 to 1. There are multiple query terms, and the input value is a scalar. 
+    - `n:1`: 1 to 1. There is only 1 query term, and the input value is a list. 
+        - condition will be repeated for each input values and `condition` key is used to decide how to combine them. 
+    - `n:n`: n to n. There are N query terms, and the input value is a list of length n. `condition` key is used to decide how to combine them.
+- there is a `condition` key which follows ES DSL `bool` value. Currently it supports `must` and `should` for `AND` and `OR`. 
+- there is a `constraint` which defined how the query term is structured. 
+    - `binary`: There is a `data_column` which is compare against input value with the `comparator`. 
+    - `binary_constant`: This is a special `binary` where  `data_column` is compared against a constant in key `constant` with the `comparator`. 
+    - `unary`: There is no `data_column` to compare against the input value. In this case, input value(s) should be the `data_column`s and compared against the `comparator`. 
+        - TODO: currently it only supports `includes`. But it should support comparing against a constant. But that might be another `binary_constant`. 
+- there is a ES DSL style `comparator` key to use in query terms
+    - `gte`: `>=`
+    - `lte`: `<=`
+    - `eq`: `=`
+    - `includes`: `IS NOT NULL`
+
+        {
+            "startTime": {  // key name from input parameters. the names need to match. 
+                "relationship": "1:1",
+                "terms": {
+                    "constraint": "binary",
+                    "type": "string",
+                    "data_column": "time_obj",
+                    "comparator": "gte"
+                }
+            },
+            "endTime": {
+                "relationship": "1:1",
+                "terms": {
+                    "constraint": "binary",
+                    "type": "string",
+                    "data_column": "time_obj",
+                    "comparator": "lte"
+                }
+            },
+            "bbox": {
+                "relationship": "n:n",
+                "condition": "must",
+                "terms": [
+                    {
+                        "constraint": "binary",
+                        "type": "float",
+                        "data_column": "longitude",
+                        "comparator": "gte"
+                    },
+                    {
+                        "constraint": "binary",
+                        "type": "float",
+                        "data_column": "latitude",
+                        "comparator": "gte"
+                    },
+                    {
+                        "constraint": "binary",
+                        "type": "float",
+                        "data_column": "longitude",
+                        "comparator": "lte"
+                    },
+                    {
+                        "constraint": "binary",
+                        "type": "float",
+                        "data_column": "latitude",
+                        "comparator": "lte"
+                    }
+                ]
+            },
+            "minDepth": {
+                "relationship": "1:n",
+                "condition": "should",
+                "terms": [
+                    {
+                        "constraint": "binary",
+                        "type": "float",
+                        "data_column": "depth",
+                        "comparator": "gte"
+                    },
+                    {
+                        "constraint": "binary_constant",
+                        "type": "float",
+                        "data_column": "depth",
+                        "comparator": "eq",
+                        "constant": -99999.0
+                    }
+                ]
+            },
+            "maxDepth": {
+                "relationship": "1:1",
+                "terms": {
+                    "constraint": "binary",
+                    "type": "float",
+                    "data_column": "depth",
+                    "comparator": "lte"
+                }
+            },
+            "variable": {
+                "relationship": "n:1",
+                "condition": "should",
+                "terms": {
+                    "constraint": "unary",
+                    "comparator": "includes"
+                }
+            }
+        }
