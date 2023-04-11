@@ -203,6 +203,10 @@ The allowed statistics types are "minmax", "data_type_record_count", "record_cou
                 "platform_code"
             ],
             "stats": {  // for each statistics, what types of statistics will be queried? 
+                "transformers": {  // one or more values may need to be parsed differently. This is where they are defined. Currently, it only supports datetime.
+                    "min_datetime": "datetime",
+                    "max_datetime": "datetime"
+                }
                 "min": [  // this says query the "min" of the following columns.
                     "min_datetime",
                     "min_depth",
