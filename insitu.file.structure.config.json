@@ -114,6 +114,10 @@
       "project",
       "platform_code"
     ],
+    "transformers": {
+      "min_datetime": "datetime",
+      "max_datetime": "datetime"
+    },
     "stats": {
       "min": [
         "min_datetime",

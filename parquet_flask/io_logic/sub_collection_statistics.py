@@ -34,57 +34,10 @@ class SubCollectionStatistics:
         self.__insitu_schema = insitu_schema
         self.__data_column_names = self.__file_struct_setting.get_data_columns()
 
-    def __restructure_core_stats(self, core_stats: dict):
-        """
-        {
-            "key": "30",
-            "doc_count": 4724,
-            "min_lon": {
-                "value": 179.9308
-            },
-            "max_lat": {
-                "value": 80.5424
-            },
-            "max_datetime": {
-                "value": 1546300740
-            },
-            "max_lon": {
-                "value": 179.9996
-            },
-            "min_datetime": {
-                "value": 1546214460
-            },
-            "max_depth": {
-                "value": 6
-            },
-            "totals": {
-                "value": 14530387
-            },
-            "min_lat": {
-                "value": 80.5317
-            },
-            "min_depth": {
-                "value": 4
-            }
-        }
-        :param core_stats:
-        :return:
-        """
-        core_stats = {
-            "platform": core_stats['key'],
-            "statistics": {
-                "total": core_stats['totals']['value'],
-                "min_lat_lon": [core_stats['min_lat']['value'], core_stats['min_lon']['value']],
-                "max_lat_lon": [core_stats['max_lat']['value'], core_stats['max_lon']['value']],
-                "min_depth": core_stats['min_depth']['value'],
-                "max_depth": core_stats['max_depth']['value'],
-                "min_datetime": TimeUtils.get_time_str(int(core_stats['min_datetime']['value']), in_ms=False),
-                "max_datetime": TimeUtils.get_time_str(int(core_stats['max_datetime']['value']), in_ms=False),
-                'observation_counts': {k: core_stats[k]['value'] for k in self.__data_column_names}
-            }
-        }
-        LOGGER.debug(f'core_stats: {core_stats}')
-        return core_stats
+    def __transform_result(self, transformer_type, input_value):
+        if transformer_type == 'datetime':
+            return TimeUtils().parse_from_unix(input_value, True).get_datetime_str()
+        raise ValueError(f'unknown transformer_type: {transformer_type}')
 
     def __retrieve_raw_stats(self, es_result_agg: dict, group_by_list: list=None):
         """
@@ -157,9 +110,10 @@ class SubCollectionStatistics:
         if len(group_by_list) < 1:
             stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()
             stat_result = {}
+            transformers = self.__file_struct_setting.get_query_statistics_instructions()['transformers']
             for agg_type, columns in stats_instructions['stats'].items():
                 for each_column in columns:
-                    stat_result[each_column] = es_result_agg[each_column]['value']
+                    stat_result[each_column] = es_result_agg[each_column]['value'] if each_column not in transformers else self.__transform_result(transformers[each_column], es_result_agg[each_column]['value'])
                     # TODO: need backward compatibility. (punted on 2023-03-26. This is the result of statistics which other applications may depend, but new format is more standardized.)
             data_stats_instructions = self.__file_struct_setting.get_query_statistics_instructions()['data_stats']
             if data_stats_instructions['is_included']:

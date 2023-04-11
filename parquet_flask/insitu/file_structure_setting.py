@@ -67,8 +67,9 @@ STRUCTURE_CONFIG = {
         },
         "query_statistics_instructions_config": {
             "type": "object",
-            "required": ["group_by", "stats", "data_stats"],
+            "required": ["group_by", "stats", "data_stats", "transformers"],
             "properties": {
+                "transformers": {"type": "object"},
                 "group_by": {"type": "array", "items": {"type": "string"}},
                 "data_stats": {
                     "type": "object",
