@@ -188,8 +188,8 @@ class ESMiddleware(ESAbstract):
             'items': first_batch['hits']['hits'],
         }
 
-    def query_by_id(self, doc_id):
-        index = self.__validate_index(None)
+    def query_by_id(self, doc_id, index=None):
+        index = self.__validate_index(index)
         dsl = {
             'query': {
                 'term': {'_id': doc_id}
