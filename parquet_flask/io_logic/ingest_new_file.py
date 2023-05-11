@@ -37,28 +37,23 @@ LOGGER = logging.getLogger(__name__)
 GEOSPATIAL_INTERVAL = 30
 
 
-def get_geospatial_interval(project: str) -> int:
+def get_geospatial_interval(project: str) -> dict:
     """
-    Get geospatial interval from environment variable. If not found, return default value.
+    Get geospatial interval dict object from environment variable. If not found, return empty dict.
 
     :param project: project name
-    :return: geospatial interval
+    :return: geospatial interval dict
     """
-    interval = GEOSPATIAL_INTERVAL
-    geo_spatial_interval_by_project = environ.get(CDMSConstants.geospatial_interval_by_project)
-    if not geo_spatial_interval_by_project:
-        return interval
-    geo_spatial_interval_by_project_dict = json.loads(geo_spatial_interval_by_project)
-    if not isinstance(geo_spatial_interval_by_project_dict, dict):
-        return interval
-    if project not in geo_spatial_interval_by_project_dict:
-        return interval
-    try:
-        return int(geo_spatial_interval_by_project_dict[project])
-    except:
-        LOGGER.exception(
-            f'geo_spatial_interval_by_project_dict for {project} is not int: {geo_spatial_interval_by_project_dict[project]}')
-        return interval
+    interval_dict = {}
+    geo_spatial_interval_by_platform = environ.get(CDMSConstants.geospatial_interval_by_platform)
+    if not geo_spatial_interval_by_platform:
+        return interval_dict
+    geo_spatial_interval_by_platform_dict = json.loads(geo_spatial_interval_by_platform)
+    if not isinstance(geo_spatial_interval_by_platform_dict, dict):
+        return interval_dict
+    if project not in geo_spatial_interval_by_platform_dict or not isinstance(geo_spatial_interval_by_platform_dict[project], dict):
+        return interval_dict
+    return geo_spatial_interval_by_platform_dict[project]
 
 
 class IngestNewJsonFile:
@@ -97,23 +92,29 @@ class IngestNewJsonFile:
             .withColumn(CDMSConstants.job_id_col, lit(job_id))\
             .withColumn(CDMSConstants.provider_col, lit(provider))\
             .withColumn(CDMSConstants.project_col, lit(project))
-        geospatial_interval = get_geospatial_interval(project)
+        geospatial_interval_dict = get_geospatial_interval(project)
         try:
             df: DataFrame = df.withColumn(
                 CDMSConstants.geo_spatial_interval_col, 
                 pyspark_functions.udf(
-                    lambda latitude, longitude: f'{int(latitude - divmod(latitude, geospatial_interval)[1])}_{int(longitude - divmod(longitude, geospatial_interval)[1])}',
+                    lambda platform_code, latitude, longitude: f'{int(latitude - divmod(latitude, int(geospatial_interval_dict.get(platform_code, GEOSPATIAL_INTERVAL)))[1])}_{int(longitude - divmod(longitude, int(geospatial_interval_dict.get(platform_code, GEOSPATIAL_INTERVAL)))[1])}',
                     StringType())(
+                        df[CDMSConstants.platform_code_col],
                         df[CDMSConstants.lat_col],
                         df[CDMSConstants.lon_col]))
             df: DataFrame = df.repartition(1)  # combine to 1 data frame to increase size
             # .withColumn('ingested_date', lit(TimeUtils.get_current_time_str()))
             LOGGER.debug(f'create writer')
-            all_partitions = [CDMSConstants.provider_col, CDMSConstants.project_col, CDMSConstants.platform_code_col,
-                              CDMSConstants.geo_spatial_interval_col,
-                              CDMSConstants.year_col, CDMSConstants.month_col,
-                              CDMSConstants.job_id_col]
-            df = df.repartition(1)  # XXX: is this line repeated?
+            all_partitions = [
+                CDMSConstants.provider_col, 
+                CDMSConstants.project_col, 
+                CDMSConstants.platform_code_col,
+                CDMSConstants.geo_spatial_interval_col,
+                CDMSConstants.year_col,
+                CDMSConstants.month_col,
+                CDMSConstants.job_id_col
+            ]
+            # df = df.repartition(1)  # XXX: is this line repeated?
             df_writer = df.write
             LOGGER.debug(f'create partitions')
             df_writer = df_writer.partitionBy(all_partitions)
