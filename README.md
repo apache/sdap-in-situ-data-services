@@ -1,6 +1,11 @@
-# Insitu Data in Parquet format stored in S3
+# About
+Ingest in-situ data (in json) to AWS S3 as parquet object files.
 
-### How to ingest a insitu json file to Parquet
+# Deployment
+Follow [this guide](Deployment-in-AWS.md) to deploy SDAP In-Situ to AWS cloud.
+
+# Ingestion
+## How to ingest a insitu json file to Parquet
 - Assumption: K8s is successfully deployed
 - Download this repo
 - (optional) create different python3.6 environment
@@ -30,8 +35,8 @@
               --BUCKET_NAME cdms-dev-ncar-in-situ-stage  \
               --KEY_PREFIX cdms_icoads_2017-01-01.json
   
-### Ref:
-- how to replace parquet file partially
+# Useful Commands
+- to replace parquet file partially
 ```
 https://stackoverflow.com/questions/38487667/overwrite-specific-partitions-in-spark-dataframe-write-method?noredirect=1&lq=1
 > Finally! This is now a feature in Spark 2.3.0: SPARK-20236
@@ -40,5 +45,4 @@ https://stackoverflow.com/questions/38487667/overwrite-specific-partitions-in-sp
 
 spark.conf.set("spark.sql.sources.partitionOverwriteMode","dynamic")
 data.toDF().write.mode("overwrite").format("parquet").partitionBy("date", "name").save("s3://path/to/somewhere")
-
 ```
