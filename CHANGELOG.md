@@ -6,7 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-
 ### Changed
 - Updated Elasticsearch *query_by_id* method to accept an *index* as argument
 - SDAP-462: Updated query logic so that depth -99999 is treated as surface (i.e. depth 0)
@@ -15,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 ### Removed
 ### Fixed
+- Fixed helm chart not building/installing
 ### Security
 
 ## [0.3.0] - 2022-07-13
