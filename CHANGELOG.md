@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- SDAP-462: Updated query logic so that depth -99999 is treated as surface (i.e. depth 0)
 - SDAP-463: Added capability to further partition parquet objects/files by platform
 ### Changed
 ### Deprecated
