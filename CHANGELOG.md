@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added code to interact with AWS SQS
 ### Changed
 - Updated Elasticsearch *query_by_id* method to accept an *index* as argument
 - SDAP-462: Updated query logic so that depth -99999 is treated as surface (i.e. depth 0)
