@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- CDMS-198: Added capability to further partition parquet objects/files by platform
+- SDAP-463: Added capability to further partition parquet objects/files by platform
 ### Changed
 ### Deprecated
 ### Removed
