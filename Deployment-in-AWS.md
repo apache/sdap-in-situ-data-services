@@ -9,7 +9,7 @@ This is a detailed guide to deploy SDAP In-Situ to AWS. Although there is a plan
 ### OpenSearch
 - create a domain named `sdap-in-situ` ([AWS OpenSearch guide](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/gsg.html))
 - under `sdap-in-situ`, create 2 indices named `entry_file_record` and `parquet_stats`
-- for `entry_file_record`, create an alias named `entry_file_records`
+- for `entry_file_records`, create an alias named `entry_file_records_alias`
 - for `parquet_stats`, create an alias named `parquet_stats_alias`
 ### EKS
 - set up EKS in AWS environment ([AWS EKS guide](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html))
