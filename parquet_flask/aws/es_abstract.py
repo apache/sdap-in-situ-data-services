@@ -58,7 +58,7 @@ class ESAbstract(ABC):
         return
 
     @abstractmethod
-    def query_by_id(self, doc_id):
+    def query_by_id(self, doc_id, index=None):
         return
 
     @abstractmethod

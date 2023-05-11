@@ -46,7 +46,7 @@ class MetadataTblES(MetadataTblInterface):
         return
 
     def get_by_s3_url(self, s3_url):
-        result = self.__es.query_by_id(s3_url)
+        result = self.__es.query_by_id(s3_url, CDMSConstants.entry_file_records_index)
         if result is None:
             return None
         return result['_source']
