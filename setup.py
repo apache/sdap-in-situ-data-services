@@ -34,7 +34,7 @@ install_requires = [
     'findspark===1.4.2',
     'flask===2.0.1', 'flask_restful===0.3.9', 'flask-restx===0.5.0',  # to create Flask server
     'gevent===21.8.0', 'greenlet===1.1.1',  # to run flask server
-    'werkzeug===2.0.1',
+    'werkzeug===2.2.3',
     'jsonschema',  # to verify json objects
     'fastjsonschema===2.15.1',
     'requests===2.26.0',
