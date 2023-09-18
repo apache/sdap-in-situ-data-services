@@ -73,12 +73,12 @@ class IngestParquet(Resource):
         if 'markerPlatform' in new_args:
             new_args.pop('markerPlatform')
         new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
-        return f'{request.base_url}?{new_args}'
+        return f'{request.base_url}?{new_args}'.replace('http://', 'https://')
 
     def __get_prev_page_url(self):
         new_args = deepcopy(dict(request.args))
         new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
-        return f'{request.base_url}?{new_args}'
+        return f'{request.base_url}?{new_args}'.replace('http://', 'https://')
 
     def __get_next_page_url(self, query_result: list):
         if len(query_result) < 1:
@@ -88,7 +88,7 @@ class IngestParquet(Resource):
         new_args['markerTime'] = last_item[CDMSConstants.time_col]
         new_args['markerPlatform'] = GeneralUtils.gen_sha_256_json_obj(last_item)
         new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
-        return f'{request.base_url}?{new_args}'
+        return f'{request.base_url}?{new_args}'.replace('http://', 'https://')
 
     def __execute_query(self, payload):
         """
