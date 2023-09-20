@@ -71,7 +71,7 @@ opensearch_client = Elasticsearch(
     connection_class=RequestsHttpConnection
 )
 
-# List all files in a bucket
+# Go through all files in a bucket
 response_iterator = paginator.paginate(Bucket=OPENSEARCH_BUCKET, Prefix=OPENSEARCH_PATH_PREFIX)
 count = 0
 error_count = 0
@@ -96,6 +96,7 @@ for page in response_iterator:
         print(f'processed {count} files', end='\r', flush=True)
 print('')
 
+# Print out the S3 keys of the files that are not found in OpenSearch
 if error_count > 0:
     for key in error_s3_keys:
         print(key)
