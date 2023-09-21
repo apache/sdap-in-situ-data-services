@@ -3,7 +3,7 @@
 #              S3 keys of the files that are not found in OpenSearch.                                                  #
 #                                                                                                                      #
 # Usage:                                                                                                               #
-#   python audit_tool.py                                                                                               #
+#   python audit_tool.py [ -o <output_filename> ]                                                                      #
 #                                                                                                                      #
 # Environment variables:                                                                                               #
 #   AWS_ACCESS_KEY_ID: AWS access key ID                                                                               #
@@ -11,26 +11,37 @@
 #   OPENSEARCH_ENDPOINT: OpenSearch endpoint                                                                           #
 #   OPENSEARCH_PORT: OpenSearch port                                                                                   #
 #   OPENSEARCH_ID_PREFIX: OpenSearch ID prefix e.g. s3://cdms-dev-in-situ-parquet                                      #
-#   OPENSEARCH_INDEX: OpenSearch index e.g. [parquet_stats_alias|entry_file_records_alias]                             #
-#   OPENSEARCH_PATH_PREFIX: OpenSearch path prefix e.g. CDMS_insitu.geo3.parquet                                       #
+#   OPENSEARCH_INDEX: OpenSearch index e.g. [ parquet_stats_alias | entry_file_records_alias ]                         #
+#   OPENSEARCH_PATH_PREFIX: OpenSearch path prefix (use '' if no prefix needed)                                        #
 #   OPENSEARCH_BUCKET: OpenSearch bucket                                                                               #
 ########################################################################################################################
+
 
 import boto3
 from requests_aws4auth import AWS4Auth
 from elasticsearch import Elasticsearch, RequestsHttpConnection, NotFoundError
 import os
+import sys
+import argparse
 
 
 # Append a slash to the end of a string if it doesn't already have one
 def append_slash(string: str):
     if string is None:
         return None
+    elif string == '':
+        return string
     elif string[-1] != '/':
         return string + '/'
     else:
         return string
 
+
+# Parse arguments
+parser = argparse.ArgumentParser(description='Audit parquet files in S3 against records in OpenSearch')
+parser.add_argument('-o', '--output-file', nargs='?', type=str, help='file to output the S3 keys of the files that are not found in OpenSearch')
+args = parser.parse_args()
+output_file = args.output_file
 
 # Check if AWS credentials are set
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', None)
@@ -76,27 +87,36 @@ response_iterator = paginator.paginate(Bucket=OPENSEARCH_BUCKET, Prefix=OPENSEAR
 count = 0
 error_count = 0
 error_s3_keys = []
-print('processing...', end='\r', flush=True)
+file = None
+if output_file is not None:
+    file = open(output_file, 'w')
+    file.truncate(0)
+print('processing... will print out S3 keys that cannot find a match...', flush=True)
 for page in response_iterator:
-    objs = page.get('Contents', [])
     for obj in page.get('Contents', []):
         count += 1
         try:
             # Search key in opensearch
-            opensearch_id = OPENSEARCH_ID_PREFIX + objs[4]['Key']
-            opensearch_response = opensearch_client.get(index='parquet_stats_alias', id=opensearch_id)
+            opensearch_id = OPENSEARCH_ID_PREFIX + obj['Key']
+            opensearch_response = opensearch_client.get(index=OPENSEARCH_INDEX, id=opensearch_id)
             if opensearch_response is None or not type(opensearch_response) is dict or not opensearch_response['found']:
                 error_count += 1
-                error_s3_keys.append(objs[4]['Key'])
+                error_s3_keys.append(obj['Key'])
+                sys.stdout.write("\x1b[2k")
+                print(obj['Key'], flush=True)
+                if file is not None:
+                    file.write(obj['Key'] + '\n')
         except NotFoundError as e:
             error_count += 1
-            error_s3_keys.append(objs[4]['Key'])
+            error_s3_keys.append(obj['Key'])
+            sys.stdout.write("\x1b[2k")
+            print(obj['Key'], flush=True)
+            if file is not None:
+                file.write(obj['Key'] + '\n')
         except Exception as e:
             error_count += 1
+
         print(f'processed {count} files', end='\r', flush=True)
 print('')
-
-# Print out the S3 keys of the files that are not found in OpenSearch
-if error_count > 0:
-    for key in error_s3_keys:
-        print(key)
+if file is not None:
+    file.close()
