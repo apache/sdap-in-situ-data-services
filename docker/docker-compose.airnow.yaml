@@ -1,0 +1,22 @@
+version: "3.7"
+services:
+  cumulus_granules_download:
+    image: waiphyojpl/cdms.parquet.flask:build-aqacf-3
+#    volumes:
+#      - /tmp/cumulus_granules:/etc/granules
+    command: ["python3 -m aqacf.airnow"]
+    environment:
+      AWS_ACCESS_KEY_ID: 'dd'
+      AWS_SECRET_ACCESS_KEY: 'dddd'
+      # AWS_SESSION_TOKEN: 'dddd'
+      AWS_REGION: 'us-west-2'
+
+      LOG_LEVEL: '10'
+      provider: 'AirNow'
+      project: 'air_quality'
+      staging_bucket: 'aq-in-situ-data-staging'
+      year: '2017'
+    networks:
+      - internal
+networks:
+  internal:
