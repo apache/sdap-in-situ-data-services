@@ -1,0 +1,7 @@
+prefix  = "ideas-project"
+insitu_lambda_subnet_ids    = ["<private subnet 1 id>", "<private subset 2 id>"]
+insitu_lambda_vpc_id        = "<VPC Id created>"
+security_group_ids = ["<security group id associated with the vpc>"]
+aws_region = "us-west-2"
+lambda_processing_role_arn = "arn:aws:iam::<lambda role arn>"
+cognito_client_id_list = "<cognito App client Id>"

@@ -2,12 +2,13 @@ version: "3.7"
 services:
   cumulus_granules_download:
     image: waiphyojpl/cdms.parquet.flask:build-aqacf-3
-#    volumes:
+    volumes:
+      - /home/wphyo/.aws:/root/.aws:ro
 #      - /tmp/cumulus_granules:/etc/granules
-    command: ["python3 -m aqacf.airnow"]
+    command: ["python3", "-m", "aqacf.airnow"]
     environment:
-      AWS_ACCESS_KEY_ID: 'dd'
-      AWS_SECRET_ACCESS_KEY: 'dddd'
+      #AWS_ACCESS_KEY_ID: 'dd'
+      #AWS_SECRET_ACCESS_KEY: 'dddd'
       # AWS_SESSION_TOKEN: 'dddd'
       AWS_REGION: 'us-west-2'
 

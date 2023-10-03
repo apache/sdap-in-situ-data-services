@@ -23,3 +23,16 @@ data "aws_s3_bucket" "insitu_bucket_staging" {
   bucket = var.insitu_bucket_staging
 }
 
+resource "aws_s3_bucket_notification" "bucket_notification" {  // https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_notification
+  bucket = data.aws_s3_bucket.insitu_bucket_staging.id
+  queue {
+    queue_arn     = aws_sqs_queue.in_situ_parquet_sqs.arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_suffix = ".json.gz"  // TODO how to enable 2 of them? , .json"
+  }
+  queue {
+    queue_arn     = aws_sqs_queue.in_situ_parquet_sqs.arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_suffix = ".json"  // TODO how to enable 2 of them? , .json"
+  }
+}
