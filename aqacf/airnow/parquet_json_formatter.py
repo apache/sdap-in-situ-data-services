@@ -32,7 +32,7 @@ class ParquetJsonFormatter:
         self.__provider_name = provider_name
         self.__project_name = project_name
 
-    def start(self, csv_file: str):
+    def start(self, csv_file: str, split_size=1):
         LOGGER.debug(f'processing: {csv_file}')
         airnow_data = pd.read_csv(csv_file, sep=',', encoding='latin1')
         LOGGER.debug(f'read: {csv_file}')
@@ -70,26 +70,34 @@ class ParquetJsonFormatter:
         # airnow_data.fillna(None, inplace=True)
         LOGGER.debug(f'renamed: {csv_file}')
 
-        json_list = airnow_data.to_dict(orient='records')
-        LOGGER.debug(f'to raw_json: {csv_file}')
+        row_size = int(airnow_data.shape[0] / split_size)
+        LOGGER.debug(f'to raw_json row_size: {row_size}')
+        for i in range(split_size):
+            start_index = row_size * i
+            end_index = row_size * (i+1) if (i+1) < split_size else airnow_data.shape[0]
+            LOGGER.debug(f'to processing batch: {i}: {start_index}:{end_index}')
+            current_airnow_data = airnow_data.iloc[start_index:end_index]
 
-        pool = multiprocessing.Pool()
+            json_list = current_airnow_data.to_dict(orient='records')
+            LOGGER.debug(f'to raw_json: {csv_file}_{i}')
 
-        # Use the Pool to apply the process_dict function to each dictionary in parallel
-        result_list = pool.map(process_dict, json_list)
-        # Close the Pool
-        pool.close()
-        pool.join()
-        LOGGER.debug(f'to parquet_json: {csv_file}')
-        site_json = {
-            "project": self.__project_name,
-            "provider": self.__provider_name,
-            "observations": result_list
-        }
-        FileUtils.write_json(f'{csv_file}.json', site_json, overwrite=True, prettify=True)
-        LOGGER.debug(f'written to file: {csv_file}')
+            pool = multiprocessing.Pool()
+
+            # Use the Pool to apply the process_dict function to each dictionary in parallel
+            result_list = pool.map(process_dict, json_list)
+            # Close the Pool
+            pool.close()
+            pool.join()
+            LOGGER.debug(f'to parquet_json: {csv_file}_{i}')
+            site_json = {
+                "project": self.__project_name,
+                "provider": self.__provider_name,
+                "observations": result_list
+            }
+            FileUtils.write_json(f'{csv_file}_{i}.json', site_json, overwrite=True, prettify=True)
+            LOGGER.debug(f'written to file: {csv_file}_{i}')
         return
 
-
-# ParquetJsonFormatter('AirNow', 'air_quality').start('/tmp/airnow3/concat/daily.csv')
-# ParquetJsonFormatter('AirNow', 'air_quality').start('/tmp/airnow3/concat/raw.csv')
+# logging.basicConfig(level=10, format="%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s")
+# ParquetJsonFormatter('AirNow', 'air_quality').start('/private/tmp/debugging/concat/daily.csv')
+# ParquetJsonFormatter('AirNow', 'air_quality').start('/private/tmp/debugging/concat/raw.csv', 6)

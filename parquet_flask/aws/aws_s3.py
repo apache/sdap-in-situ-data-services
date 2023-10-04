@@ -77,7 +77,7 @@ class AwsS3(AwsCred):
 
     def upload(self, file_path: str, base_path: str, relative_parent_path: str, delete_files: bool,
                s3_name: Union[str, None] = None, obj_tags: dict = {}):
-        uploaded_relative_path = self.__upload_to_s3(base_path, relative_parent_path, file_path, delete_files, True, obj_tags, s3_name)
+        uploaded_relative_path = self.__upload_to_s3(base_path, relative_parent_path, file_path, delete_files, False, obj_tags, s3_name)
         if delete_files is True:  # deleting local files
             FileUtils.remove_if_exists(file_path)
         return self.to_url(base_path, uploaded_relative_path)

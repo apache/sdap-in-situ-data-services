@@ -9,6 +9,9 @@ from aqacf.airnow.airnow_wrapper import AirNowWrapper
 # os.environ['project'] = 'air_quality'
 # os.environ['staging_bucket'] = 'aq-in-situ-data-staging'
 # os.environ['year'] = '2017'
+
+# os.environ['AWS_REGION'] = 'us-west-2'
+
 if __name__ == '__main__':
     logging.basicConfig(level=int(os.getenv('LOG_LEVEL', '20')),
                         format="%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s")
