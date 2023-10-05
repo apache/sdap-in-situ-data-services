@@ -81,13 +81,15 @@ class ParquetJsonFormatter:
             json_list = current_airnow_data.to_dict(orient='records')
             LOGGER.debug(f'to raw_json: {csv_file}_{i}')
 
-            pool = multiprocessing.Pool()
-
-            # Use the Pool to apply the process_dict function to each dictionary in parallel
-            result_list = pool.map(process_dict, json_list)
-            # Close the Pool
-            pool.close()
-            pool.join()
+            result_list = [process_dict(k) for k in json_list]
+            # mysterious error in parallel processing
+            # pool = multiprocessing.Pool()
+            #
+            # # Use the Pool to apply the process_dict function to each dictionary in parallel
+            # result_list = pool.map(process_dict, json_list)
+            # # Close the Pool
+            # pool.close()
+            # pool.join()
             LOGGER.debug(f'to parquet_json: {csv_file}_{i}')
             site_json = {
                 "project": self.__project_name,
@@ -100,4 +102,4 @@ class ParquetJsonFormatter:
 
 # logging.basicConfig(level=10, format="%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s")
 # ParquetJsonFormatter('AirNow', 'air_quality').start('/private/tmp/debugging/concat/daily.csv')
-# ParquetJsonFormatter('AirNow', 'air_quality').start('/private/tmp/debugging/concat/raw.csv', 6)
+# ParquetJsonFormatter('AirNow', 'air_quality').start('/private/tmp/debugging/concat/raw.csv', 3)
