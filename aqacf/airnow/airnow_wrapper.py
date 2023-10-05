@@ -11,12 +11,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 class AirNowWrapper:
-    def __init__(self, provider, project, bucket):
+    def __init__(self, provider, project, bucket, chunk_size=10):
         self.__provider = provider
         self.__project = project
         self.__bucket = bucket
         self.__s3 = AwsS3()
-        self.__split_size = 6
+        self.__split_size = chunk_size
 
     def execute_month(self, start_date, end_date):
         start_month = start_date[:-3]

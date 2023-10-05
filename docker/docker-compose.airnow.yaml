@@ -17,6 +17,7 @@ services:
       project: 'air_quality'
       staging_bucket: 'aq-in-situ-data-staging'
       year: '2017'
+      chunk_size: '10'
     networks:
       - internal
 networks:
