@@ -52,7 +52,6 @@ class AirNowWrapper:
             start_date = f'{year}-{i:02d}-01'
             end_date = f'{year}-{i+1:02d}-01'
             self.execute_month(start_date, end_date)
-            break
         start_date = f'{year}-12-01'
         end_date = f'{year+1}-01-01'
         self.execute_month(start_date, end_date)
