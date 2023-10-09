@@ -23,6 +23,7 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection, NotFoundError
 import os
 import sys
 import argparse
+import textwrap
 
 
 # Append a slash to the end of a string if it doesn't already have one
@@ -38,7 +39,22 @@ def append_slash(string: str):
 
 
 # Parse arguments
-parser = argparse.ArgumentParser(description='Audit parquet files in S3 against records in OpenSearch')
+parser = argparse.ArgumentParser(
+    description='Audit parquet files in S3 against records in OpenSearch',
+    epilog=textwrap.dedent('''\
+        Environment variables:  (describe what they are for & provide examples where appropriate
+            AWS_ACCESS_KEY_ID : AWS access key ID for S3 bucket & OpenSearch index
+            AWS_SECRET_ACCESS_KEY : AWS secret access key for S3 bucket & OpenSearch index
+            AWS_REGION : AWS region for S3 bucket & OpenSearch index
+            OPENSEARCH_ENDPOINT : Endpoint for OpenSearch domain
+            OPENSEARCH_PORT : Port to connect to OpenSearch (Default: 443)
+            OPENSEARCH_BUCKET : Name of the bucket storing ingested Parquet files.
+            OPENSEARCH_PATH_PREFIX : Key prefix for objects in OPENSEARCH_BUCKET to audit.
+            OPENSEARCH_ID_PREFIX : S3 URI prefix for the id field in OpenSearch documents. Defaults to 's3://<OPENSEARCH_BUCKET>/'
+            OPENSEARCH_INDEX : OpenSearch index to audit
+    '''),
+    formatter_class=argparse.RawDescriptionHelpFormatter
+)
 parser.add_argument('-o', '--output-file', nargs='?', type=str, help='file to output the S3 keys of the files that are not found in OpenSearch')
 args = parser.parse_args()
 output_file = args.output_file
@@ -52,11 +68,11 @@ if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
 
 # Check if OpenSearch parameters are set
 OPENSEARCH_ENDPOINT = os.environ.get('OPENSEARCH_ENDPOINT', None)
-OPENSEARCH_PORT = os.environ.get('OPENSEARCH_PORT', None)
-OPENSEARCH_ID_PREFIX = append_slash(os.environ.get('OPENSEARCH_ID_PREFIX', None))
+OPENSEARCH_PORT = os.environ.get('OPENSEARCH_PORT', 443)
 OPENSEARCH_INDEX = os.environ.get('OPENSEARCH_INDEX', None)
 OPENSEARCH_PATH_PREFIX = append_slash(os.environ.get('OPENSEARCH_PATH_PREFIX', None))
 OPENSEARCH_BUCKET = os.environ.get('OPENSEARCH_BUCKET', None)
+OPENSEARCH_ID_PREFIX = append_slash(os.environ.get('OPENSEARCH_ID_PREFIX', f's3://{OPENSEARCH_BUCKET}/'))
 if OPENSEARCH_ENDPOINT is None or OPENSEARCH_PORT is None or OPENSEARCH_ID_PREFIX is None or OPENSEARCH_INDEX is None or OPENSEARCH_PATH_PREFIX is None or OPENSEARCH_BUCKET is None:
     print('OpenSearch parameters are not set. Please set OPENSEARCH_ENDPOINT, OPENSEARCH_PORT, OPENSEARCH_ID_PREFIX, OPENSEARCH_INDEX, OPENSEARCH_PATH_PREFIX, OPENSEARCH_BUCKET.')
     exit(1)
@@ -97,7 +113,7 @@ for page in response_iterator:
         count += 1
         try:
             # Search key in opensearch
-            opensearch_id = OPENSEARCH_ID_PREFIX + obj['Key']
+            opensearch_id = os.path.join(OPENSEARCH_ID_PREFIX + obj['Key'])
             opensearch_response = opensearch_client.get(index=OPENSEARCH_INDEX, id=opensearch_id)
             if opensearch_response is None or not type(opensearch_response) is dict or not opensearch_response['found']:
                 error_count += 1
