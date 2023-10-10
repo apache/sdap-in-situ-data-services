@@ -55,9 +55,29 @@ parser = argparse.ArgumentParser(
     '''),
     formatter_class=argparse.RawDescriptionHelpFormatter
 )
-parser.add_argument('-o', '--output-file', nargs='?', type=str, help='file to output the S3 keys of the files that are not found in OpenSearch')
+parser.add_argument(
+    '-o', '--output-file',
+    nargs='?',
+    type=str,
+    help='file to output the S3 keys of the files that are not found in OpenSearch',
+    dest='output'
+)
+
+parser.add_argument(
+    '-f', '--format',
+    choices=['plain', 'mock-s3'],
+    default='plain',
+    dest='format',
+    help='Output format. \'plain\' will output keys of missing parquet files to the output file in plain text. '
+         '\'mock-s3\' will output missing keys to SQS (-o is required as the SQS queue URL), formatted as an S3 object '
+         'created event'
+)
+
 args = parser.parse_args()
-output_file = args.output_file
+output_file = args.output
+
+if args.format == 'mock-s3' and not output_file:
+    raise ValueError('Output file MUST be defined with mock-s3 output format')
 
 # Check if AWS credentials are set
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', None)
@@ -103,10 +123,7 @@ response_iterator = paginator.paginate(Bucket=OPENSEARCH_BUCKET, Prefix=OPENSEAR
 count = 0
 error_count = 0
 error_s3_keys = []
-file = None
-if output_file is not None:
-    file = open(output_file, 'w')
-    file.truncate(0)
+missing_keys = []
 print('processing... will print out S3 keys that cannot find a match...', flush=True)
 for page in response_iterator:
     for obj in page.get('Contents', []):
@@ -120,19 +137,28 @@ for page in response_iterator:
                 error_s3_keys.append(obj['Key'])
                 sys.stdout.write("\x1b[2k")
                 print(obj['Key'], flush=True)
-                if file is not None:
-                    file.write(obj['Key'] + '\n')
+                missing_keys.append(obj['Key'])
         except NotFoundError as e:
             error_count += 1
             error_s3_keys.append(obj['Key'])
             sys.stdout.write("\x1b[2k")
             print(obj['Key'], flush=True)
-            if file is not None:
-                file.write(obj['Key'] + '\n')
+            missing_keys.append(obj['Key'])
         except Exception as e:
             error_count += 1
 
         print(f'processed {count} files', end='\r', flush=True)
 print('')
-if file is not None:
-    file.close()
+
+print(f'Found {len(missing_keys):,} missing keys')
+
+if args.format == 'plain':
+    if output_file:
+        with open(output_file, 'w') as f:
+            for key in missing_keys:
+                f.write(key + '\n')
+    else:
+        print('Not writing to file as none was given')
+else:
+    pass
+    #TODO: Format to mock SQS messages. One key per message cause the lambda only expects one object per message
