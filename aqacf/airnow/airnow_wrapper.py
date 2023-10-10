@@ -22,7 +22,7 @@ class AirNowWrapper:
         start_month = start_date[:-3]
         LOGGER.debug(f'processing: {start_month}')
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            tmp_dir_name = '/tmp/debugging'  # TODO delete this
+            # tmp_dir_name = '/tmp/debugging'  # TODO delete this
             DownloadRawData(tmp_dir_name).download_data(start_date, end_date)
             LOGGER.debug(f'downloaded data for: {start_month}')
             concat_dir = os.path.join(tmp_dir_name, 'concat')
