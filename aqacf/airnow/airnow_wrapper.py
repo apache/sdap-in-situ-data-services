@@ -47,8 +47,8 @@ class AirNowWrapper:
                 LOGGER.debug(f'uploaded data for: {raw_json_file}')
         return
 
-    def start(self, year):
-        for i in range(1, 12):
+    def start(self, year, start_month=1):
+        for i in range(start_month, 12):
             start_date = f'{year}-{i:02d}-01'
             end_date = f'{year}-{i+1:02d}-01'
             self.execute_month(start_date, end_date)
