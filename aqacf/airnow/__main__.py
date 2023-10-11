@@ -11,8 +11,7 @@ from aqacf.airnow.airnow_wrapper import AirNowWrapper
 # os.environ['year'] = '2017'
 # os.environ['year'] = '2'
 # os.environ['chunk_size'] = '5'
-
-# os.environ['AWS_REGION'] = 'us-west-2'
+#os.environ['AWS_REGION'] = 'us-west-2'
 
 if __name__ == '__main__':
     logging.basicConfig(level=int(os.getenv('LOG_LEVEL', '20')),

@@ -1,5 +1,8 @@
+import json
 import logging
 import multiprocessing
+
+from parquet_flask.utils.general_utils import GeneralUtils
 
 multiprocessing.set_start_method("fork")
 
@@ -14,7 +17,7 @@ from parquet_flask.utils.file_utils import FileUtils
 LOGGER = logging.getLogger(__name__)
 
 
-def process_dict(data_dict_input):
+def process_dict(data_dict_input, in_str_form=False):
     data_dict = deepcopy(data_dict_input)
     removing_keys = [k for k, v in data_dict.items() if not isinstance(v, str) and np.isnan(v)]
     data_dict['platform'] = {
@@ -25,6 +28,8 @@ def process_dict(data_dict_input):
     for k in removing_keys:
         if k in data_dict:
             data_dict.pop(k)
+    if in_str_form:
+        return json.dumps(data_dict)
     return data_dict
 
 class ParquetJsonFormatter:
@@ -79,9 +84,9 @@ class ParquetJsonFormatter:
             current_airnow_data = airnow_data.iloc[start_index:end_index]
 
             json_list = current_airnow_data.to_dict(orient='records')
-            LOGGER.debug(f'to raw_json: {csv_file}_{i}')
+            # LOGGER.debug(f'to raw_json: {csv_file}_{i}')
 
-            result_list = [process_dict(k) for k in json_list]
+            # result_list = [process_dict(k) for k in json_list]
             # mysterious error in parallel processing
             # pool = multiprocessing.Pool()
             #
@@ -91,12 +96,19 @@ class ParquetJsonFormatter:
             # pool.close()
             # pool.join()
             LOGGER.debug(f'to parquet_json: {csv_file}_{i}')
-            site_json = {
-                "project": self.__project_name,
-                "provider": self.__provider_name,
-                "observations": result_list
-            }
-            FileUtils.write_json(f'{csv_file}_{i}.json', site_json, overwrite=True, prettify=True)
+            with open(f'{csv_file}_{i}.json', 'w') as ff:
+                ff.write('{\n')
+                ff.write(f'"project": "{self.__project_name}",\n')
+                ff.write(f'"provider": "{self.__provider_name}",\n')
+                ff.write(f'"observations": [\n')
+                splitter_comma = ''
+                for each_chunk in GeneralUtils.chunk_list(json_list, 10**4 * 5):
+                    ff.write(splitter_comma)
+                    str_chunk = [process_dict(k, True) for k in each_chunk]
+                    ff.write(','.join(str_chunk))
+                    splitter_comma = ','
+                ff.write(']}\n')
+            # FileUtils.write_json(f'{csv_file}_{i}.json', site_json, overwrite=True, prettify=True)
             LOGGER.debug(f'written to file: {csv_file}_{i}')
         return
 
