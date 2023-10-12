@@ -40,7 +40,15 @@ pipeline {
                 }
             }
         }
-        stage('Build and push zip file') {
+//         stage('Build and push lambda') {
+//             when { expression { return PIPELINE_CONTROL.ci_skip == false } }
+//             steps {
+//                 withDockerRegistry([url: "https://index.docker.io/v1/", credentialsId: "waiphyojpl-dockerhub"]) {
+//                     sh("VERSION=${BUILD_TAG} make -f ci.cd/Makefile build_push")
+//                 }
+//             }
+//         }
+        stage('Build and push docker') {
             when { expression { return PIPELINE_CONTROL.ci_skip == false } }
             steps {
                 withDockerRegistry([url: "https://index.docker.io/v1/", credentialsId: "waiphyojpl-dockerhub"]) {

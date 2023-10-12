@@ -20,7 +20,7 @@ resource "aws_lambda_function" "in_situ_parquet_ingestion" {
   function_name = "${var.prefix}-in_situ_parquet_ingestion"
   role          = var.lambda_processing_role_arn
   handler       = "parquet_flask.cdms_lambda_func.ingest_s3_to_cdms.execute_lambda.execute_code"
-  runtime       = "python3.7"
+  runtime       = "python3.8"
   memory_size = 512
   ephemeral_storage {
     size = 1024 # Min 512 MB and the Max 10240 MB
