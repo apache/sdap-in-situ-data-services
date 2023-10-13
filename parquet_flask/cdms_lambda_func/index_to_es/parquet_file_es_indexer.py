@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import json
 
 from parquet_flask.parquet_stat_extractor.local_statistics_retriever import LocalStatisticsRetriever
 from parquet_flask.utils.file_utils import FileUtils
@@ -80,6 +81,9 @@ class ParquetFileEsIndexer:
         #         'match_all': {}
         #     }
         # }))
+
+        LOGGER.debug(f'Triggering event:\n{json.dumps(event, indent=4)}')
+
         s3_records = S3ToSqs(event)
         ignoring_phrases = ['spark-staging', '_temporary']
         for i in range(s3_records.size()):

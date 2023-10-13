@@ -146,14 +146,21 @@ class S3ToSqs(S3EventValidatorAbstract):
         if is_valid is False:
             raise ValueError(f'invalid OUTER_SCHEMA: {self.__event} vs {self.OUTER_SCHEMA}. errors: {validation_err}')
         self.__s3_record = []
-        for each_s3_record in self.__event['Records']:
-            s3_record = each_s3_record['body']
+
+        # Unpack SQS messages from lambda event
+
+        for each_sqs_record in self.__event['Records']:
+            s3_record = each_sqs_record['body']
             if isinstance(s3_record, str):
                 s3_record = json.loads(s3_record)
             is_valid, validation_err = GeneralUtils.is_json_valid(s3_record, self.S3_RECORD_SCHEMA)
             if is_valid is False:
                 raise ValueError(f'invalid S3_RECORD_SCHEMA: {s3_record} vs {self.S3_RECORD_SCHEMA}. errors: {validation_err}')
-            self.__s3_record.append(s3_record)
+
+            # Unpack S3 events from SQS message. (I believe multiple events can be consolidated into single messages)
+
+            for each_s3_record in s3_record['Records']:
+                self.__s3_record.append(each_s3_record)
         return self
 
     def size(self):
@@ -166,7 +173,7 @@ class S3ToSqs(S3EventValidatorAbstract):
             self.__is_valid()
         if index >= len(self.__s3_record):
             raise ValueError(f'index: {index} is larger than s3_record array size: {len(self.__s3_record)}')
-        s3_url = f"s3://{self.__s3_record[index]['Records'][0]['s3']['bucket']['name']}/{self.__s3_record[index]['Records'][0]['s3']['object']['key']}"
+        s3_url = f"s3://{self.__s3_record[index]['s3']['bucket']['name']}/{self.__s3_record[index]['s3']['object']['key']}"
         LOGGER.debug(f'original s3_url: {s3_url}')
         s3_url = unquote_plus(s3_url)
         LOGGER.debug(f'unquoted s3_url: {s3_url}')
@@ -177,4 +184,4 @@ class S3ToSqs(S3EventValidatorAbstract):
             self.__is_valid()
         if index >= len(self.__s3_record):
             raise ValueError(f'index: {index} is larger than s3_record array size: {len(self.__s3_record)}')
-        return self.__s3_record[index]['Records'][0]['eventName']
+        return self.__s3_record[index]['eventName']
