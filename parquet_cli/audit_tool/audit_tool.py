@@ -24,6 +24,9 @@ import os
 import sys
 import argparse
 import textwrap
+import json
+
+from parquet_flask.aws import AwsSQS, AwsSNS
 
 
 # Append a slash to the end of a string if it doesn't already have one
@@ -37,13 +40,33 @@ def append_slash(string: str):
     else:
         return string
 
-def audit(format='plain', output_file=None):
+
+def key_to_sqs_msg(key: str, bucket: str):
+    s3_event = {
+        'Records': [
+            {
+                'eventName': 'ObjectCreated:Put',
+                's3': {
+                    'bucket': {'name': bucket},
+                    'object': {'key': key}
+                }
+            }
+        ]
+    }
+
+    sqs_body = json.dumps(s3_event)
+
+    return sqs_body
+
+
+def audit(format='plain', output_file=None, sns_topic=None):
     if format == 'mock-s3' and not output_file:
         raise ValueError('Output file MUST be defined with mock-s3 output format')
 
     # Check if AWS credentials are set
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', None)
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', None)
+    AWS_SESSION_TOKEN = os.environ.get('AWS_SESSION_TOKEN', None)
     if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
         print('AWS credentials are not set. Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.')
         exit(1)
@@ -63,10 +86,20 @@ def audit(format='plain', output_file=None):
     aws_session_param = {}
     aws_session_param['aws_access_key_id'] = AWS_ACCESS_KEY_ID
     aws_session_param['aws_secret_access_key'] = AWS_SECRET_ACCESS_KEY
+
+    if AWS_SESSION_TOKEN:
+        aws_session_param['aws_session_token'] = AWS_SESSION_TOKEN
+
     aws_session = boto3.Session(**aws_session_param)
 
     # AWS auth
-    aws_auth = AWS4Auth(aws_session.get_credentials().access_key, aws_session.get_credentials().secret_key, aws_session.region_name, 'es')
+    aws_auth = AWS4Auth(
+        aws_session.get_credentials().access_key,
+        aws_session.get_credentials().secret_key,
+        aws_session.region_name,
+        'es',
+        session_token=aws_session.get_credentials().token
+    )
 
     # S3 paginator
     s3 = aws_session.client('s3')
@@ -122,8 +155,21 @@ def audit(format='plain', output_file=None):
         else:
             print('Not writing to file as none was given')
     else:
-        pass
-        # TODO: Format to mock SQS messages. One key per message cause the lambda only expects one object per message
+        sqs_messages = [key_to_sqs_msg(k, OPENSEARCH_BUCKET) for k in missing_keys]
+
+        sqs = AwsSQS()
+
+        for m in sqs_messages:
+            sqs.send_message(output_file, m)
+
+        if sns_topic:
+            sns = AwsSNS()
+
+            sns.publish(
+                sns_topic,
+                f'Parquet stats audit found {len(missing_keys):,} missing keys. Trying to republish to SQS.',
+                'Insitu audit'
+            )
 
 
 if __name__ == '__main__':
