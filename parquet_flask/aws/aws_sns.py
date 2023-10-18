@@ -13,5 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from parquet_flask.aws.aws_sqs import AwsSQS
-from parquet_flask.aws.aws_sns import AwsSNS
+import logging
+from parquet_flask.aws.aws_cred import AwsCred
+
+LOGGER = logging.getLogger(__name__)
+
+
+class AwsSNS(AwsCred):
+    def __init__(self):
+        super().__init__()
+        self.__sns_client = self.get_client('sns')
+
+    def publish(self, topic_arn: str, message: str, subject: str):
+        return self.__sns_client.publish(
+            TopicArn=topic_arn,
+            Message=message,
+            Subject=subject
+        )

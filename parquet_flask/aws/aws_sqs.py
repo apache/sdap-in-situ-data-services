@@ -13,5 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from parquet_flask.aws.aws_sqs import AwsSQS
-from parquet_flask.aws.aws_sns import AwsSNS
+import logging
+from parquet_flask.aws.aws_cred import AwsCred
+
+LOGGER = logging.getLogger(__name__)
+
+
+class AwsSQS(AwsCred):
+    def __init__(self):
+        super().__init__()
+        self.__sqs_client = self.get_client('sqs')
+
+    def send_message(self, queue_url: str, message: str):
+        return self.__sqs_client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=message
+        )
