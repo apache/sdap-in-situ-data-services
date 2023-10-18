@@ -50,7 +50,7 @@ setup(
     install_requires=install_requires,
     author="Apache SDAP",
     author_email="dev@sdap.apache.org",
-    python_requires="==3.7",
+    python_requires=">=3.7",
     license='NONE',
     include_package_data=True,
 )
