@@ -99,7 +99,7 @@ class SubCollectionStatistics:
             "lon": core_stats['max_lon']['value'],
             "min_datetime": TimeUtils.get_time_str(int(core_stats['min_datetime']['value']), in_ms=False),
             "max_datetime": TimeUtils.get_time_str(int(core_stats['max_datetime']['value']), in_ms=False),
-            'observation_counts': {k: core_stats[k]['value'] for k in self.__cdms_obs_names},
+            CDMSConstants.observation_counts: {k: core_stats[k]['value'] for k in self.__cdms_obs_names},
             'units': {k: self.__insitu_schema['definitions']['observation']['properties'][k]['units'] for k in self.__cdms_obs_names}
         }
         LOGGER.debug(f'core_stats: {core_stats}')
@@ -190,7 +190,7 @@ class SubCollectionStatistics:
     def __get_observation_agg_stmts(self):
         agg_stmts = {k: {
             'sum': {
-                'field': f'observation_counts.{k}'
+                'field': f'{CDMSConstants.observation_counts}.{k}'
             }
         } for k in self.__cdms_obs_names}
         return agg_stmts
@@ -219,7 +219,7 @@ class SubCollectionStatistics:
 
         if self.__query_props.filter_cql is not None:
             LOGGER.debug(f'it has some additiona. filter. {self.__query_props.filter_cql}')
-            cql_to_dsl = CqlParser('observation_counts').transform(self.__query_props.filter_cql)
+            cql_to_dsl = CqlParser(CDMSConstants.observation_counts).transform(self.__query_props.filter_cql)
             LOGGER.debug(f'cql_to_dsl = {cql_to_dsl}')
             es_terms.append(cql_to_dsl)
         # Time range

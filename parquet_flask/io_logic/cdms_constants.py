@@ -67,6 +67,6 @@ class CDMSConstants:
 
     max_lon = 'max_lon'
     min_lon = 'min_lon'
-    
 
+    observation_counts = 'observation_counts'
     geospatial_interval_by_platform = 'geospatial_interval_by_platform'

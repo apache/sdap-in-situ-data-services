@@ -176,7 +176,7 @@ class StatisticsRetriever:
             'max_lat': self.max_lat,
             'min_lon': self.min_lon,
             'max_lon': self.max_lon,
-            'observation_counts': self.__observation_count
+            CDMSConstants.observation_counts: self.__observation_count
         }
 
     def start(self):
