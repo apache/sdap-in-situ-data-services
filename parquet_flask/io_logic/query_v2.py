@@ -41,6 +41,7 @@ QUERY_PROPS_SCHEMA = {
         'provider': {'type': 'array', 'items': {'type': 'string'}, 'minItems': 1},
         'marker_platform_code': {'type': 'string'},
         'project': {'type': 'array', 'items': {'type': 'string'}, 'minItems': 1},
+        'filter_cql': {'type': 'string'},
         'min_time': {'type': 'string'},
         'max_time': {'type': 'string'},
         'min_lat_lon': {'type': 'array', 'items': {'type': 'number'}, 'minItems': 2, 'maxItems': 2},
@@ -154,6 +155,8 @@ class QueryProps:
             self.columns = input_json['columns']
         if 'variable' in input_json:
             self.variable = input_json['variable']
+        if 'filter_cql' in input_json:
+            self.filter_cql = input_json['filter_cql']
         return self
 
     @property

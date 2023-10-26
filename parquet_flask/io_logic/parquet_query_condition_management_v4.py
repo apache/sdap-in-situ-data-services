@@ -200,8 +200,15 @@ class ParquetQueryConditionManagementV4:
         self.__columns = self.__query_props.columns + variable_columns + self.__columns
         return
 
+    def __check_filter_cql(self):
+        if self.__query_props.filter_cql is not None or self.__query_props.filter_cql != '':
+            self.conditions.append(f"( {self.__query_props.filter_cql} )")
+
+        return
+
     def manage_query_props(self):
         self.__check_bbox()
+        self.__check_filter_cql()
         self.__check_time_range()
         self.__check_platform_id()
         #self.__check_depth()  # TODO: check depth

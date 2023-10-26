@@ -162,6 +162,9 @@ class IngestParquet(Resource):
         if 'project' in request.args:
             query_json['project'] = [k.strip() for k in request.args.get('project').strip().split(',')]
             query_json['project'].sort()
+        if 'filter' in request.args:
+            query_json['filter_cql'] = request.args.get('filter')
+
         if 'columns' in request.args and request.args.get('columns').strip() != '':
             query_json['columns'] = [k.strip() for k in request.args.get('columns').split(',')]
         if 'variable' in request.args and request.args.get('variable').strip() != '':
