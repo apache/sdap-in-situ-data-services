@@ -18,6 +18,7 @@ import logging
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
 from parquet_flask.io_logic.query_v2 import QueryProps
+from parquet_flask.utils.cql_parser import CqlParser
 from parquet_flask.utils.file_utils import FileUtils
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
@@ -216,6 +217,11 @@ class SubCollectionStatistics:
             else:
                 es_terms.append({'term': {CDMSConstants.platform_id_col: self.__query_props.platform_id}})
 
+        if self.__query_props.filter_cql is not None:
+            LOGGER.debug(f'it has some additiona. filter. {self.__query_props.filter_cql}')
+            cql_to_dsl = CqlParser().transform(self.__query_props.filter_cql)
+            LOGGER.debug(f'cql_to_dsl = {cql_to_dsl}')
+            es_terms.append(cql_to_dsl)
         # Time range
         if self.__query_props.min_datetime is not None and self.__query_props.max_datetime is not None:
             es_terms.append({'range': {CDMSConstants.max_datetime: {'gte': self.__query_props.min_datetime}}})

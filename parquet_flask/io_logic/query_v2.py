@@ -67,7 +67,21 @@ class QueryProps:
         self.__max_lat_lon = None
         self.__start_at = 0
         self.__size = 0
+        self.__filter_cql = None
         self.__columns = []
+
+    @property
+    def filter_cql(self):
+        return self.__filter_cql
+
+    @filter_cql.setter
+    def filter_cql(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__filter_cql = val
+        return
 
     @property
     def marker_platform_code(self):

@@ -74,6 +74,8 @@ class SubCollectionStatisticsEndpoint(Resource):
                 query_props.platform_id = [k.strip() for k in request.args.get('platform').strip().split(',')]
                 query_props.platform_id.sort()
 
+            if 'filter' in request.args:
+                query_props.filter_cql = request.args.get('filter')
             # Get stats
             sub_collection_stats = sub_collection_stats_api.start()
         except Exception as e:
