@@ -219,7 +219,7 @@ class SubCollectionStatistics:
 
         if self.__query_props.filter_cql is not None:
             LOGGER.debug(f'it has some additiona. filter. {self.__query_props.filter_cql}')
-            cql_to_dsl = CqlParser().transform(self.__query_props.filter_cql)
+            cql_to_dsl = CqlParser('observation_counts').transform(self.__query_props.filter_cql)
             LOGGER.debug(f'cql_to_dsl = {cql_to_dsl}')
             es_terms.append(cql_to_dsl)
         # Time range
