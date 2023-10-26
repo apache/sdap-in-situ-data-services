@@ -18,6 +18,8 @@ import os
 import json
 import logging
 
+import boto3
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s'
@@ -36,22 +38,33 @@ logging.basicConfig(
 
 
 def execute_code(event, context):
-    resume_from_key = None
-
-    print('TEST LOGGING', flush=True)
-    logging.getLogger('test').info('TEST LOGGING')
-    logging.getLogger('test').critical('TEST LOGGING')
+    state = None
 
     if event:
         if isinstance(event, str):
             event = json.loads(event)
 
-        resume_from_key = event.get('ResumeFromKey')
+        if 'State' in event:
+            s3 = boto3.client('s3')
+            s3.download_file(event['State']['Bucket'], event['State']['Key'], 'state.json')
+
+            with open('state.json') as fp:
+                state = json.load(fp)
+
+            print('Loaded persisted state from S3', flush=True)
+
+            s3.delete_object(Bucket=event['State']['Bucket'], Key=event['State']['Key'])
+
+    print('INVOKING AUDIT TOOL', flush=True)
+    print(event, flush=True)
+    print(context, flush=True)
+    print(state, flush=True)
+    print('', flush=True)
 
     audit(
         'mock-s3',
         os.getenv('SQS_URL'),
         os.getenv('SNS_ARN'),
-        resume_from_key=resume_from_key,
+        state=state,
         lambda_ctx=context
     )

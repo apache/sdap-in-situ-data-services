@@ -26,6 +26,8 @@ import argparse
 import textwrap
 import json
 import logging
+from tempfile import NamedTemporaryFile
+from datetime import timedelta
 
 from parquet_flask.aws import AwsSQS, AwsSNS
 from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
@@ -38,6 +40,13 @@ logging.basicConfig(
 
 logger = LambdaLoggerGenerator.get_logger(__name__)
 logging.getLogger('elasticsearch').setLevel(logging.WARNING)
+
+
+PHASES = dict(
+    start=0,
+    list=1,
+    audit=2
+)
 
 
 # Append a slash to the end of a string if it doesn't already have one
@@ -70,9 +79,28 @@ def key_to_sqs_msg(key: str, bucket: str):
     return sqs_body
 
 
-def audit(format='plain', output_file=None, sns_topic=None, resume_from_key=None, lambda_ctx=None):
+def reinvoke(state, bucket, s3_client, lambda_client, function_name):
+    with NamedTemporaryFile(mode='w', suffix='.json') as tmp:
+        json.dump(state, tmp)
+        tmp.flush()
+
+        s3_client.upload_file(tmp.name, bucket, 'AUDIT_LAMBDA_STATE.tmp.json')
+
+    response = lambda_client.invoke(
+        FunctionName=function_name,
+        InvocationType='Event',
+        Payload=json.dumps({"State": {"Bucket": bucket, "Key": "AUDIT_LAMBDA_STATE.tmp.json"}})
+    )
+
+    print(response)
+
+
+def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_ctx=None):
     if format == 'mock-s3' and not output_file:
         raise ValueError('Output file MUST be defined with mock-s3 output format')
+
+    if state is None:
+        state = {}
 
     # Check if AWS credentials are set
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', None)
@@ -116,7 +144,10 @@ def audit(format='plain', output_file=None, sns_topic=None, resume_from_key=None
     s3 = aws_session.client('s3')
     lambda_client = aws_session.client('lambda')
 
-    paginator = s3.get_paginator('list_objects_v2')
+    phase = state.get('state', 'start')
+    phase = PHASES[phase]
+    marker = state.get('marker')
+    keys = state.get('keys', [])
 
     opensearch_client = Elasticsearch(
         hosts=[{'host': OPENSEARCH_ENDPOINT, 'port': OPENSEARCH_PORT}],
@@ -127,24 +158,57 @@ def audit(format='plain', output_file=None, sns_topic=None, resume_from_key=None
     )
 
     # Go through all files in a bucket
-    response_iterator = paginator.paginate(Bucket=OPENSEARCH_BUCKET, Prefix=OPENSEARCH_PATH_PREFIX)
-
-    keys = []
-
     count = 0
     error_count = 0
     error_s3_keys = []
     missing_keys = []
     logger.info('processing... will print out S3 keys that cannot find a match...')
-    for page in response_iterator:
-        logger.info(f"Listed page of {len(page.get('Contents', [])):,} objects")
+    if phase < 2:
+        if phase == 0:
+            logger.info(f'Starting listing of bucket {OPENSEARCH_BUCKET}')
+        else:
+            logger.info(f'Resuming listing of bucket {OPENSEARCH_BUCKET}')
+        while True:
+            list_kwargs = dict(
+                Bucket=OPENSEARCH_BUCKET,
+                Prefix=OPENSEARCH_PATH_PREFIX,
+                MaxKeys=1000
+            )
 
-        for obj in page.get('Contents', []):
-            keys.append(obj)
+            if marker:
+                list_kwargs['ContinuationToken'] = marker
 
-    if resume_from_key is not None and resume_from_key in keys:
-        logger.info(f'Resuming audit from key {resume_from_key}')
-        index = keys.index(resume_from_key)
+            page = s3.list_objects_v2(**list_kwargs)
+
+            logger.info(f"Listed page of {len(page.get('Contents', [])):,} objects. Total={len(keys):,}")
+
+            if lambda_ctx:
+                remaining_time = timedelta(milliseconds=lambda_ctx.get_remaining_time_in_millis())
+                logger.info(f'Remaining time: {remaining_time}')
+
+            for obj in page.get('Contents', []):
+                keys.append(obj)
+
+            if not page['IsTruncated']:
+                break
+            else:
+                marker = page['NextContinuationToken']
+
+            if lambda_ctx is not None and lambda_ctx.get_remaining_time_in_millis() < (60 * 1000):
+                logger.warning('Lambda is about to time out, re-invoking to resume from this key')
+
+                state = dict(
+                    state='list',
+                    marker=marker,
+                    keys=keys
+                )
+
+                reinvoke(state, OPENSEARCH_BUCKET, s3, lambda_client, lambda_ctx.function_name)
+                exit(0)
+
+    if phase == 3 and marker is not None and marker in keys:
+        logger.info(f'Resuming audit from key {marker}')
+        index = keys.index(marker)
     else:
         logger.info('Starting audit from the beginning')
         index = 0
@@ -153,15 +217,8 @@ def audit(format='plain', output_file=None, sns_topic=None, resume_from_key=None
 
     need_to_resume = False
 
-    for obj in keys:
-        if lambda_ctx is not None and lambda_ctx.get_remaining_time_in_millis() < (60 * 1000):
-            logger.warning('Lambda is about to time out, re-invoking to resume from this key')
-
-            need_to_resume = True
-            resume_from_key = obj['Key']
-
-            break
-
+    while len(keys) > 0:
+        obj = keys.pop(0)
         count += 1
         try:
             # Search key in opensearch
@@ -184,6 +241,17 @@ def audit(format='plain', output_file=None, sns_topic=None, resume_from_key=None
 
         if count % 50 == 0:
             logger.info(f'Processed {count} files')
+
+        if lambda_ctx is not None and lambda_ctx.get_remaining_time_in_millis() < (60 * 1000):
+            logger.warning('Lambda is about to time out, re-invoking to resume from this key')
+
+            state = dict(
+                state='audit',
+                marker=obj['Key'],
+                keys=keys
+            )
+
+            need_to_resume = True
 
     logger.info(f'Processed {count} files')
     logger.info(f'Found {len(missing_keys):,} missing keys')
@@ -213,13 +281,8 @@ def audit(format='plain', output_file=None, sns_topic=None, resume_from_key=None
             )
 
     if need_to_resume:
-        response = lambda_client.invoke(
-            FunctionName=lambda_ctx.function_name,
-            InvocationType='Event',
-            Payload=json.dumps({'ResumeFromKey': resume_from_key}).encode('utf-8')
-        )
-
-        print(response)
+        reinvoke(state, OPENSEARCH_BUCKET, s3, lambda_client, lambda_ctx.function_name)
+        exit(0)
 
 
 if __name__ == '__main__':
