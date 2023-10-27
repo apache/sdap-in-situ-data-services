@@ -33,7 +33,10 @@ class StatisticsRetriever:
         self.__max_lat = None
         self.__min_lon = None
         self.__max_lon = None
+        self.__max_depth = None
+        self.__min_depth = None
         self.__observation_count = []
+        self.__observation_min_max = {}
 
     @property
     def total(self):
@@ -167,7 +170,7 @@ class StatisticsRetriever:
         """
         :return:
         """
-        return {
+        returning_dict = {
             'total': self.total,
             'platform_short_name': self.platform_short_name,
             'min_datetime': self.min_datetime,
@@ -176,8 +179,14 @@ class StatisticsRetriever:
             'max_lat': self.max_lat,
             'min_lon': self.min_lon,
             'max_lon': self.max_lon,
-            CDMSConstants.observation_counts: self.__observation_count
+            CDMSConstants.observation_counts: self.__observation_count,
+            'observation_min_max': self.__observation_min_max,
         }
+        if self.min_depth is not None:
+            returning_dict['min_depth'] = self.min_depth
+        if self.max_depth is not None:
+            returning_dict['max_depth'] = self.max_depth
+        return returning_dict
 
     def start(self):
         stats = self.__input_dataset.select(
@@ -205,7 +214,25 @@ class StatisticsRetriever:
         self.min_datetime = stats[f'min({CDMSConstants.time_obj_col})'].timestamp()
         self.max_datetime = stats[f'max({CDMSConstants.time_obj_col})'].timestamp()
 
+        if CDMSConstants.depth_col in self.__input_dataset.columns:
+            stats = self.__input_dataset.select(
+                pyspark_functions.min(CDMSConstants.depth_col),
+                pyspark_functions.max(CDMSConstants.depth_col),
+            ).collect()
+            stats = stats[0].asDict()
+            self.min_depth = stats[f'min({CDMSConstants.depth_col})']
+            self.max_depth = stats[f'max({CDMSConstants.depth_col})']
+
         self.__observation_count = {}
+        for each_obs_key in self.__observation_keys:
+            if each_obs_key in self.__input_dataset.columns:
+                stats = self.__input_dataset.select(
+                    pyspark_functions.min(each_obs_key),
+                    pyspark_functions.max(each_obs_key),
+                ).collect()
+                stats = stats[0].asDict()
+                self.__observation_min_max[f'min_{each_obs_key}'] = stats[f'min({each_obs_key})']
+                self.__observation_min_max[f'max_{each_obs_key}'] = stats[f'max({each_obs_key})']
 
         for each_obs_key in self.__observation_keys:
             try:
