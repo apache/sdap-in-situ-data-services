@@ -201,8 +201,8 @@ class ParquetQueryConditionManagementV4:
         return
 
     def __check_filter_cql(self):
-        if self.__query_props.filter_cql is not None or self.__query_props.filter_cql != '':
-            self.conditions.append(f"( {self.__query_props.filter_cql} )")
+        if self.__query_props.filter_cql is not None and self.__query_props.filter_cql.strip() != '':
+            self.conditions.append(f"( {self.__query_props.filter_cql.strip()} )")
 
         return
 
