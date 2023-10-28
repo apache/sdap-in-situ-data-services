@@ -163,7 +163,9 @@ class QueryV4:
         LOGGER.debug(f'<delay_check> query_v4_search started')
         condition_manager = ParquetQueryConditionManagementV4(self.__parquet_name, self.__missing_depth_value, self.__es_config, self.__props)
         condition_manager.manage_query_props()
+        LOGGER.debug(f'condition_manager.conditions: {condition_manager.conditions}')
         conditions = ' AND '.join(condition_manager.conditions)
+        LOGGER.debug(f'conditions: {conditions}')
 
         # Get the parquet files into spark dataframe
         query_begin_time = datetime.now()
