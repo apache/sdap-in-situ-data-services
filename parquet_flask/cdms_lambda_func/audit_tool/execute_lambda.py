@@ -73,7 +73,7 @@ def execute_code(event, context):
             state = {}
 
     if 'lastListTime' not in state:
-        state['lastListTime'] = datetime(1, 1, 1)  # .strftime()
+        state['lastListTime'] = datetime(1, 1, 1, tzinfo=timezone.utc)
     else:
         state['lastListTime'] = datetime.strptime(state['lastListTime'], "%Y-%m-%dT%H:%M:%S%z")
 

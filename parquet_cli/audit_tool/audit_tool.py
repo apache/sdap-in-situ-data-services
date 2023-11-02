@@ -175,6 +175,9 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
             state['listStartTime'] = datetime.now(timezone.utc)
         else:
             logger.info(f'Resuming listing of bucket {OPENSEARCH_BUCKET}')
+
+        logger.info(f'Listing objects older than {state["lastListTime"].strftime("%Y-%m-%dT%H:%M:%S%z")}')
+
         while True:
             list_kwargs = dict(
                 Bucket=OPENSEARCH_BUCKET,
@@ -189,7 +192,7 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
             keys_to_add = []
 
             for key in page.get('Contents', []):
-                if key['Key'].endswith('parquet'):
+                if key['Key'].endswith('parquet') and key['LastModified'] >= state['lastListTime']:
                     keys_to_add.append(key['Key'])
 
             keys.extend(keys_to_add)
