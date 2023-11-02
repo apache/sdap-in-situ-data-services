@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM public.ecr.aws/lambda/python:3.7
+FROM public.ecr.aws/lambda/python:3.8
 
 # Reference: https://aws.plainenglish.io/spark-on-aws-lambda-c65877c0ac96
 #USER root
@@ -24,7 +24,7 @@ RUN python3 -m pip install pyspark==3.1.2
 #ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto/jre
 ENV JAVA_HOME="/usr/lib/jvm/jre-1.8.0-openjdk.x86_64"
 ENV PATH=${PATH}:${JAVA_HOME}/bin
-ENV SPARK_HOME="/var/lang/lib/python3.7/site-packages/pyspark"
+ENV SPARK_HOME="/var/lang/lib/python3.8/site-packages/pyspark"
 ENV PATH=$PATH:$SPARK_HOME/bin
 ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9-src.zip:$PYTHONPATH
 ENV PATH=$SPARK_HOME/python:$PATH
