@@ -6,7 +6,6 @@ charset-normalizer==2.0.12
 elasticsearch==7.13.4
 fastjsonschema==2.15.1
 idna==3.4
-importlib-metadata==6.8.0
 importlib-resources==6.1.0
 jmespath==1.0.1
 jsonschema==4.16.0
