@@ -46,7 +46,7 @@ RUN mkdir /usr/app
 WORKDIR /usr/app
 
 COPY requirements_lambda.txt /usr/app
-RUN ["python3", "-m", "pip", "install", "-r", "requirements_lambda.txt"]
+RUN python3 -m pip install -r requirements_lambda.txt
 ENV PYTHONPATH="${PYTHONPATH}:/usr/app/"
 
 COPY parquet_flask /usr/app/parquet_flask
