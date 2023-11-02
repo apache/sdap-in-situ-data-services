@@ -45,10 +45,8 @@ COPY etc/lambda-spark/spark-defaults.conf $SPARK_HOME/conf/spark-defaults.conf
 RUN mkdir /usr/app
 WORKDIR /usr/app
 
-COPY setup_lambda.py /usr/app
-RUN python3 /usr/app/setup_lambda.py install
-RUN python3 -m pip install pyspark==3.1.2
-
+COPY requirements_lambda.txt /usr/app
+RUN ["python", "-m", "pip", "install", "-r", "requirements_lambda.txt"]
 ENV PYTHONPATH="${PYTHONPATH}:/usr/app/"
 
 COPY parquet_flask /usr/app/parquet_flask
