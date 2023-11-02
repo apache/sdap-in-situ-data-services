@@ -27,7 +27,7 @@ import textwrap
 import json
 import logging
 from tempfile import NamedTemporaryFile
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 
 from parquet_flask.aws import AwsSQS, AwsSNS
 from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
@@ -80,19 +80,19 @@ def key_to_sqs_msg(key: str, bucket: str):
 
 
 def reinvoke(state, bucket, s3_client, lambda_client, function_name):
-    with NamedTemporaryFile(mode='w', suffix='.json') as tmp:
-        json.dump(state, tmp)
-        tmp.flush()
+    state['lastListTime'] = state['lastListTime'].strftime("%Y-%m-%dT%H:%M:%S%z")
 
-        s3_client.upload_file(tmp.name, bucket, 'AUDIT_LAMBDA_STATE.tmp.json')
+    object_data = json.dumps(state).encode('utf-8')
+
+    s3_client.put_object(Bucket=bucket, Key='AUDIT_STATE.json', Body=object_data)
 
     response = lambda_client.invoke(
         FunctionName=function_name,
         InvocationType='Event',
-        Payload=json.dumps({"State": {"Bucket": bucket, "Key": "AUDIT_LAMBDA_STATE.tmp.json"}})
+        Payload=json.dumps({"State": {"Bucket": bucket, "Key": "AUDIT_STATE.json"}})
     )
 
-    print(response)
+    logger.info(repr(response))
 
 
 def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_ctx=None):
@@ -186,8 +186,9 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
                 remaining_time = timedelta(milliseconds=lambda_ctx.get_remaining_time_in_millis())
                 logger.info(f'Remaining time: {remaining_time}')
 
-            for obj in page.get('Contents', []):
-                keys.append(obj)
+            for key in page.get('Contents', []):
+                if key['Key'].endswith('parquet'):
+                    keys.append(key['Key'])
 
             if not page['IsTruncated']:
                 break
@@ -204,7 +205,9 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
                 )
 
                 reinvoke(state, OPENSEARCH_BUCKET, s3, lambda_client, lambda_ctx.function_name)
-                exit(0)
+                return
+
+        state['lastListTime'] = datetime.now(timezone.utc)
 
     if phase == 3 and marker is not None and marker in keys:
         logger.info(f'Resuming audit from key {marker}')
@@ -218,71 +221,91 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
     need_to_resume = False
 
     while len(keys) > 0:
-        obj = keys.pop(0)
+        key = keys.pop(0)
         count += 1
         try:
             # Search key in opensearch
-            opensearch_id = os.path.join(OPENSEARCH_ID_PREFIX + obj['Key'])
+            opensearch_id = os.path.join(OPENSEARCH_ID_PREFIX + key)
             opensearch_response = opensearch_client.get(index=OPENSEARCH_INDEX, id=opensearch_id)
             if opensearch_response is None or not type(opensearch_response) is dict or not opensearch_response['found']:
                 error_count += 1
-                error_s3_keys.append(obj['Key'])
+                error_s3_keys.append(key)
                 sys.stdout.write("\x1b[2k")
-                logger.info(obj['Key'])
-                missing_keys.append(obj['Key'])
+                logger.info(key)
+                missing_keys.append(key)
         except NotFoundError as e:
             error_count += 1
-            error_s3_keys.append(obj['Key'])
+            error_s3_keys.append(key)
             sys.stdout.write("\x1b[2k")
-            logger.info(obj['Key'])
-            missing_keys.append(obj['Key'])
+            logger.info(key)
+            missing_keys.append(key)
         except Exception as e:
             error_count += 1
 
         if count % 50 == 0:
             logger.info(f'Processed {count} files')
+            if lambda_ctx:
+                remaining_time = timedelta(milliseconds=lambda_ctx.get_remaining_time_in_millis())
+                logger.info(f'Remaining time: {remaining_time}')
 
         if lambda_ctx is not None and lambda_ctx.get_remaining_time_in_millis() < (60 * 1000):
             logger.warning('Lambda is about to time out, re-invoking to resume from this key')
 
             state = dict(
                 state='audit',
-                marker=obj['Key'],
-                keys=keys
+                marker=key,
+                keys=keys,
+                lastListTime=state['lastListTime']
             )
 
             need_to_resume = True
 
+            break
+
     logger.info(f'Processed {count} files')
     logger.info(f'Found {len(missing_keys):,} missing keys')
 
-    if format == 'plain':
-        if output_file:
-            with open(output_file, 'w') as f:
-                for key in missing_keys:
-                    f.write(key + '\n')
+    if len(missing_keys) > 0:
+        if format == 'plain':
+            if output_file:
+                with open(output_file, 'w') as f:
+                    for key in missing_keys:
+                        f.write(key + '\n')
+            else:
+                logger.info('Not writing to file as none was given')
         else:
-            logger.info('Not writing to file as none was given')
-    else:
-        sqs_messages = [key_to_sqs_msg(k, OPENSEARCH_BUCKET) for k in missing_keys]
+            sqs_messages = [key_to_sqs_msg(k, OPENSEARCH_BUCKET) for k in missing_keys]
 
-        sqs = AwsSQS()
+            sqs = AwsSQS()
 
-        for m in sqs_messages:
-            sqs.send_message(output_file, m)
+            sqs_response = None
 
-        if sns_topic:
-            sns = AwsSNS()
+            for m in sqs_messages:
+                sqs_response = sqs.send_message(output_file, m)
 
-            sns.publish(
-                sns_topic,
-                f'Parquet stats audit found {len(missing_keys):,} missing keys. Trying to republish to SQS.',
-                'Insitu audit'
-            )
+            print(sqs_response, flush=True)
+
+            if sns_topic:
+                sns = AwsSNS()
+
+                sns_response = sns.publish(
+                    sns_topic,
+                    f'Parquet stats audit found {len(missing_keys):,} missing keys. Trying to republish to SQS.',
+                    'Insitu audit'
+                )
+
+                print(sns_response, flush=True)
 
     if need_to_resume:
         reinvoke(state, OPENSEARCH_BUCKET, s3, lambda_client, lambda_ctx.function_name)
-        exit(0)
+        return
+
+    # Finished, reset state to just last list time
+    state = {'lastListTime': state['lastListTime'].strftime("%Y-%m-%dT%H:%M:%S%z")}
+
+    object_data = json.dumps(state).encode('utf-8')
+
+    s3.put_object(Bucket=OPENSEARCH_BUCKET, Key='AUDIT_STATE.json', Body=object_data)
 
 
 if __name__ == '__main__':
@@ -317,8 +340,8 @@ if __name__ == '__main__':
         default='plain',
         dest='format',
         help='Output format. \'plain\' will output keys of missing parquet files to the output file in plain text. '
-             '\'mock-s3\' will output missing keys to SQS (-o is required as the SQS queue URL), formatted as an S3 object '
-             'created event'
+             '\'mock-s3\' will output missing keys to SQS (-o is required as the SQS queue URL), formatted as an S3 '
+             'object created event'
     )
 
     args = parser.parse_args()

@@ -17,6 +17,9 @@ from parquet_cli.audit_tool import audit
 import os
 import json
 import logging
+from io import BytesIO
+
+from datetime import datetime, timezone
 
 import boto3
 
@@ -39,26 +42,42 @@ logging.basicConfig(
 
 def execute_code(event, context):
     state = None
+    s3 = boto3.client('s3')
 
     if event:
         if isinstance(event, str):
             event = json.loads(event)
 
         if 'State' in event:
-            s3 = boto3.client('s3')
-            s3.download_file(event['State']['Bucket'], event['State']['Key'], 'state.json')
+            buf = BytesIO()
 
-            with open('state.json') as fp:
-                state = json.load(fp)
+            s3.download_fileobj(event['State']['Bucket'], event['State']['Key'], buf)
+            buf.seek(0)
+            state = json.load(buf)
 
             print('Loaded persisted state from S3', flush=True)
 
-            s3.delete_object(Bucket=event['State']['Bucket'], Key=event['State']['Key'])
+            # s3.delete_object(Bucket=event['State']['Bucket'], Key=event['State']['Key'])
+
+    if state is None:
+        try:
+            buf = BytesIO()
+
+            s3.download_fileobj(os.getenv('OPENSEARCH_BUCKET'), 'AUDIT_STATE.json', buf)
+            buf.seek(0)
+            state = json.load(buf)
+
+            print('Loaded persisted state from S3', flush=True)
+        except:
+            print('Could not load state, starting from scratch')
+            state = {}
+
+    if 'lastListTime' not in state:
+        state['lastListTime'] = datetime(1, 1, 1)  # .strftime()
+    else:
+        state['lastListTime'] = datetime.strptime(state['lastListTime'], "%Y-%m-%dT%H:%M:%S%z")
 
     print('INVOKING AUDIT TOOL', flush=True)
-    print(event, flush=True)
-    print(context, flush=True)
-    print(state, flush=True)
     print('', flush=True)
 
     audit(
