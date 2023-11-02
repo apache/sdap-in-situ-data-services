@@ -33,13 +33,17 @@ from parquet_flask.aws import AwsSQS, AwsSNS
 from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
 
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s'
-)
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format=
+# )
 
-logger = LambdaLoggerGenerator.get_logger(__name__)
-logging.getLogger('elasticsearch').setLevel(logging.WARNING)
+LambdaLoggerGenerator.remove_default_handlers()
+logger = LambdaLoggerGenerator.get_logger(
+    __name__,
+    log_format='%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s'
+)
+LambdaLoggerGenerator.get_logger('elasticsearch', log_level=logging.WARNING)
 
 
 PHASES = dict(
@@ -82,6 +86,8 @@ def key_to_sqs_msg(key: str, bucket: str):
 def reinvoke(state, bucket, s3_client, lambda_client, function_name):
     state['lastListTime'] = state['lastListTime'].strftime("%Y-%m-%dT%H:%M:%S%z")
 
+    logger.info('Preparing to reinvoke. Persisting audit state to S3')
+
     object_data = json.dumps(state).encode('utf-8')
 
     s3_client.put_object(Bucket=bucket, Key='AUDIT_STATE.json', Body=object_data)
@@ -92,7 +98,7 @@ def reinvoke(state, bucket, s3_client, lambda_client, function_name):
         Payload=json.dumps({"State": {"Bucket": bucket, "Key": "AUDIT_STATE.json"}})
     )
 
-    logger.info(repr(response))
+    logger.info(f'Lambda response: {repr(response)}')
 
 
 def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_ctx=None):
@@ -147,7 +153,7 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
     phase = state.get('state', 'start')
     phase = PHASES[phase]
     marker = state.get('marker')
-    keys = state.get('keys', [])
+    keys: list = state.get('keys', [])
 
     opensearch_client = Elasticsearch(
         hosts=[{'host': OPENSEARCH_ENDPOINT, 'port': OPENSEARCH_PORT}],
@@ -166,6 +172,7 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
     if phase < 2:
         if phase == 0:
             logger.info(f'Starting listing of bucket {OPENSEARCH_BUCKET}')
+            state['listStartTime'] = datetime.now(timezone.utc)
         else:
             logger.info(f'Resuming listing of bucket {OPENSEARCH_BUCKET}')
         while True:
@@ -179,16 +186,20 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
                 list_kwargs['ContinuationToken'] = marker
 
             page = s3.list_objects_v2(**list_kwargs)
+            keys_to_add = []
 
-            logger.info(f"Listed page of {len(page.get('Contents', [])):,} objects. Total={len(keys):,}")
+            for key in page.get('Contents', []):
+                if key['Key'].endswith('parquet'):
+                    keys_to_add.append(key['Key'])
+
+            keys.extend(keys_to_add)
+
+            logger.info(f"Listed page of {len(page.get('Contents', [])):,} objects; selected {len(keys_to_add):,}; "
+                        f"total={len(keys):,}")
 
             if lambda_ctx:
                 remaining_time = timedelta(milliseconds=lambda_ctx.get_remaining_time_in_millis())
                 logger.info(f'Remaining time: {remaining_time}')
-
-            for key in page.get('Contents', []):
-                if key['Key'].endswith('parquet'):
-                    keys.append(key['Key'])
 
             if not page['IsTruncated']:
                 break
@@ -201,22 +212,28 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
                 state = dict(
                     state='list',
                     marker=marker,
-                    keys=keys
+                    keys=keys,
+                    listStartTime=state['lastListTime']
                 )
 
                 reinvoke(state, OPENSEARCH_BUCKET, s3, lambda_client, lambda_ctx.function_name)
                 return
 
-        state['lastListTime'] = datetime.now(timezone.utc)
+        state['lastListTime'] = state['listStartTime']
+        del state['listStartTime']
 
-    if phase == 3 and marker is not None and marker in keys:
-        logger.info(f'Resuming audit from key {marker}')
-        index = keys.index(marker)
-    else:
-        logger.info('Starting audit from the beginning')
-        index = 0
+    # if phase == 3 and marker is not None and marker in keys:
+    #     logger.info(f'Resuming audit from key {marker}')
+    #     index = keys.index(marker)
+    # else:
+    #     logger.info('Starting audit from the beginning')
+    #     index = 0
+    #
+    # keys = keys[index:]
 
-    keys = keys[index:]
+    n_keys = len(keys)
+
+    logger.info(f'Beginning audit on {n_keys:,} keys...')
 
     need_to_resume = False
 
@@ -243,7 +260,7 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
             error_count += 1
 
         if count % 50 == 0:
-            logger.info(f'Processed {count} files')
+            logger.info(f'Checked {count} files [{(count/n_keys)*100:7.3f}%]')
             if lambda_ctx:
                 remaining_time = timedelta(milliseconds=lambda_ctx.get_remaining_time_in_millis())
                 logger.info(f'Remaining time: {remaining_time}')
@@ -262,7 +279,7 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
 
             break
 
-    logger.info(f'Processed {count} files')
+    logger.info(f'Checked {count} files')
     logger.info(f'Found {len(missing_keys):,} missing keys')
 
     if len(missing_keys) > 0:
@@ -283,7 +300,7 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
             for m in sqs_messages:
                 sqs_response = sqs.send_message(output_file, m)
 
-            print(sqs_response, flush=True)
+            logger.info(f'SQS response: {repr(sqs_response)}')
 
             if sns_topic:
                 sns = AwsSNS()
@@ -294,13 +311,16 @@ def audit(format='plain', output_file=None, sns_topic=None, state=None, lambda_c
                     'Insitu audit'
                 )
 
-                print(sns_response, flush=True)
+                logger.info(f'SNS response: {repr(sns_response)}')
 
     if need_to_resume:
         reinvoke(state, OPENSEARCH_BUCKET, s3, lambda_client, lambda_ctx.function_name)
         return
 
     # Finished, reset state to just last list time
+
+    logger.info('Audit complete! Persisting state to S3')
+
     state = {'lastListTime': state['lastListTime'].strftime("%Y-%m-%dT%H:%M:%S%z")}
 
     object_data = json.dumps(state).encode('utf-8')

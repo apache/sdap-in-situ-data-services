@@ -17,16 +17,17 @@ from parquet_cli.audit_tool import audit
 import os
 import json
 import logging
+import traceback
 from io import BytesIO
 
 from datetime import datetime, timezone
 
 import boto3
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s'
-)
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s [%(levelname)s] [%(name)s::%(lineno)d] %(message)s'
+# )
 
 
 # Build process:
@@ -57,8 +58,6 @@ def execute_code(event, context):
 
             print('Loaded persisted state from S3', flush=True)
 
-            # s3.delete_object(Bucket=event['State']['Bucket'], Key=event['State']['Key'])
-
     if state is None:
         try:
             buf = BytesIO()
@@ -70,6 +69,7 @@ def execute_code(event, context):
             print('Loaded persisted state from S3', flush=True)
         except:
             print('Could not load state, starting from scratch')
+            print(traceback.print_exc())
             state = {}
 
     if 'lastListTime' not in state:
