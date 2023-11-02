@@ -6,7 +6,7 @@ Follow [this guide](Deployment-in-AWS.md) to deploy SDAP In-Situ to AWS cloud.
 
 # Ingestion
 ## How to ingest a insitu json file to Parquet
-- Assumption: K8s is successfully deployed
+- Assumption: K8s is successfully deployed.
 - Download this repo
 - (optional) create different python3.6 environment
 - install dependencies
