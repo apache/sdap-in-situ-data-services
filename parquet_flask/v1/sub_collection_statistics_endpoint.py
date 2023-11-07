@@ -74,6 +74,9 @@ class SubCollectionStatisticsEndpoint(Resource):
                 query_props.platform_id = [k.strip() for k in request.args.get('platform').strip().split(',')]
                 query_props.platform_id.sort()
 
+            if 'variable' in request.args and request.args.get('variable').strip() != '':
+                query_props.variable = [k.strip() for k in request.args.get('variable').split(',')]
+
             if 'filter' in request.args:
                 query_props.filter_cql = request.args.get('filter')
             # Get stats

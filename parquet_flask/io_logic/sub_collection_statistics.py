@@ -191,7 +191,7 @@ class SubCollectionStatistics:
         agg_stmts = {k: {
             'sum': {
                 'field': f'{CDMSConstants.observation_counts}.{k}'
-            }
+            },
         } for k in self.__cdms_obs_names}
         return agg_stmts
 
@@ -217,9 +217,21 @@ class SubCollectionStatistics:
             else:
                 es_terms.append({'term': {CDMSConstants.platform_id_col: self.__query_props.platform_id}})
 
+        if self.__query_props.variable is not None and len(self.__query_props.variable) > 0:
+            es_terms.append({
+                'bool': {
+                    'must': [{
+                        'range': {
+                            f'{CDMSConstants.observation_counts}.{k}': {
+                                'gte': 1,
+                            } for k in self.__query_props.variable
+                        }
+                    }]
+                }
+            })
         if self.__query_props.filter_cql is not None:
-            LOGGER.debug(f'it has some additiona. filter. {self.__query_props.filter_cql}')
-            cql_to_dsl = CqlParser(CDMSConstants.observation_counts).transform(self.__query_props.filter_cql)
+            LOGGER.debug(f'it has some additional filter. {self.__query_props.filter_cql}')
+            cql_to_dsl = CqlParser(CDMSConstants.observation_min_max).transform(self.__query_props.filter_cql)
             LOGGER.debug(f'cql_to_dsl = {cql_to_dsl}')
             es_terms.append(cql_to_dsl)
         # Time range
