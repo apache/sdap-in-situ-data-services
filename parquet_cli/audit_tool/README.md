@@ -70,7 +70,7 @@ Create a lambda function w/ python 3.8 runtime, x86_64 arch, with an execution r
 
 Config:
 - Handler: `parquet_flask.cdms_lambda_func.audit_tool.execute_lambda.execute_code`
-- Contact me for code .zip or follow the instructions in 
+- To build code .zip follow the instructions in `parquet_flask/cdms_lambda_func/audit_tool/execute_lambda.py` (~ line 33)
 - Timeout: No less than 2 minutes, recommend at least 10 minutes
 - Memory: 512 MB
 - Ephemeral storage: 512 MB
