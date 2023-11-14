@@ -1,0 +1,102 @@
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 2
+  },
+  "mappings": {
+    "properties": {
+      "provider": {
+        "type": "keyword"
+      },
+      "project": {
+        "type": "keyword"
+      },
+      "platform": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "short_name": {
+            "type": "keyword"
+          }
+        }
+      },
+      "time": {
+        "type": "date"
+      },
+      "latitude": {
+        "type": "float"
+      },
+      "longitude": {
+        "type": "float"
+      },
+      "Qout": {
+        "type": "float"
+      },
+      "pm2_5": {
+        "type": "float"
+      },
+      "bc": {
+        "type": "float"
+      },
+      "no2": {
+        "type": "float"
+      },
+      "co": {
+        "type": "float"
+      },
+      "co2": {
+        "type": "float"
+      },
+      "no": {
+        "type": "float"
+      },
+      "o3": {
+        "type": "float"
+      },
+      "pm1": {
+        "type": "float"
+      },
+      "pm10": {
+        "type": "float"
+      },
+      "pm25": {
+        "type": "float"
+      },
+      "Streamflow": {
+        "type": "float"
+      },
+      "Gage_height": {
+        "type": "float"
+      },
+      "Stream_water_level_elevation_above_NAVD_1988": {
+        "type": "float"
+      },
+      "Lake_or_reservoir_water_surface_elevation_above_NAVD_1988": {
+        "type": "float"
+      },
+      "RelativeHumidity": {
+        "type": "float"
+      },
+      "Temperature": {
+        "type": "float"
+      },
+      "Specific_conductance": {
+        "type": "float"
+      },
+      "Turbidity": {
+        "type": "float"
+      },
+      "Suspended_sediment_concentration": {
+        "type": "float"
+      },
+      "Precipitation": {
+        "type": "float"
+      },
+      "Depth_to_water_level": {
+        "type": "float"
+      }
+    }
+  }
+}
