@@ -14,15 +14,14 @@ from parquet_flask.utils.general_utils import GeneralUtils
 
 
 class InsituRecordsToEs:
-    def __init__(self, s3_url, es_url):
+    def __init__(self, es_url):
         self.__s3 = AwsS3()
-        self.__s3_url = s3_url
         self.__es: ESAbstract = ESFactory().get_instance('AWS', index=CDMSConstants.insitu_records_index_alias, base_url=es_url, port=443)
 
-    def start(self):
+    def ingest(self, s3_url):
         with TemporaryDirectory() as tmp_dir_name:
-            local_file_path = self.__s3.set_s3_url(self.__s3_url).download(tmp_dir_name)
-            if self.__s3_url.endswith('.gz'):
+            local_file_path = self.__s3.set_s3_url(s3_url).download(tmp_dir_name)
+            if s3_url.endswith('.gz'):
                 local_file_path = FileUtils.gunzip_file_os(local_file_path)
             # local_file_path = '/Users/wphyo/Downloads/2023-10_daily.json'
             insitu_records = FileUtils.read_json(local_file_path)
