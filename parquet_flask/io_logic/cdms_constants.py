@@ -55,6 +55,7 @@ class CDMSConstants:
 
     es_index_parquet_stats = 'parquet_stats_alias'
     entry_file_records_index = 'entry_file_records_alias'
+    insitu_records_index_alias = 'insitu_records'
 
     min_depth = 'min_depth'
     max_depth = 'max_depth'

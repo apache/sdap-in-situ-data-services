@@ -79,6 +79,7 @@ class SubCollectionStatisticsEndpoint(Resource):
 
             if 'filter' in request.args:
                 query_props.filter_cql = request.args.get('filter')
+
             # Get stats
             sub_collection_stats = sub_collection_stats_api.start()
         except Exception as e:
