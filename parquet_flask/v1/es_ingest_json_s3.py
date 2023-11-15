@@ -24,7 +24,7 @@ from parquet_flask.io_logic.insitu_records_to_es import InsituRecordsToEs
 from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.v1.authenticator_decorator import authenticator_decorator
 
-api = Namespace('es_ingest_json_s3', description="Ingesting JSON files")
+api = Namespace('es_insitu_data', description="Ingesting JSON files")
 LOGGER = logging.getLogger(__name__)
 
 query_model = api.model('es_ingest_json_s3', {
