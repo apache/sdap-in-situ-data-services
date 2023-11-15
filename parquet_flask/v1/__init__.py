@@ -27,6 +27,8 @@ from .query_data_doms import api as query_data_doms
 from .extract_statistics_from_parquet_file import api as extract_statistics_from_parquet_file
 from .sub_collection_statistics_endpoint import api as sub_collection_statistics_endpoint
 from .query_data_doms_custom_pagination import api as query_data_doms_custom_pagination
+from .es_ingest_json_s3 import api as es_ingest_json_s3
+from .query_es_data import api as query_es_data
 from ..io_logic.cdms_constants import CDMSConstants
 
 _version = "1.0"
@@ -44,6 +46,8 @@ api = Api(blueprint,
           )
 
 # Register namespaces
+api.add_namespace(query_es_data)
+api.add_namespace(es_ingest_json_s3)
 api.add_namespace(cdms_schema_api)
 api.add_namespace(ingest_parquet_json_s3)
 api.add_namespace(replace_parquet_json_s3)
@@ -51,4 +55,6 @@ api.add_namespace(query_data)
 api.add_namespace(query_data_doms)
 api.add_namespace(query_data_doms_custom_pagination)
 api.add_namespace(extract_statistics_from_parquet_file)
+api.add_namespace(sub_collection_statistics_endpoint)
+api.add_namespace(sub_collection_statistics_endpoint)
 api.add_namespace(sub_collection_statistics_endpoint)
