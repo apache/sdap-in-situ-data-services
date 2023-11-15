@@ -77,7 +77,7 @@ class IngestParquet(Resource):
         return f'{request.base_url}?{new_args}'
 
     def __get_next_page_url(self, es_results: dict):
-        if len(es_results['hits']) < 1:
+        if len(es_results['hits']) < self.__size:
             return 'NA'
         new_args = deepcopy(dict(request.args))
         new_args['marker'] = ','.join(es_results['marker'])
@@ -86,8 +86,9 @@ class IngestParquet(Resource):
 
     @api.expect()
     def get(self):
+        self.__size = int(request.args.get('itemsPerPage', '1000'))
         query_props = InsituQueryProps()
-        query_props.size = int(request.args.get('itemsPerPage', '1000'))
+        query_props.size = self.__size
         if 'marker' in request.args and request.args.get('marker') is not None and request.args.get('marker') != '':
             query_props.marker = [k.strip() for k in request.args.get('marker', '').strip().split(',')]
         if 'variable' in request.args and request.args.get('variable') is not None and request.args.get('variable') != '':
