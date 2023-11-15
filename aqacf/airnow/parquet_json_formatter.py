@@ -37,9 +37,11 @@ class ParquetJsonFormatter:
         self.__provider_name = provider_name
         self.__project_name = project_name
 
-    def start(self, csv_file: str, split_size=1):
+    def start(self, csv_file: str, split_size=1, platform_appender=''):
         LOGGER.debug(f'processing: {csv_file}')
         airnow_data = pd.read_csv(csv_file, sep=',', encoding='latin1')
+        airnow_data['site_id'] = airnow_data['site_id'].astype(str) + platform_appender
+
         LOGGER.debug(f'read: {csv_file}')
         """
         {

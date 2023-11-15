@@ -34,6 +34,7 @@ class MergeData:
         result_df['time'] = result_df['time'].astype('datetime64').dt.strftime('%Y-%m-%dT%H:%M:%SZ')
         result_df = result_df.merge(site_names, on='site_id', how='left')
         LOGGER.debug(f'aggregated {self.__raw_data_dir}')
+        result_df['site_name'] = result_df['site_name'].fillna('')
         result_df.to_csv(os.path.join(self.__merged_data_dir, 'daily.csv'), index=False)
         LOGGER.debug(f'written aggregated data {self.__raw_data_dir}')
         return

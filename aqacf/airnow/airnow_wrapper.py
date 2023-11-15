@@ -23,7 +23,7 @@ class AirNowWrapper:
         LOGGER.debug(f'processing: {start_month}')
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            tmp_dir_name = f'/aqacf/air_now/f{start_month}'
+            tmp_dir_name = f'/tmp/aqacf/air_now/{start_month}'
             # DownloadRawData(tmp_dir_name).download_data(start_date, end_date)
             # LOGGER.debug(f'downloaded data for: {start_month}')
 
@@ -39,7 +39,7 @@ class AirNowWrapper:
             self.__s3.upload(daily_json_file, self.__bucket, f'{self.__provider}/daily', True)
             LOGGER.debug(f'uploaded daily data for: {daily_json_file}')
 
-            ParquetJsonFormatter(self.__provider, f'{self.__project}_raw').start(os.path.join(concat_dir, 'raw.csv'), self.__split_size)
+            ParquetJsonFormatter(self.__provider, f'{self.__project}').start(os.path.join(concat_dir, 'raw.csv'), self.__split_size, '_raw')
             LOGGER.debug(f'converted raw data for: {start_month}')
             for i in range(self.__split_size):
                 raw_json_file = os.path.join(concat_dir, f'{start_month}__{i}_raw.json.gz')
