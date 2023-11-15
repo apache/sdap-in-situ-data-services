@@ -21,9 +21,8 @@ class InsituQueryProps:
         self.__project = None
         self.__timestamp = None
         self.__size = 1000
-        self.__min_lat_lon = None
-        self.__max_lat_lon = None
-        self.__bbox = None
+        self.__min_lat_lon = []
+        self.__max_lat_lon = []
         self.__variable = []
         self.__columns = []
         self.__marker = []
@@ -171,8 +170,13 @@ class InsituRecordsToEs:
             query_dsl['query']['bool']['must'].append({'bool': {'should': [{'exists': {'field': k}} for k in query_props.variable]}})
         if len(query_props.marker) > 0:
             query_dsl['search_after'] = query_props.marker
+        if len(query_props.min_lat_lon) > 0:
+            query_dsl['query']['bool']['must'].append({'range': {'latitude': {'gte': query_props.min_lat_lon[0]}}})
+            query_dsl['query']['bool']['must'].append({'range': {'longitude': {'gte': query_props.min_lat_lon[1]}}})
+        if len(query_props.max_lat_lon) > 0:
+            query_dsl['query']['bool']['must'].append({'range': {'latitude': {'lte': query_props.max_lat_lon[0]}}})
+            query_dsl['query']['bool']['must'].append({'range': {'longitude': {'lte': query_props.max_lat_lon[1]}}})
         LOGGER.debug(f'query_dsl: {query_dsl}')
-        print(json.dumps(query_dsl, indent=2))
         es_results = self.__es.query(query_dsl)
         records = [k['_source'] for k in es_results['hits']['hits']]
         pagination_marker = es_results['hits']['hits'][-1]['sort'] if len(records) > 0 else None

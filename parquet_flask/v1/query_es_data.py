@@ -66,10 +66,8 @@ class IngestParquet(Resource):
 
     def __get_first_page_url(self):
         new_args = deepcopy(dict(request.args))
-        if 'markerTime' in new_args:
+        if 'marker' in new_args:
             new_args.pop('markerTime')
-        if 'markerPlatform' in new_args:
-            new_args.pop('markerPlatform')
         new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
         return f'{request.base_url}?{new_args}'
 
@@ -78,51 +76,13 @@ class IngestParquet(Resource):
         new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
         return f'{request.base_url}?{new_args}'
 
-    def __get_next_page_url(self, query_result: list):
-        if len(query_result) < 1:
+    def __get_next_page_url(self, es_results: dict):
+        if len(es_results['hits']) < 1:
             return 'NA'
-        last_item: dict = query_result[-1]
         new_args = deepcopy(dict(request.args))
-        new_args['markerTime'] = last_item[CDMSConstants.time_col]
-        new_args['markerPlatform'] = GeneralUtils.gen_sha_256_json_obj(last_item)
+        new_args['marker'] = ','.join(es_results['marker'])
         new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
         return f'{request.base_url}?{new_args}'
-
-    def __execute_query(self, payload):
-        """
-        TODO: transform the results to:
-        {
-            "last": "url",
-            "prev": "url",
-            "next": "url",
-            "first": "url",
-            "results": ["results"],
-            "total": "number
-        }
-        :param payload:
-        :return:
-        """
-        is_valid, json_error = GeneralUtils.is_json_valid(payload, QUERY_PROPS_SCHEMA)
-        if not is_valid:
-            return {'message': 'invalid request body', 'details': str(json_error)}, 400
-        try:
-            LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination calling QueryV4: {request.args}')
-            query = QueryV4(QueryProps().from_json(payload))
-            # with timeout(seconds=20):
-            #     result_set = query.search()
-            result_set = query.search()
-            LOGGER.debug(f'search params: {payload}')
-            # page_info = self.__calculate_4_ranges(result_set['total'])
-            LOGGER.debug(f'search done')
-            result_set['last'] = 'keep browsing next till there is nothing left'
-            result_set['first'] = self.__get_first_page_url()
-            result_set['prev'] = self.__get_prev_page_url()
-            result_set['next'] = self.__get_next_page_url(result_set['results'])
-            LOGGER.debug(f'pagination done')
-            return result_set, 200
-        except Exception as e:
-            LOGGER.exception(f'failed to query parquet. cause: {str(e)}')
-            return {'message': 'failed to query parquet', 'details': str(e)}, 500
 
     @api.expect()
     def get(self):
@@ -144,8 +104,17 @@ class IngestParquet(Resource):
         es_url = os.environ.get(CdmsLambdaConstants.es_url, None)
         try:
             es_results = InsituRecordsToEs(es_url).query(query_props)
+            resonse = {
+                'total': -1,
+                'results': es_results['hits'],
+                'last': 'keep browsing next till there is nothing left',
+                'first': 'TODO without marker',
+                'prev': self.__get_prev_page_url(),
+                'next': self.__get_next_page_url(es_results),
+
+            }
         except Exception as e:
             LOGGER.exception(f'deleting error file')
             return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500
-        return {'message': 'ingested'}, 200
+        return resonse, 200
         # return self.__execute_query(query_json)

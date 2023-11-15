@@ -16,8 +16,10 @@ class TestInsituRecordsToEs(TestCase):
         query_props.project = 'air_quality'
         query_props.provider = 'AirNow'
         query_props.timestamp = '2023-10-11'
-        query_props.marker = ['340170006']
+        # query_props.marker = ['340170006']
         query_props.variable = ['o3', 'pm2_5']
+        query_props.max_lat_lon = [0, 0]
+        query_props.min_lat_lon = [-90, -90]
         result = InsituRecordsToEs(es_url).query(query_props)
         print(result)
         """
