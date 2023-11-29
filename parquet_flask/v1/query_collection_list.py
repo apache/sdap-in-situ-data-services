@@ -40,6 +40,6 @@ class QueryCollectionListEndpoint(Resource):
             sub_collection_stats_api = SubCollectionStatistics(query_props)
             collection_list = sub_collection_stats_api.list_collections()
         except Exception as e:
-            LOGGER.exception(f'error while retrieving stats')
-            return {'message': 'error while retrieving stats', 'details': str(e)}, 500
+            LOGGER.exception(f'error while retrieving collection_list')
+            return {'message': 'error while retrieving collection_list', 'details': str(e)}, 500
         return collection_list, 200

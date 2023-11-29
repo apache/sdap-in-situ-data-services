@@ -94,7 +94,7 @@ class MetadataTblES(MetadataTblInterface):
                         }},
                         {"range": {
                             "job_end_time": {
-                                "lte": start_time
+                                "gte": start_time
                             }
                         }}
                     ]
@@ -103,6 +103,6 @@ class MetadataTblES(MetadataTblInterface):
         }
         LOGGER.debug(f'query_dsl: {query_dsl}')
         latest_ingested_files = self.__es.query(query_dsl, CDMSConstants.entry_file_records_index)
-        LOGGER.debug(f'latest_ingested_files: {latest_ingested_files}')
-        result = latest_ingested_files['hits']['hits']
+        LOGGER.debug(f"latest_ingested_files: {len(latest_ingested_files['hits']['hits'])}")
+        result = [k['_source'] for k in latest_ingested_files['hits']['hits']]
         return result
