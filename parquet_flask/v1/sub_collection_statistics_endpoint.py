@@ -51,6 +51,9 @@ class SubCollectionStatisticsEndpoint(Resource):
             query_props = QueryProps()
             sub_collection_stats_api = SubCollectionStatistics(query_props)
 
+            if 'provider' not in request.args or 'project' not in request.args:
+                return {'message': 'missing provider or project. Requires both', 'details': request.args}, 500
+
             # Time range
             if 'startTime' in request.args:
                 query_props.min_datetime = TimeUtils.get_datetime_obj(request.args.get('startTime')).timestamp()

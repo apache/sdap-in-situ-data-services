@@ -12,12 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
-from parquet_flask.aws.aws_ddb import AwsDdb, AwsDdbProps
 from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.metadata_tbl_interface import MetadataTblInterface
-from parquet_flask.utils.config import Config
+LOGGER = logging.getLogger(__name__)
 
 
 class MetadataTblES(MetadataTblInterface):
@@ -74,5 +74,35 @@ class MetadataTblES(MetadataTblInterface):
         self.__es.delete_by_id(s3_url)
         return self
 
-    def query_by_date_range(self, start_time, end_time):
-        raise NotImplementedError('cannot implement range query to the primary key in DDB')
+    def query_by_date_range(self, start_time: int, end_time: int):
+        query_dsl = {
+            "size": 9999,
+            "sort": [
+                {
+                    "job_start_time": {
+                        "order": "desc"
+                    }
+                }
+            ],
+            "query": {
+                "bool": {
+                    "must": [
+                        {"range": {
+                            "job_start_time": {
+                                "lte": end_time
+                            }
+                        }},
+                        {"range": {
+                            "job_end_time": {
+                                "lte": start_time
+                            }
+                        }}
+                    ]
+                }
+            }
+        }
+        LOGGER.debug(f'query_dsl: {query_dsl}')
+        latest_ingested_files = self.__es.query(query_dsl, CDMSConstants.entry_file_records_index)
+        LOGGER.debug(f'latest_ingested_files: {latest_ingested_files}')
+        result = latest_ingested_files['hits']['hits']
+        return result

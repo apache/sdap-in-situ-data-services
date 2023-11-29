@@ -43,6 +43,41 @@ class SubCollectionStatistics:
         self.__insitu_schema = FileUtils.read_json(Config().get_value(Config.in_situ_schema))
         self.__cdms_obs_names = CdmsSchema().get_observation_names(self.__insitu_schema)
 
+    def list_collections(self):
+        query_dsl = {
+            "size": 0,
+            "query": {"match_all": {}},
+            "aggs": {
+                "projects": {
+                    "terms": {
+                        "field": "project",
+                        "size": 10000
+                    },
+                    "aggs": {
+                        "providers": {
+                            "terms": {
+                                "field": "provider",
+                                "size": 10000
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        LOGGER.debug(f'query_dsl: {json.dumps(query_dsl)}')
+        es_result = self.__es.query(query_dsl, CDMSConstants.es_index_parquet_stats)
+        LOGGER.debug(f'es_result: {json.dumps(es_result)}')
+        projects = es_result['aggregations']['projects']['buckets']
+        collection_list = []
+        for each_project in projects:
+            project_name = each_project['key']
+            providers = each_project['providers']['buckets']
+            collection_list.extend([{
+                'provider': k['key'],
+                'project': project_name
+            } for k in providers])
+        return collection_list
+
     def with_provider(self, provider: str):
         self.__provider = provider
         return self
@@ -313,7 +348,7 @@ class SubCollectionStatistics:
                                 "by_platform_id": {
                                     "terms": {
                                         "field": CDMSConstants.platform_id_col,
-                                        "size": 10000
+                                        "size": 2147483647
                                     },
                                     "aggs": {
                                         **normal_agg_stmts,
