@@ -19,6 +19,10 @@ class TestSubCollectionStatistics(TestCase):
         query_props.provider = 'RAPID_NOAHMP_3x_Garonne'
         query_props.project = 'IDEAS'
         sub_collection_stats_api = SubCollectionStatistics(query_props)
-        sub_collection_stats = sub_collection_stats_api.start()
-        print(sub_collection_stats)
+        sub_collection_stats, search_after_key = sub_collection_stats_api.start()
+        while search_after_key is not None:
+            print(search_after_key, len(sub_collection_stats['providers'][0]['projects'][0]['platforms']))
+            # print(sub_collection_stats)
+            query_props.marker_platform_code = search_after_key
+            sub_collection_stats, search_after_key = sub_collection_stats_api.start(search_after_key)
         return

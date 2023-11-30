@@ -84,7 +84,7 @@ class SubCollectionStatisticsEndpoint(Resource):
                 query_props.filter_cql = request.args.get('filter')
 
             # Get stats
-            sub_collection_stats = sub_collection_stats_api.start()
+            sub_collection_stats, search_after_key = sub_collection_stats_api.start()
         except Exception as e:
             LOGGER.exception(f'error while retrieving stats')
             return {'message': 'error while retrieving stats', 'details': str(e)}, 500

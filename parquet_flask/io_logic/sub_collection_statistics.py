@@ -42,6 +42,7 @@ class SubCollectionStatistics:
         self.__query_props = query_props
         self.__insitu_schema = FileUtils.read_json(Config().get_value(Config.in_situ_schema))
         self.__cdms_obs_names = CdmsSchema().get_observation_names(self.__insitu_schema)
+        self.__aggregation_page_size = 10000
 
     def list_collections(self):
         query_dsl = {
@@ -127,7 +128,7 @@ class SubCollectionStatistics:
         :return:
         """
         core_stats = {
-            "platform": core_stats['key'],
+            "platform": core_stats['key']['platforms'],
             "platform_short_name": core_stats['platform_short_name']['buckets'][0]['key'],
             "total": core_stats['totals']['value'],
             "lat": core_stats['max_lat']['value'],
@@ -230,7 +231,7 @@ class SubCollectionStatistics:
         } for k in self.__cdms_obs_names}
         return agg_stmts
 
-    def start(self):
+    def start(self, search_after_key=None):
         es_terms = []
 
         if self.__query_props.provider is None or self.__query_props.project is None:
@@ -328,6 +329,7 @@ class SubCollectionStatistics:
             }
         }
 
+        search_after_phrase = {"after": self.__query_props.marker_platform_code} if self.__query_props.marker_platform_code is not None else {}
         stats_dsl = {
             "size": 0,
             "query": {
@@ -337,9 +339,12 @@ class SubCollectionStatistics:
             },
             "aggs": {
                 "by_platform_id": {
-                    "terms": {
-                        "field": CDMSConstants.platform_id_col,
-                        "size": 1000
+                    "composite": {
+                        **search_after_phrase,
+                        "size": self.__aggregation_page_size,
+                        "sources": [
+                            {"platforms": {"terms": {"field": "platform_id"}}}
+                        ]
                     },
                     "aggs": {
                         **normal_agg_stmts,
@@ -350,5 +355,8 @@ class SubCollectionStatistics:
         }
         LOGGER.warning(f'es_dsl: {json.dumps(stats_dsl)}')
         es_result = self.__es.query(stats_dsl, CDMSConstants.es_index_parquet_stats)
+        platform_aggregation = self.__restructure_stats(es_result['aggregations'])
+
+        search_after_key = es_result['aggregations']['by_platform_id']['after_key'] if len(platform_aggregation['providers'][0]['projects'][0]['platforms']) >= self.__aggregation_page_size else None
         # statistics = {k: v['value'] for k, v in es_result['aggregations'].items()}
-        return self.__restructure_stats(es_result['aggregations'])
+        return platform_aggregation, search_after_key
