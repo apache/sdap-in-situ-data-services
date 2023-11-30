@@ -207,16 +207,16 @@ class SubCollectionStatistics:
         restructured_stats = {
             "providers": [
                 {
-                    "provider": m['key'],
+                    "provider": self.__query_props.provider,
                     "projects": [
                         {
-                            "project": l['key'],
+                            "project": self.__query_props.project,
                             "platforms": [
-                                self.__restructure_core_stats(k) for k in l['by_platform_id']['buckets']
+                                self.__restructure_core_stats(k) for k in es_result['by_platform_id']['buckets']
                             ]
-                        } for l in m['by_project']['buckets']
+                        }
                     ]
-                } for m in es_result['by_provider']['buckets']
+                }
             ]
         }
         LOGGER.debug(f'restructured_stats: {restructured_stats}')
@@ -232,6 +232,9 @@ class SubCollectionStatistics:
 
     def start(self):
         es_terms = []
+
+        if self.__query_props.provider is None or self.__query_props.project is None:
+            raise ValueError(f'missing provider or project in __query_props')
 
         # Provider and project
         if self.__query_props.provider is not None:
@@ -333,30 +336,14 @@ class SubCollectionStatistics:
                 }
             },
             "aggs": {
-                "by_provider": {
+                "by_platform_id": {
                     "terms": {
-                        "field": CDMSConstants.provider_col,
-                        "size": 100
+                        "field": CDMSConstants.platform_id_col,
+                        "size": 1000
                     },
                     "aggs": {
-                        "by_project": {
-                            "terms": {
-                                "field": CDMSConstants.project_col,
-                                "size": 100
-                            },
-                            "aggs": {
-                                "by_platform_id": {
-                                    "terms": {
-                                        "field": CDMSConstants.platform_id_col,
-                                        "size": 2147483647
-                                    },
-                                    "aggs": {
-                                        **normal_agg_stmts,
-                                        **self.__get_observation_agg_stmts()
-                                    }
-                                }
-                            }
-                        }
+                        **normal_agg_stmts,
+                        **self.__get_observation_agg_stmts()
                     }
                 }
             }
