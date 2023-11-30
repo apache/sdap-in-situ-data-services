@@ -90,7 +90,7 @@ class ParquetFileEsIndexer:
             self.__s3_url = s3_records.get_s3_url(i)
             if any([k in self.__s3_url for k in ignoring_phrases]):
                 LOGGER.debug(f'skipping temp file: {self.__s3_url}')
-                return
+                continue
             LOGGER.debug(f'executing: {self.__s3_url}')
             s3_event = s3_records.get_event_name(i).strip().lower()
             if s3_event.startswith('objectcreated'):
@@ -100,5 +100,5 @@ class ParquetFileEsIndexer:
                 LOGGER.debug('executing to remove index')
                 self.remove_file()
             else:
-                raise ValueError(f'invalid s3_event: {s3_event}')
+                LOGGER.error(f'invalid s3_event: {s3_event}; skipping it')
         return
