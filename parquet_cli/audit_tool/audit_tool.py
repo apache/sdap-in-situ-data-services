@@ -367,5 +367,16 @@ if __name__ == '__main__':
              'object created event'
     )
 
+    def utcfromisoformat(s):
+        return datetime.fromisoformat(s).astimezone(timezone.utc)
+
+    parser.add_argument(
+        '--from-time',
+        type=utcfromisoformat,
+        default=datetime(1970, 1, 1, tzinfo=timezone.utc),
+        dest='llt',
+        help='Check all objects newer than this time as ISO datetime string. Default: 1970-01-01'
+    )
+
     args = parser.parse_args()
-    audit(args.format, args.output)
+    audit(args.format, args.output, state=dict(lastListTime=args.llt))
