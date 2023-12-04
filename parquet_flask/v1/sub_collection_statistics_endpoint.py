@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import logging
+from copy import deepcopy
 
 from flask_restx import Resource, Namespace, fields
 from flask import request
@@ -89,6 +90,18 @@ class SubCollectionStatisticsEndpoint(Resource):
                 query_props.marker_platform_code = request.args.get('markerPlatform')
             # Get stats
             sub_collection_stats = sub_collection_stats_api.start()
+            new_args = deepcopy(dict(request.args))
+            if 'markerPlatform' in new_args:
+                new_args.pop('markerPlatform')
+            new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
+            sub_collection_stats['first'] = f'{request.base_url}?{new_args}'
+            if 'markerPlatform' in sub_collection_stats:
+                new_args = deepcopy(dict(request.args))
+                new_args['markerPlatform'] = sub_collection_stats['markerPlatform']
+                sub_collection_stats.pop('markerPlatform')
+                new_args = '&'.join([f'{k}={v}' for k, v in new_args.items()])
+                sub_collection_stats['next'] = f'{request.base_url}?{new_args}'
+
         except Exception as e:
             LOGGER.exception(f'error while retrieving stats')
             return {'message': 'error while retrieving stats', 'details': str(e)}, 500
