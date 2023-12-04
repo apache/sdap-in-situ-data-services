@@ -42,7 +42,6 @@ class SubCollectionStatistics:
         self.__query_props = query_props
         self.__insitu_schema = FileUtils.read_json(Config().get_value(Config.in_situ_schema))
         self.__cdms_obs_names = CdmsSchema().get_observation_names(self.__insitu_schema)
-        self.__aggregation_page_size = self.__query_props.size
 
     def list_collections(self):
         query_dsl = {
@@ -341,7 +340,7 @@ class SubCollectionStatistics:
                 "by_platform_id": {
                     "composite": {
                         **search_after_phrase,
-                        "size": self.__aggregation_page_size,
+                        "size": self.__query_props.size,
                         "sources": [
                             {"platforms": {"terms": {"field": "platform_id"}}}
                         ]
@@ -356,6 +355,6 @@ class SubCollectionStatistics:
         LOGGER.warning(f'es_dsl: {json.dumps(stats_dsl)}')
         es_result = self.__es.query(stats_dsl, CDMSConstants.es_index_parquet_stats)
         platform_aggregation = self.__restructure_stats(es_result['aggregations'])
-        if len(platform_aggregation['providers'][0]['projects'][0]['platforms']) >= self.__aggregation_page_size:
+        if len(platform_aggregation['providers'][0]['projects'][0]['platforms']) >= self.__query_props.size:
             platform_aggregation['page_marker'] = es_result['aggregations']['by_platform_id']['after_key']
         return platform_aggregation
