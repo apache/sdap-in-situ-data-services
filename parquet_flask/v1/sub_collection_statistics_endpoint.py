@@ -36,6 +36,7 @@ query_model = api.model('sub_collection_statistics', {
     'platform': fields.String(required=True, example='30,3B'),
     'provider': fields.Integer(required=True, example=0),
     'project': fields.Integer(required=True, example=0),
+    'size': fields.Integer(required=False, example=10000),
 })
 
 
@@ -50,7 +51,9 @@ class SubCollectionStatisticsEndpoint(Resource):
         try:
             query_props = QueryProps()
             sub_collection_stats_api = SubCollectionStatistics(query_props)
-
+            if 'size' not in request.args:
+                request.args['size'] = '10000'
+            query_props.size = int(request.args.get('size'))
             if 'provider' not in request.args or 'project' not in request.args:
                 return {'message': 'missing provider or project. Requires both', 'details': request.args}, 500
 
@@ -84,7 +87,7 @@ class SubCollectionStatisticsEndpoint(Resource):
                 query_props.filter_cql = request.args.get('filter')
 
             # Get stats
-            sub_collection_stats, search_after_key = sub_collection_stats_api.start()
+            sub_collection_stats = sub_collection_stats_api.start()
         except Exception as e:
             LOGGER.exception(f'error while retrieving stats')
             return {'message': 'error while retrieving stats', 'details': str(e)}, 500
