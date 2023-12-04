@@ -51,9 +51,7 @@ class SubCollectionStatisticsEndpoint(Resource):
         try:
             query_props = QueryProps()
             sub_collection_stats_api = SubCollectionStatistics(query_props)
-            if 'size' not in request.args:
-                request.args['size'] = '10000'
-            query_props.size = int(request.args.get('size'))
+            query_props.size = 10**4 if 'size' not in request.args else int(request.args.get('size'))
             if 'provider' not in request.args or 'project' not in request.args:
                 return {'message': 'missing provider or project. Requires both', 'details': request.args}, 500
 
