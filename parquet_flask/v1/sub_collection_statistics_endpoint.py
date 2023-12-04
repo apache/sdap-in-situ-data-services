@@ -31,6 +31,7 @@ query_model = api.model('sub_collection_statistics', {
     'maxDepth': fields.Float(required=True, example=-65.34),
     'startTime': fields.String(required=True, example='2020-01-01T00:00:00Z'),
     'endTime': fields.String(required=True, example='2020-01-31T00:00:00Z'),
+    'markerPlatform': fields.String(required=False, example='30', description='platform ID of the last item of the current page'),
     'bbox': fields.String(required=True, example='-45, 175, -30, 180', description='west, south, east, north || min_lon, min_lat, max_lon, max_lat'),
 
     'platform': fields.String(required=True, example='30,3B'),
@@ -84,6 +85,8 @@ class SubCollectionStatisticsEndpoint(Resource):
             if 'filter' in request.args:
                 query_props.filter_cql = request.args.get('filter')
 
+            if 'markerPlatform' in request.args:
+                query_props.marker_platform_code = request.args.get('markerPlatform')
             # Get stats
             sub_collection_stats = sub_collection_stats_api.start()
         except Exception as e:

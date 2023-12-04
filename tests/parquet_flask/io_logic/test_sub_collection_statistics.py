@@ -21,9 +21,9 @@ class TestSubCollectionStatistics(TestCase):
         query_props.size = 10000
         sub_collection_stats_api = SubCollectionStatistics(query_props)
         sub_collection_stats = sub_collection_stats_api.start()
-        while 'page_marker' in sub_collection_stats:
-            print(sub_collection_stats['page_marker'], len(sub_collection_stats['providers'][0]['projects'][0]['platforms']))
+        while 'markerPlatform' in sub_collection_stats:
+            print(sub_collection_stats['markerPlatform'], len(sub_collection_stats['providers'][0]['projects'][0]['platforms']))
             # print(sub_collection_stats)
-            query_props.marker_platform_code = sub_collection_stats['page_marker']
+            query_props.marker_platform_code = sub_collection_stats['markerPlatform']
             sub_collection_stats = sub_collection_stats_api.start()
         return

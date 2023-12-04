@@ -328,7 +328,7 @@ class SubCollectionStatistics:
             }
         }
 
-        search_after_phrase = {"after": self.__query_props.marker_platform_code} if self.__query_props.marker_platform_code is not None else {}
+        search_after_phrase = {"after": {'platforms': self.__query_props.marker_platform_code}} if self.__query_props.marker_platform_code is not None else {}
         stats_dsl = {
             "size": 0,
             "query": {
@@ -356,5 +356,5 @@ class SubCollectionStatistics:
         es_result = self.__es.query(stats_dsl, CDMSConstants.es_index_parquet_stats)
         platform_aggregation = self.__restructure_stats(es_result['aggregations'])
         if len(platform_aggregation['providers'][0]['projects'][0]['platforms']) >= self.__query_props.size:
-            platform_aggregation['page_marker'] = es_result['aggregations']['by_platform_id']['after_key']
+            platform_aggregation['markerPlatform'] = es_result['aggregations']['by_platform_id']['after_key']['platforms']
         return platform_aggregation
