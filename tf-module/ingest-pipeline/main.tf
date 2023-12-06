@@ -9,7 +9,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
-  lambda_file_name = "${path.module}/build/ideas_api_lambda_function.zip"
+  lambda_file_name = "${path.module}/build/cdms_lambda_functions_deployment.zip"
   security_group_ids_set = var.security_group_ids != null
 }
 
