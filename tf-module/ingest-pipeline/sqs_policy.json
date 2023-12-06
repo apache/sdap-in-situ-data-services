@@ -1,0 +1,35 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "sqs:Change*",
+        "sqs:DeleteMessage*",
+        "sqs:Get*",
+        "sqs:List*",
+        "sqs:ReceiveMessage*",
+        "sqs:SendMessage*"
+      ],
+      "Principal": {
+        "Service": "sns.amazonaws.com"
+      },
+      "Resource": "arn:aws:sqs:${region}:${accountId}:${sqsName}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:SendMessage",
+        "sqs:GetQueueAttributes"
+      ],
+      "Resource": "arn:aws:sqs:${region}:${accountId}:${sqsName}",
+      "Condition": {
+        "ArnEquals": {
+          "aws:SourceArn": "${roleArn}"
+        }
+      }
+    }
+  ]
+}

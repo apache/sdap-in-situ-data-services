@@ -135,6 +135,22 @@ class S3ToSqs(S3EventValidatorAbstract):
         'required': ['Records']
     }
 
+    SNS_MSG_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "Type": {"type": "string"},
+            "MessageId": {"type": "string"},
+            "TopicArn": {"type": "string"},
+            "Subject": {"type": "string"},
+            "Timestamp": {"type": "string"},
+            "SignatureVersion": {"type": "string"},
+            "Signature": {"type": "string"},
+            "SigningCertURL": {"type": "string"},
+            "UnsubscribeURL": {"type": "string"},
+            "Message": {"type": "string"},
+        },
+        "required": ["Message"]
+    }
     def __init__(self, event) -> None:
         super().__init__(event)
         self.__event = event
@@ -178,3 +194,27 @@ class S3ToSqs(S3EventValidatorAbstract):
         if index >= len(self.__s3_record):
             raise ValueError(f'index: {index} is larger than s3_record array size: {len(self.__s3_record)}')
         return self.__s3_record[index]['Records'][0]['eventName']
+
+    def from_sqs(self):
+        is_valid, validation_err = GeneralUtils.is_json_valid(self.__event, self.OUTER_SCHEMA)
+        if is_valid is False:
+            raise ValueError(f'sqs_msg did not pass SQS_MSG_SCHEMA: {self.__event} vs {self.OUTER_SCHEMA}. errors: {validation_err}')
+
+        # TODO validate sqs
+        sns_msgs = []
+        for each_msg in self.__event['Records']:
+            sns_msg = json.loads(each_msg['body'])
+            is_valid, validation_err = GeneralUtils.is_json_valid(sns_msg, self.SNS_MSG_SCHEMA)
+            if is_valid is False:
+                LOGGER.error(f'sns_msg did not pass SNS_MSG_SCHEMA: {validation_err}. msg: {sns_msg}')
+                continue
+            sns_msgs.append(json.loads(sns_msg['Message']))
+        return sns_msgs
+
+    def get_sns_msg(self, index: int):
+        is_valid, validation_err = GeneralUtils.is_json_valid(self.__event, self.OUTER_SCHEMA)
+        if is_valid is False:
+            raise ValueError(f'invalid OUTER_SCHEMA: {self.__event} vs {self.OUTER_SCHEMA}. errors: {validation_err}')
+        sns_msg = self.__event['Records'][index]['body']
+        # TODO confirm that body is already SNS msg.
+        return sns_msg
