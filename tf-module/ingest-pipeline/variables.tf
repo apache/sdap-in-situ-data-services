@@ -47,3 +47,11 @@ variable "ideas_es_cluster_instance_type" {
 variable "lambda_processing_role_arn" {
   type = string
 }
+
+variable "staging_location_prefix" {
+  type = string
+}
+
+variable "ideas_insitu_staging_bucket_name" {
+  type = string
+}

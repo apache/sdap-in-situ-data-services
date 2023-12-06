@@ -18,3 +18,8 @@ one_offs
 
 parquet.spark.helm.values.yaml
 parquet.spark.helm.values.local*
+
+terraform.tf
+terraform.tfvars
+tf-module/ingest-pipeline/.terraform
+.terraform.lock.hcl
