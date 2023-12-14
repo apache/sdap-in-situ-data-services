@@ -17,8 +17,7 @@ import logging
 from math import isnan
 from os import environ
 import json
-
-import pandas
+from pandas import DataFrame as PandaDataFrame
 from pyspark.sql.dataframe import DataFrame
 
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
@@ -116,7 +115,9 @@ class IngestNewJsonFile:
         df = spark_session.createDataFrame(data_list)
         return IngestNewJsonFile.prepare_spark_df(df, job_id, provider, project)
 
-    def ingest_df(self, panda_df: DataFrame, job_id: str, provider: str, project: str):
+    def ingest_df(self, panda_df: PandaDataFrame, job_id: str, provider: str, project: str):
+        # from parquet_flask.parquet_stat_extractor.local_spark_session import LocalSparkSession
+        # spark_session = LocalSparkSession().get_spark_session()
         spark_session = self.__sss.retrieve_spark_session(self.__app_name, self.__master_spark)
         LOGGER.debug(f'creating data frame with length {panda_df.shape}')
         spark_df = spark_session.createDataFrame(panda_df)

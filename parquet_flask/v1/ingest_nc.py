@@ -59,3 +59,12 @@ class NcInsituProcessor:
                 LOGGER.debug(f'ingesting dataframe')
                 IngestNewJsonFile(self.__is_overwriting).ingest_df(df, self.__job_id, self.__provider, self.__project)
         return
+os.environ['master_spark_url'] = ''
+os.environ['spark_app_name'] = ''
+os.environ['parquet_file_name'] = ''
+os.environ['in_situ_schema'] = ''
+os.environ['authentication_type'] = ''
+os.environ['authentication_key'] = ''
+os.environ['parquet_metadata_tbl'] = ''
+os.environ['es_url'] = ''
+NcInsituProcessor().start()
