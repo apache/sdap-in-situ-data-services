@@ -56,7 +56,7 @@ def get_geospatial_interval(project: str) -> dict:
 
 
 class IngestNewJsonFile:
-    def __init__(self, is_overwriting=False):
+    def __init__(self, is_overwriting=False, compression='GZIP'):
         self.__sss = RetrieveSparkSession()
         config = Config()
         self.__app_name = config.get_spark_app_name()
@@ -64,6 +64,7 @@ class IngestNewJsonFile:
         self.__mode = 'overwrite' if is_overwriting else 'append'
         self.__parquet_name = config.get_value('parquet_file_name')
         self.__sanitize_record = True
+        self.__compression = compression
 
     @property
     def sanitize_record(self):
@@ -79,26 +80,24 @@ class IngestNewJsonFile:
         return
 
     @staticmethod
-    def create_df(spark_session, data_list, job_id, provider, project):
-        LOGGER.debug(f'creating data frame with length {len(data_list)}')
-        df = spark_session.createDataFrame(data_list)
+    def prepare_spark_df(spark_df, job_id, provider, project):
         LOGGER.debug(f'adding columns')
         try:
-            df: DataFrame = df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col))\
-                .withColumn(CDMSConstants.year_col, year(CDMSConstants.time_col))\
-                .withColumn(CDMSConstants.month_col, month(CDMSConstants.time_col))\
-                .withColumn(CDMSConstants.job_id_col, lit(job_id))\
-                .withColumn(CDMSConstants.provider_col, lit(provider))\
-                .withColumn(CDMSConstants.project_col, lit(project))\
-                .withColumn(CDMSConstants.platform_id_col, df[CDMSConstants.platform_col][CDMSConstants.id_col])\
+            df: DataFrame = spark_df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col)) \
+                .withColumn(CDMSConstants.year_col, year(CDMSConstants.time_col)) \
+                .withColumn(CDMSConstants.month_col, month(CDMSConstants.time_col)) \
+                .withColumn(CDMSConstants.job_id_col, lit(job_id)) \
+                .withColumn(CDMSConstants.provider_col, lit(provider)) \
+                .withColumn(CDMSConstants.project_col, lit(project)) \
+                .withColumn(CDMSConstants.platform_id_col, spark_df[CDMSConstants.platform_col][CDMSConstants.id_col]) \
                 .repartition(1)  # combine to 1 data frame to increase size
             LOGGER.debug(f'create writer')
             all_partitions = [
-                CDMSConstants.provider_col, 
+                CDMSConstants.provider_col,
                 CDMSConstants.project_col,
                 CDMSConstants.platform_id_col,
-                CDMSConstants.year_col, 
-                CDMSConstants.month_col, 
+                CDMSConstants.year_col,
+                CDMSConstants.month_col,
                 CDMSConstants.job_id_col]
             df = df.repartition(1)
             df_writer = df.write
@@ -106,9 +105,25 @@ class IngestNewJsonFile:
             df_writer = df_writer.partitionBy(all_partitions)
             LOGGER.debug(f'created partitions')
         except BaseException as e:
-            LOGGER.exception(f'unexpected exception. latitude: {df[CDMSConstants.lat_col]}. longitude: {df[CDMSConstants.lon_col]}')
+            LOGGER.exception(
+                f'unexpected exception. latitude: {df[CDMSConstants.lat_col]}. longitude: {df[CDMSConstants.lon_col]}')
             raise e
         return df_writer
+
+    @staticmethod
+    def create_df(spark_session, data_list, job_id, provider, project):
+        LOGGER.debug(f'creating data frame with length {len(data_list)}')
+        df = spark_session.createDataFrame(data_list)
+        return IngestNewJsonFile.prepare_spark_df(df, job_id, provider, project)
+
+    def ingest_df(self, panda_df: DataFrame, job_id: str, provider: str, project: str):
+        spark_session = self.__sss.retrieve_spark_session(self.__app_name, self.__master_spark)
+        LOGGER.debug(f'creating data frame with length {panda_df.shape}')
+        spark_df = spark_session.createDataFrame(panda_df)
+        df_writer = self.prepare_spark_df(spark_df, job_id, provider, project)
+        df_writer.mode(self.__mode).parquet(self.__parquet_name, compression=self.__compression)  # snappy GZIP
+        LOGGER.debug(f'finished writing parquet')
+        return panda_df.shape[0]
 
     def ingest(self, abs_file_path, job_id):
         """
@@ -135,6 +150,6 @@ class IngestNewJsonFile:
             job_id,
             input_json[CDMSConstants.provider_col],
             input_json[CDMSConstants.project_col])
-        df_writer.mode(self.__mode).parquet(self.__parquet_name, compression='GZIP')  # snappy GZIP
+        df_writer.mode(self.__mode).parquet(self.__parquet_name, compression=self.__compression)  # snappy GZIP
         LOGGER.debug(f'finished writing parquet')
         return len(input_json[CDMSConstants.observations_key])
