@@ -20,6 +20,8 @@ from flask_restx import Api
 
 from .insitu_query_swagger import api as apidocs
 from .cdms_schema import api as cdms_schema_api
+from .ingest_nc_s3 import api as ingest_nc_s3
+from .replace_nc_s3 import api as replace_nc_s3
 from .ingest_json_s3 import api as ingest_parquet_json_s3
 from .replace_json_s3 import api as replace_parquet_json_s3
 from .query_data import api as query_data
@@ -51,6 +53,8 @@ api = Api(blueprint,
 api.add_namespace(query_es_data)
 api.add_namespace(es_ingest_json_s3)
 api.add_namespace(cdms_schema_api)
+api.add_namespace(ingest_nc_s3)
+api.add_namespace(replace_nc_s3)
 api.add_namespace(ingest_parquet_json_s3)
 api.add_namespace(replace_parquet_json_s3)
 api.add_namespace(query_data)
