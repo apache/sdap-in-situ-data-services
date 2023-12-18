@@ -41,7 +41,7 @@ pipeline {
                 }
             }
         }
-        stage('Build build_deployment') {
+        stage('Build lambda_zip') {
             options { retry(12) }
             when { expression { return PIPELINE_CONTROL.ci_skip == false } }
             steps {
