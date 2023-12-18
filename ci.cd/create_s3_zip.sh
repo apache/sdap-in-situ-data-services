@@ -17,10 +17,11 @@
 
 apt-get update -y && apt-get install zip -y
 
-ZIP_NAME='cdms_lambda_functions'
+#ZIP_NAME='cdms_lambda_functions'
 project_root_dir=${PWD}
-software_version=`python3 ${project_root_dir}/setup.py --version`
-zip_file="${project_root_dir}/${ZIP_NAME}__${software_version}.zip" ; # save the result file in current working directory
+#software_version=`python3 ${project_root_dir}/setup.py --version`
+#zip_file="${project_root_dir}/${ZIP_NAME}__${software_version}.zip" ; # save the result file in current working directory
+zip_file="${project_root_dir}/$ZIP_NAME" ; # save the result file in current working directory
 
 tmp_proj='/tmp/parquet_flask'
 
