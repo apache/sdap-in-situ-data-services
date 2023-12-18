@@ -53,7 +53,7 @@ _QUERY_SCHEMA = {
         'platform_id_key': {'type': 'string'},
         'provider': {'type': 'string'},
         'project': {'type': 'string'},
-        'chunk_size': {'type': 'int'},
+        'chunk_size': {'type': 'integer'},
     },
     'required': ['s3_url', 'provider', 'project', 'platform_id_key', 'time_key', 'lat_key', 'lon_key', 'observation_key'],
 }
