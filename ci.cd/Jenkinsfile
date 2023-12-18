@@ -18,7 +18,8 @@ pipeline {
         BUILD_TAG = sh(script: "echo ${env.BUILD_TAG_RAW} | tr -dc \"[A-Za-z0-9\\-\\_\\.]\"", returnStdout: true).trim() // to strip out special characters in branch name
         HOME="." /* to resolve EACCES: permission denied, mkdir '/.npm'*/
         GH4JPL=credentials("wphyo-github")
-        CAE_ARTI_TOKEN=credentials("wphyo-cae-artifactory-token-as-text")
+        CAE_ARTI_TOKEN=credentials("wphyo-cae-artifactory")
+//         CAE_ARTI_TOKEN=credentials("wphyo-cae-artifactory-token-as-text")
         GH_TOKEN="${GH4JPL_PSW}"
         GH_URL="https://github.jpl.nasa.gov/api/v3"
 //         CAE_ARTI_TOKEN=credentials("wphyo-cae-artifactory")
@@ -39,6 +40,17 @@ pipeline {
                 }
             }
         }
+        stage('Build build_deployment') {
+            options { retry(12) }
+            when { expression { return PIPELINE_CONTROL.ci_skip == false } }
+            steps {
+                withDockerRegistry([url: "${ARTIFACTORY_URL}", credentialsId: "${ARTIFACTORY_CREDENTIALS}"]) {
+                    sh("NAME=${BUILD_LIB_NAME} VERSION=${BUILD_TAG} make -f ci.cd/Makefile build_lambda")
+                    sh("curl -H X-JFrog-Art-Api:${CAE_ARTI_TOKEN_PSW} -T ${BUILD_LIB_NAME}__${BUILD_TAG}.zip ${ARTIFACTORY_URL}/artifactory/general/gov/nasa/jpl/sdap/ideas/${BUILD_LIB_NAME}__${BUILD_TAG}.zip")
+                }
+                sleep(time: (1000 * 4), unit: "MILLISECONDS")
+            }
+        }
         stage('Build and push lambda docker') {
             when { expression { return PIPELINE_CONTROL.ci_skip == false } }
             steps {
@@ -53,17 +65,6 @@ pipeline {
                 withDockerRegistry([url: "https://index.docker.io/v1/", credentialsId: "waiphyojpl-dockerhub"]) {
                     sh("VERSION=${BUILD_TAG} make -f ci.cd/Makefile build_push")
                 }
-            }
-        }
-        stage('Build build_deployment') {
-            options { retry(12) }
-            when { expression { return PIPELINE_CONTROL.ci_skip == false } }
-            steps {
-                withDockerRegistry([url: "${ARTIFACTORY_URL}", credentialsId: "${ARTIFACTORY_CREDENTIALS}"]) {
-                    sh("NAME=${BUILD_LIB_NAME} VERSION=${BUILD_TAG} make -f ci.cd/Makefile build_lambda")
-                    sh("curl -H X-JFrog-Art-Api:${CAE_ARTI_TOKEN_PSW} -T ${BUILD_LIB_NAME}__${BUILD_TAG}.zip ${ARTIFACTORY_URL}/artifactory/general/gov/nasa/jpl/sdap/ideas/${BUILD_LIB_NAME}__${BUILD_TAG}.zip")
-                }
-                sleep(time: (1000 * 4), unit: "MILLISECONDS")
             }
         }
     }
