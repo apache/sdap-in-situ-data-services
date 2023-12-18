@@ -18,6 +18,7 @@ pipeline {
         BUILD_TAG = sh(script: "echo ${env.BUILD_TAG_RAW} | tr -dc \"[A-Za-z0-9\\-\\_\\.]\"", returnStdout: true).trim() // to strip out special characters in branch name
         HOME="." /* to resolve EACCES: permission denied, mkdir '/.npm'*/
         GH4JPL=credentials("wphyo-github")
+        ARTIFACTORY_CREDENTIALS = "wphyo-cae-artifactory"
         CAE_ARTI_TOKEN=credentials("wphyo-cae-artifactory")
 //         CAE_ARTI_TOKEN=credentials("wphyo-cae-artifactory-token-as-text")
         GH_TOKEN="${GH4JPL_PSW}"
