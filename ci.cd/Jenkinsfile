@@ -47,7 +47,7 @@ pipeline {
             steps {
                 withDockerRegistry([url: "${ARTIFACTORY_URL}", credentialsId: "${ARTIFACTORY_CREDENTIALS}"]) {
                     sh("NAME=${BUILD_LIB_NAME} VERSION=${BUILD_TAG} make -f ci.cd/Makefile build_lambda")
-                    sh("curl -H X-JFrog-Art-Api:${CAE_ARTI_TOKEN_PSW} -T ${BUILD_LIB_NAME}__${BUILD_TAG}.zip ${ARTIFACTORY_URL}/artifactory/general/gov/nasa/jpl/sdap/ideas/${BUILD_LIB_NAME}__${BUILD_TAG}.zip")
+                    sh("curl -H X-JFrog-Art-Api:${CAE_ARTI_TOKEN_PSW} -T ${BUILD_LIB_NAME}__${BUILD_TAG}.zip ${ARTIFACTORY_URL}/artifactory/general-develop/gov/nasa/jpl/sdap/ideas/${BUILD_LIB_NAME}__${BUILD_TAG}.zip")
                 }
                 sleep(time: (1000 * 4), unit: "MILLISECONDS")
             }
