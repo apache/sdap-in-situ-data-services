@@ -17,6 +17,14 @@ FROM bitnami/spark:3.2.0-debian-10-r44
 
 USER root
 RUN apt-get update -y && apt-get install vim -y
+RUN curl \
+    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o Miniconda3-latest-Linux-x86_64.sh \
+    && mkdir /root/.conda \
+    && bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda \
+    && rm -f Miniconda3-latest-Linux-x86_64.sh
+ENV PATH /opt/conda/bin:$PATH
+RUN /opt/conda/bin/conda --version
+RUN /opt/conda/bin/conda install -c conda-forge netcdf4 -y
 RUN mkdir /usr/app
 WORKDIR /usr/app
 COPY requirements.txt /usr/app
