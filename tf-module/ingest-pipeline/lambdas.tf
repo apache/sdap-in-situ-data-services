@@ -11,8 +11,8 @@ resource "aws_lambda_function" "ideas_insitu_staging" {
     variables = {
       LOG_LEVEL = var.log_level
       aws_region = var.aws_region
-      ES_URL = data.aws_elasticsearch_domain.ideas-es.endpoint
-      ES_PORT = 443
+      es_url = data.aws_elasticsearch_domain.ideas-es.endpoint
+      es_port = 443
     }
   }
 
@@ -36,8 +36,8 @@ resource "aws_lambda_function" "ideas_insitu_ingestion" {
     variables = {
       LOG_LEVEL = var.log_level
       aws_region = var.aws_region
-      ES_URL = data.aws_elasticsearch_domain.ideas-es.endpoint
-      ES_PORT = 443
+      es_url = data.aws_elasticsearch_domain.ideas-es.endpoint
+      es_port = 443
     }
   }
 

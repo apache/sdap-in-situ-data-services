@@ -26,11 +26,11 @@ LOGGER = LambdaLoggerGenerator.get_logger(__name__, log_level=LambdaLoggerGenera
 
 class S3ToESStager:
     def __init__(self):
+        if any([k not in os.environ for k in [CdmsLambdaConstants.es_url]]):
+            raise ValueError(f'invalid env. must have {[CdmsLambdaConstants.es_url]}')
         self.__es_url = os.environ.get(CdmsLambdaConstants.es_url, None)
         self.__es_index = os.environ.get(CdmsLambdaConstants.es_index, CDMSConstants.staging_file_records_index)
         self.__es_port = int(os.environ.get(CdmsLambdaConstants.es_port, '443'))
-        if any([k is None for k in [self.__es_url]]):
-            raise ValueError(f'invalid env. must have {[CdmsLambdaConstants.es_url, CdmsLambdaConstants.es_index]}')
         self.__es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_index, base_url=self.__es_url, port=self.__es_port)
 
     def start(self, event):

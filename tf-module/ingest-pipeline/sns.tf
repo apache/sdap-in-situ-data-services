@@ -5,7 +5,7 @@ resource "aws_sns_topic" "ideas_insitu_s3_pipeline" {  // https://registry.terra
     region: var.aws_region,
     roleArn: var.lambda_processing_role_arn,
     accountId: local.account_id,
-    sqsName: "${var.prefix}-ideas_insitu_s3_pipeline",
+    snsName: "${var.prefix}-ideas_insitu_s3_pipeline",
   })
 }
 
@@ -16,7 +16,7 @@ resource "aws_sns_topic" "ideas_insitu_ingestion_completion" {  // https://regis
     region: var.aws_region,
     roleArn: var.lambda_processing_role_arn,
     accountId: local.account_id,
-    sqsName: "${var.prefix}-ideas_insitu_ingestion_completion",
+    snsName: "${var.prefix}-ideas_insitu_ingestion_completion",
   })
 }
 

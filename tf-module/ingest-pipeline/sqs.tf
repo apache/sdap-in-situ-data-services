@@ -9,7 +9,7 @@ resource "aws_sqs_queue" "ideas_insitu_s3_pipeline" {  // https://registry.terra
     region: var.aws_region,
     roleArn: var.lambda_processing_role_arn,
     accountId: local.account_id,
-    sqsName: "${var.prefix}-ideas_jobs_lis_queue",
+    sqsName: "${var.prefix}-ideas_insitu_s3_pipeline",
   })
 //  redrive_policy = jsonencode({
 //    deadLetterTargetArn = aws_sqs_queue.terraform_queue_deadletter.arn
@@ -31,7 +31,7 @@ resource "aws_sqs_queue" "ideas_insitu_ingestion_completion" {  // https://regis
     region: var.aws_region,
     roleArn: var.lambda_processing_role_arn,
     accountId: local.account_id,
-    sqsName: "${var.prefix}-ideas_jobs_lis_queue",
+    sqsName: "${var.prefix}-ideas_insitu_ingestion_completion",
   })
 //  redrive_policy = jsonencode({
 //    deadLetterTargetArn = aws_sqs_queue.terraform_queue_deadletter.arn
