@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "s3_url": {"type": "keyword"},
+      "event_time": {"type": "long"},
+      "ingestion_status": {"type": "keyword"}
+    }
+  }
+}

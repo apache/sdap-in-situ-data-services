@@ -29,11 +29,12 @@ class S3ToESStager:
         self.__es_url = os.environ.get(CdmsLambdaConstants.es_url, None)
         self.__es_index = os.environ.get(CdmsLambdaConstants.es_index, CDMSConstants.staging_file_records_index)
         self.__es_port = int(os.environ.get(CdmsLambdaConstants.es_port, '443'))
-        if any([k is None for k in [self.__es_url, self.__es_index]]):
+        if any([k is None for k in [self.__es_url]]):
             raise ValueError(f'invalid env. must have {[CdmsLambdaConstants.es_url, CdmsLambdaConstants.es_index]}')
         self.__es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_index, base_url=self.__es_url, port=self.__es_port)
 
     def start(self, event):
+        LOGGER.debug(f'event: {event}')
         s3_url = S3ToSqs(event).get_s3_url(0)
         inserting_doc = {
             'event_time': TimeUtils.get_current_time_unix(),
