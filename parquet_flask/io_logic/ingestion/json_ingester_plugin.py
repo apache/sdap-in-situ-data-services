@@ -47,5 +47,9 @@ class JsonIngesterPlugin(AwsFileIngesterPluginAbstract):
             FileUtils.del_file(self._saved_file_name)
             raise e
         if self._sha512_result is True:
-            return {'message': 'ingested', 'job_id': self._props.uuid}, 201
-        return {'message': 'ingested, different sha512', 'cause': self._sha512_cause, 'job_id': self._props.uuid}, 203
+            self._props.result_status_code = 201
+            self._props.result_json = {'message': 'ingested', 'job_id': self._props.uuid}
+            return self
+        self._props.result_status_code = 203
+        self._props.result_json = {'message': 'ingested, different sha512', 'cause': self._sha512_cause, 'job_id': self._props.uuid}
+        return self

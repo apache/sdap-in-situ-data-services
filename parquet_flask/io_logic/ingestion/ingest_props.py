@@ -23,6 +23,35 @@ class IngestProps:
         self.__pub_sub_topic = None
         self.__generated_record = None
 
+        self.__result_json = {}
+        self.__result_status_code = 500
+
+    @property
+    def result_json(self):
+        return self.__result_json
+
+    @result_json.setter
+    def result_json(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__result_json = val
+        return
+
+    @property
+    def result_status_code(self):
+        return self.__result_status_code
+
+    @result_status_code.setter
+    def result_status_code(self, val):
+        """
+        :param val:
+        :return: None
+        """
+        self.__result_status_code = val
+        return
+
     @property
     def generated_record(self):
         return self.__generated_record

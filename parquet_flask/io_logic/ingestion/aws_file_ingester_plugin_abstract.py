@@ -100,7 +100,8 @@ class AwsFileIngesterPluginAbstract(IngestPluginAbstract):
                 bg_process = Process(target=self._execute_ingest_data, args=())
                 bg_process.daemon = True
                 bg_process.start()
-                return {'message': 'ingesting. Not waiting.', 'job_id': self._props.uuid}, 204  # TODO
+                self._props.result_status_code = 204
+                self._props.result_json = {'message': 'ingesting. Not waiting.', 'job_id': self._props.uuid}
         except Exception as e:
             LOGGER.exception(f'deleting error file')
             FileUtils.del_file(self._saved_file_name)
