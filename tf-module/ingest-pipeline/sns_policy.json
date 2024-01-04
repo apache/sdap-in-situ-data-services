@@ -2,6 +2,20 @@
   "Version": "2008-10-17",
   "Statement": [
     {
+      "Sid": "Example SNS topic policy",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "s3.amazonaws.com"
+      },
+      "Action": "SNS:Publish",
+      "Resource": "arn:aws:sns:${region}:${accountId}:${snsName}",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceAccount": "${accountId}"
+        }
+      }
+    },
+    {
       "Effect": "Allow",
       "Principal": {
         "AWS": "*"
