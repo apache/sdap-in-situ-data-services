@@ -37,6 +37,7 @@ class Config(metaclass=Singleton):
     es_url = 'es_url'
     es_index = 'es_index'
     es_port = 'es_port'
+    pub_sub_topic = 'pub_sub_topic'
 
     def __init__(self, validate_env: bool = True):
         self.__keys = [

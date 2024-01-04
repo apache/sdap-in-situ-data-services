@@ -18,6 +18,9 @@ import logging
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
+from parquet_flask.io_logic.ingestion.ingest_props import IngestProps
+from parquet_flask.io_logic.ingestion.ingester_core import IngesterCore
+from parquet_flask.utils.config import Config
 from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.v1.authenticator_decorator import authenticator_decorator
 from parquet_flask.v1.ingest_aws_json import IngestAwsJsonProps
@@ -78,7 +81,13 @@ class IngestParquet(Resource):
         is_valid, json_error = GeneralUtils.is_json_valid(payload, _QUERY_SCHEMA)
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
-        props = IngestAwsJsonProps()
+        # props = IngestAwsJsonProps()
+        config = Config()
+        props = IngestProps()
+        props.es_url = config.get_value(Config.es_url)
+        props.es_port = int(config.get_value(Config.es_port, '443'))
+        props.pub_sub_topic = config.get_value(Config.pub_sub_topic, None)
+
         props.observation_key = payload['observation_key']
         props.lat_key = payload['lat_key']
         props.lon_key = payload['lon_key']
@@ -92,4 +101,11 @@ class IngestParquet(Resource):
         props.is_replacing = True
         props.is_sanitizing = payload['sanitize_record'] if 'sanitize_record' in payload else True
         props.wait_till_complete = payload['wait_till_finish'] if 'wait_till_finish' in payload else True
-        return IngestAwsNc(props).ingest()
+
+        try:
+            IngesterCore(IngesterCore.TYPE_NC, props).start()
+            LOGGER.debug(f'ingestion finished with: {props.result_json, props.result_status_code}')
+            return props.result_json, props.result_status_code
+        except Exception as e:
+            return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500
+        # return IngestAwsNc(props).ingest()

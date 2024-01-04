@@ -13,19 +13,17 @@ class IngesterCore:
         self.__props = props
         self.__ingesting_type = ingesting_type
         self.__plug_ins = [
-            self.__get_ingester_plugin(),
             UpdateMetaTablePlugin(self.__props),
             PublishResultPlugin(self.__props),
         ]
 
     def __get_ingester_plugin(self):
         if self.__ingesting_type == self.TYPE_JSON:
-            return JsonIngesterPlugin(self.__props)
+            return JsonIngesterPlugin(self.__props, self.__plug_ins)
         if self.__ingesting_type == self.TYPE_NC:
-            return NcIngesterPlugin(self.__props)
+            return NcIngesterPlugin(self.__props, self.__plug_ins)
         raise ValueError(f'unknown ingesting_type: {self.__ingesting_type}')
 
     def start(self):
-        for each_plugin in self.__plug_ins:
-            each_plugin.ingest()
+        self.__get_ingester_plugin().ingest()
         return

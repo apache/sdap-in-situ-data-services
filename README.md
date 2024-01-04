@@ -46,3 +46,8 @@ https://stackoverflow.com/questions/38487667/overwrite-specific-partitions-in-sp
 spark.conf.set("spark.sql.sources.partitionOverwriteMode","dynamic")
 data.toDF().write.mode("overwrite").format("parquet").partitionBy("date", "name").save("s3://path/to/somewhere")
 ```
+
+## Tasks
+- why units are in every result in insitu query. 
+- need to have constraints on all endpoints so that only specific types of measurements
+- 

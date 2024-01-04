@@ -16,8 +16,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class AwsFileIngesterPluginAbstract(IngestPluginAbstract):
-    def __init__(self, props: IngestProps) -> None:
+    def __init__(self, props: IngestProps, post_processor_plugins=[]) -> None:
         super().__init__(props)
+        self._post_processor_plugins = post_processor_plugins
         self._saved_file_name = None
         self._ingested_date = TimeUtils.get_current_time_unix()
         self._file_sha512 = None
@@ -56,6 +57,11 @@ class AwsFileIngesterPluginAbstract(IngestPluginAbstract):
         self._sha512_cause = f'mismatched sha512: {s3_sha512} vs {self._file_sha512}'
         return
 
+    def _execute_post_ingestion_plugins(self):
+        for each_plugin in self._post_processor_plugins:
+            each_plugin.ingest()
+        return
+
     def _generate_db_record(self, start_time, end_time, num_records):
         self._props.generated_record = {
             CDMSConstants.s3_url_key: self._props.s3_url,
@@ -70,6 +76,12 @@ class AwsFileIngesterPluginAbstract(IngestPluginAbstract):
             CDMSConstants.records_count_key: num_records,
         }
         return self
+
+    def _execute_ingest_data_wrapper(self):
+        self._execute_ingest_data()
+        self._execute_post_ingestion_plugins()
+        return
+
     def _execute_ingest_data(self):
         raise NotImplemented('required concrete implementation')
 
@@ -95,9 +107,9 @@ class AwsFileIngesterPluginAbstract(IngestPluginAbstract):
                 self._saved_file_name = FileUtils.gunzip_file_os(self._saved_file_name)
             self._compare_sha512(self._get_s3_sha512())
             if self._props.wait_till_complete is True:
-                return self._execute_ingest_data()
+                return self._execute_ingest_data_wrapper()
             else:
-                bg_process = Process(target=self._execute_ingest_data, args=())
+                bg_process = Process(target=self._execute_ingest_data_wrapper, args=())
                 bg_process.daemon = True
                 bg_process.start()
                 self._props.result_status_code = 204
