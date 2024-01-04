@@ -69,7 +69,7 @@ class ParquetJsonFormatter:
             'NO': 'no',
             'NO2': 'no2',
             'SO2': 'so2',
-            'SO3': 'so2',
+            'SO3': 'so3',
             'PM2.5': 'pm2_5',
             'PM10': 'pm10',
         }
