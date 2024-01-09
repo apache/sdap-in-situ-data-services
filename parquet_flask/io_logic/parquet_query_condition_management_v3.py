@@ -115,19 +115,19 @@ class ParquetQueryConditionManagementV3:
         return
 
     def __check_platform(self):
-        if self.__query_props.platform_code is None:
+        if self.__query_props.platform_id is None:
             self.__is_extending_base = False
             # self.__columns.append(CDMSConstants.platform_code_col)  # platform_code has separate nested column.
             return
         if not self.__is_extending_base:
-            LOGGER.debug(f'setting platform_code condition as sql: {self.__query_props.platform_code}')
+            LOGGER.debug(f'setting platform_code condition as sql: {self.__query_props.platform_id}')
             # self.__columns.append(CDMSConstants.platform_code_col)
-            comma_sep_platforms = ','.join([f"'{k}'" for k in self.__query_props.platform_code])
+            comma_sep_platforms = ','.join([f"'{k}'" for k in self.__query_props.platform_id])
             self.__conditions.append(f"{CDMSConstants.platform_code_col} in ({comma_sep_platforms})")
             return
-        LOGGER.debug(f'setting platform_code condition as path: {self.__query_props.platform_code}')
+        LOGGER.debug(f'setting platform_code condition as path: {self.__query_props.platform_id}')
         new_parquet_names = []
-        for each in self.__query_props.platform_code:
+        for each in self.__query_props.platform_id:
             new_parquet_names.extend([k.duplicate().set_platform(each) for k in self.parquet_names])
         self.parquet_names = new_parquet_names
         return

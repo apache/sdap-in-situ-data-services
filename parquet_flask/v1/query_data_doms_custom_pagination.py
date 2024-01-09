@@ -81,7 +81,7 @@ class IngestParquet(Resource):
         return f'{request.base_url}?{new_args}'
 
     def __get_next_page_url(self, query_result: list):
-        if len(query_result) < 1:
+        if len(query_result) < self.__size:
             return 'NA'
         last_item: dict = query_result[-1]
         new_args = deepcopy(dict(request.args))

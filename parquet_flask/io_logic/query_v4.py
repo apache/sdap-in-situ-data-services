@@ -131,7 +131,9 @@ class QueryV4:
         new_index = -1
         for i, each_row in enumerate(result_head):
             each_row: Row = each_row
-            each_sha_256 = GeneralUtils.gen_sha_256_json_obj(each_row.asDict())
+            each_row_dict = each_row.asDict()
+            each_sha_256 = GeneralUtils.gen_sha_256_json_obj(each_row_dict)
+            LOGGER.debug(f'counter: {i}, sha: {each_sha_256}, each_row_dict: {each_row_dict}')
             if each_sha_256 == self.__props.marker_platform_code:
                 new_index = i
                 break
