@@ -20,7 +20,7 @@ FROM public.ecr.aws/lambda/python:3.7
 #RUN apt-get update -y && apt-get install vim -y
 
 RUN yum -y install java-1.8.0-openjdk wget curl
-RUN python3 -m pip install pyspark==3.1.2
+RUN python3 -m pip install pyspark==3.2.3
 #ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto/jre
 ENV JAVA_HOME="/usr/lib/jvm/jre-1.8.0-openjdk.x86_64"
 ENV PATH=${PATH}:${JAVA_HOME}/bin
@@ -47,7 +47,7 @@ WORKDIR /usr/app
 
 COPY setup_lambda.py /usr/app
 RUN python3 /usr/app/setup_lambda.py install
-RUN python3 -m pip install pyspark==3.1.2
+RUN python3 -m pip install pyspark==3.2.3
 
 ENV PYTHONPATH="${PYTHONPATH}:/usr/app/"
 
