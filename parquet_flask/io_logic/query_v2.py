@@ -157,6 +157,8 @@ class QueryProps:
             self.variable = input_json['variable']
         if 'filter_cql' in input_json:
             self.filter_cql = input_json['filter_cql']
+        if 'marker_platform_code' in input_json:
+            self.marker_platform_code = input_json['marker_platform_code']
         return self
 
     @property

@@ -108,6 +108,7 @@ class QueryV4:
         return main_read_df
 
     def __get_paged_result(self, result_df: DataFrame, total_result: int):
+        LOGGER.debug(f'in __get_paged_result')
         remaining_size = total_result - self.__props.start_at
         current_page_size = remaining_size if remaining_size < self.__props.size else self.__props.size
         result = result_df.limit(self.__props.start_at + current_page_size).tail(current_page_size)
@@ -127,6 +128,7 @@ class QueryV4:
         return [query_result[k].asc() for k in self.__sorting_columns]
 
     def __get_nth_first_page(self, query_result: DataFrame):
+        LOGGER.debug(f'in __get_nth_first_page')
         result_head = query_result.where(f"{CDMSConstants.time_col} = '{self.__props.min_datetime}'").sort(self.__get_sorting_params(query_result)).collect()
         new_index = -1
         for i, each_row in enumerate(result_head):
@@ -144,9 +146,11 @@ class QueryV4:
         return result_tail
 
     def __get_page(self, query_result: DataFrame, total_result: int):
+        LOGGER.debug(f'in __get_page')
         if self.__props.size == 0:
             return []
         if self.__props.marker_platform_code is not None:  # pagination new logic
+            LOGGER.debug(f'in __get_page')
             return self.__get_nth_first_page(query_result)
         if total_result < 0:
             raise ValueError('total_result is not calculated for old pagination logic. This should not happen. Something has horribly gone wrong')
