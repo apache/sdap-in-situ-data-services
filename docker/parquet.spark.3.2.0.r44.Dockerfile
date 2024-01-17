@@ -34,7 +34,7 @@ RUN ["python", "-m", "pip", "install", "-r", "requirements.txt"]
 #COPY setup.py /usr/app
 # RUN python3 /usr/app/setup.py install
 ENV PYTHONPATH="${PYTHONPATH}:/usr/app/:/opt/conda/envs/my_py/lib/python3.8/site-packages/"
-
+ENV LD_LIBRARY_PATH="/opt/conda/lib/:${LD_LIBRARY_PATH}"
 RUN echo '{"auth_cred":"Mock-CDMS-Flask-Token"}' > /usr/app/cdms_flask_auth.json
 ENV authentication_key '/usr/app/cdms_flask_auth.json'
 ENV authentication_type 'FILE'
