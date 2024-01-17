@@ -22,15 +22,18 @@ RUN curl \
     && mkdir /root/.conda \
     && bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
+
+RUN /opt/conda/bin/conda create -n my_py python=3.8 -y
+RUN /opt/conda/bin/conda install -n my_py -c conda-forge netcdf4 -y
+
 RUN mkdir /usr/app
 WORKDIR /usr/app
 COPY requirements.txt /usr/app
 
 RUN ["python", "-m", "pip", "install", "-r", "requirements.txt"]
 #COPY setup.py /usr/app
-RUN #python3 /usr/app/setup.py install
-RUN /opt/conda/bin/conda install -c conda-forge netcdf4 -y
-ENV PYTHONPATH="${PYTHONPATH}:/usr/app/"
+# RUN python3 /usr/app/setup.py install
+ENV PYTHONPATH="${PYTHONPATH}:/usr/app/:/opt/conda/envs/my_py/lib/python3.8/site-packages/"
 
 RUN echo '{"auth_cred":"Mock-CDMS-Flask-Token"}' > /usr/app/cdms_flask_auth.json
 ENV authentication_key '/usr/app/cdms_flask_auth.json'
