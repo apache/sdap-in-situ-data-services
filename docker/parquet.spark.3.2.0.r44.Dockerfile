@@ -24,7 +24,7 @@ RUN curl \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
 
 RUN /opt/conda/bin/conda create -n my_py python=3.8 -y
-RUN /opt/conda/bin/conda install -n my_py -c conda-forge netcdf4 -y
+RUN /opt/conda/bin/conda install -n my_py -c conda-forge netcdf4=1.6.2 -y
 
 RUN mkdir /usr/app
 WORKDIR /usr/app
