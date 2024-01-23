@@ -90,6 +90,11 @@ class SubCollectionStatistics:
         self.__platform_codes = platform_code
         return self
 
+    def __get_platform_shortname_stats(self, core_stats):
+        if 'platform_short_name' not in core_stats or 'buckets' not in core_stats['platform_short_name'] or len(core_stats['platform_short_name']['buckets']) < 1:
+            return ''
+        return core_stats['platform_short_name']['buckets'][0]['key']
+
     def __restructure_core_stats(self, core_stats: dict):
         """
         {
@@ -128,7 +133,7 @@ class SubCollectionStatistics:
         """
         core_stats = {
             "platform": core_stats['key']['platforms'],
-            "platform_short_name": core_stats['platform_short_name']['buckets'][0]['key'],
+            "platform_short_name": self.__get_platform_shortname_stats(core_stats),
             "total": core_stats['totals']['value'],
             "lat": core_stats['max_lat']['value'],
             "lon": core_stats['max_lon']['value'],
