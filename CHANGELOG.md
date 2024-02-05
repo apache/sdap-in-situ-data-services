@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SDAP-464: Updated AWS deployment guide
 ### Changed
 - Updated Elasticsearch *query_by_id* method to accept an *index* as argument
+- Change handling of ingesting previously ingested files to replace the previous job instead of failing the current job
 - SDAP-462: Updated query logic so that depth -99999 is treated as surface (i.e. depth 0)
 - SDAP-463: Added capability to further partition parquet objects/files by platform
 ### Changed
