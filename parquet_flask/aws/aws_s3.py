@@ -140,3 +140,22 @@ class AwsS3(AwsCred):
         self.__s3_client.download_file(self.__target_bucket, self.__target_key, local_file_path)
         LOGGER.debug(f'file downloaded')
         return local_file_path
+
+    def delete_keys(self, bucket, keys):
+        batches = [keys[i:i + 1000] for i in range(0, len(keys), 1000)]
+
+        for batch in batches:
+            LOGGER.debug(f'Deleting {len(batch):,} objects')
+            resp = self.__s3_client.delete_objects(Bucket=bucket, Delete=dict(Objects=batch))
+
+            if len(resp['Deleted']) != len(batch):
+                LOGGER.error(f'{len(resp["Errors"]):,} objects could not be deleted')
+
+                retries = 3
+
+                while len(resp["Errors"]) > 0 and retries > 0:
+                    LOGGER.debug(f'Retrying {len(resp["Errors"])} objects')
+                    resp = self.__s3_client.delete_objects(
+                        Bucket=bucket,
+                        Delete=dict(Objects=[dict(Key=e['Key']) for e in resp['Errors']])
+                    )
