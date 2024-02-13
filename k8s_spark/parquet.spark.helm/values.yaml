@@ -26,6 +26,7 @@ flask_env:
   flask_prefix: "insitu"
   es_url: "https://aws-es-url/"
   es_port: "443"
+  pub_sub_topic: ""
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"
   # "spark.shuffle.service.enabled": "true",  This should be "true", but "shuffle.service" not setup yet.
   ## Specify Spark config options

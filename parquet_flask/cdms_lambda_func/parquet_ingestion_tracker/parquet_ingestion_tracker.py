@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import time
 
 from parquet_flask.aws.es_abstract import ESAbstract
 from parquet_flask.aws.es_factory import ESFactory
@@ -21,6 +22,7 @@ from parquet_flask.cdms_lambda_func.ingest_s3_to_cdms.ingest_s3_to_cdms import I
 from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
 from parquet_flask.cdms_lambda_func.s3_records.s3_2_sqs import S3ToSqs
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
+from parquet_flask.utils.sns_msg_retriever import LambdaEventMsgRetriever
 from parquet_flask.utils.time_utils import TimeUtils
 LOGGER = LambdaLoggerGenerator.get_logger(__name__, log_level=LambdaLoggerGenerator.get_level_from_env())
 
@@ -35,7 +37,11 @@ class ParquetIngestionTracker:
         self.__es: ESAbstract = ESFactory().get_instance('AWS', index=self.__es_index, base_url=self.__es_url, port=self.__es_port)
 
     def start(self, event):
-        sns_msgs = S3ToSqs(event).from_sqs()
+        sns_msgs = LambdaEventMsgRetriever().from_sqs(event)
+        updating_docs = {k['s3_url']: {'event_time': TimeUtils.get_current_time_unix(),'ingestion_status': CDMSConstants.ingestion_stage_success} for k in sns_msgs}
+        LOGGER.debug(f'succeeded: updating_docs: {updating_docs}')
+        self.__es.update_many(doc_dict=updating_docs, index=self.__es_index)
+        time.sleep(3.0)
         to_be_ingested_files = self.__es.query({
             'size': len(sns_msgs),
             'sort': [{
@@ -47,9 +53,6 @@ class ParquetIngestionTracker:
                 }
             }
         })
-        updating_docs = {k['s3_url']: {'event_time': TimeUtils.get_current_time_unix(),'ingestion_status': CDMSConstants.ingestion_stage_success} for k in sns_msgs}
-        LOGGER.debug(f'succeeded: updating_docs: {updating_docs}')
-        self.__es.update_many(doc_dict=updating_docs, index=self.__es_index)
 
         to_be_ingested_files = [k['_source'] for k in to_be_ingested_files['hits']['hits']]
         LOGGER.debug(f'to_be_ingested_files: {to_be_ingested_files}')

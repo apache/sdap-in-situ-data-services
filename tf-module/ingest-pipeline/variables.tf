@@ -55,3 +55,11 @@ variable "staging_location_prefix" {
 variable "ideas_insitu_staging_bucket_name" {
   type = string
 }
+
+variable "cdms_bearer_token" {
+  type = string
+}
+
+variable "cdms_domain" {
+  type = string
+}

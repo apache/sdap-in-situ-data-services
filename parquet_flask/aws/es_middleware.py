@@ -92,15 +92,14 @@ class ESMiddleware(ESAbstract):
         doc_dict = self.__get_doc_dict(docs, doc_ids, doc_dict)
         body = []
         for k, v in doc_dict.items():
-            body.append({'update': {'__index': index, '_id': k, 'retry_on_conflict': 3}})
+            body.append({'update': {'_index': index, '_id': k, 'retry_on_conflict': 3}})
             body.append({'doc': v, 'doc_as_upsert': True})
-            pass
         index = self.__validate_index(index)
         try:
             index_result = self._engine.bulk(index=index,
                                              body=body, doc_type=DEFAULT_TYPE)
             LOGGER.info('indexed. result: {}'.format(index_result))
-        except:
+        except Exception as e:
             LOGGER.exception('cannot update indices with ids: {} for index: {}'.format(list(doc_dict.keys()),
                                                                                              index))
             return doc_dict

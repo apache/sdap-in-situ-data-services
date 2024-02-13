@@ -37,6 +37,8 @@ resource "aws_lambda_function" "ideas_insitu_ingestion" {
       LOG_LEVEL = var.log_level
       aws_region = var.aws_region
       es_url = data.aws_elasticsearch_domain.ideas-es.endpoint
+      CDMS_BEARER_TOKEN = var.cdms_bearer_token
+      CDMS_DOMAIN = var.cdms_domain
       es_port = 443
     }
   }
