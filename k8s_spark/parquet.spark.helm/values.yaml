@@ -175,6 +175,7 @@ bitnami-spark:
   image:
     tag: 3.2.0-debian-10-r44
   master:
+    extraPodLabels: {}
     ## When using AWS EKS IRSA for AWS auth, disable securityContext.  Can potentially also keep
     ## enabled and set 'fsGroup: 65534', though this is currently untested.
     ##
@@ -185,6 +186,7 @@ bitnami-spark:
     #   runAsGroup: 0
     #   seLinuxOptions: {}
   worker:
+    extraPodLabels: {}
     ## @param worker.memoryLimit Set the maximum memory the worker is allowed to use
     ##
     memoryLimit: "4g"

@@ -5,6 +5,5 @@
         {"add" : {"index" : "parquet_stats_v3", "alias" : "parquet_stats_alias"}},
         {"add" : {"index" : "entry_file_records_v3", "alias" : "entry_file_records_alias"}},
         {"add" : {"index" : "staging_file_records_v1", "alias" : "staging_file_records"}}
-
     ]
 }

@@ -20,6 +20,7 @@ from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConst
 from parquet_flask.cdms_lambda_func.lambda_logger_generator import LambdaLoggerGenerator
 from parquet_flask.cdms_lambda_func.s3_records.s3_2_sqs import S3ToSqs
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
+from parquet_flask.utils.sns_msg_retriever import LambdaEventMsgRetriever
 from parquet_flask.utils.time_utils import TimeUtils
 LOGGER = LambdaLoggerGenerator.get_logger(__name__, log_level=LambdaLoggerGenerator.get_level_from_env())
 
@@ -35,11 +36,14 @@ class S3ToESStager:
 
     def start(self, event):
         LOGGER.debug(f'event: {event}')
-        s3_url = S3ToSqs(event).get_s3_url(0)
-        inserting_doc = {
-            'event_time': TimeUtils.get_current_time_unix(),
-            's3_url': s3_url,
-            'ingestion_status': CDMSConstants.ingestion_stage_ready
-        }
-        self.__es.index_one(inserting_doc, s3_url, self.__es_index)
+        sns_msgs = LambdaEventMsgRetriever().from_sqs(event)
+        for each_sns_msg in sns_msgs:
+            LOGGER.debug(f'each_sns_msg: {each_sns_msg}')
+            s3_summary = LambdaEventMsgRetriever().get_s3_from_sns(each_sns_msg)
+            inserting_doc = {
+                'event_time': TimeUtils.get_current_time_unix(),
+                's3_url': f's3://{s3_summary["bucket"]}/{s3_summary["key"]}',
+                'ingestion_status': CDMSConstants.ingestion_stage_ready
+            }
+            self.__es.index_one(inserting_doc, inserting_doc['s3_url'], self.__es_index)
         return

@@ -1,0 +1,16 @@
+import os
+from unittest import TestCase
+
+from parquet_flask.cdms_lambda_func.s3_to_es.s3_to_es_stager import S3ToESStager
+
+
+class TestS3ToESStager(TestCase):
+    def test_01(self):
+        os.environ['es_url'] = 'search-ideas-api-dev-1-f62xltsguioft2hpjepkrhln3e.us-west-2.es.amazonaws.com'
+        sample_event = {'Records': [
+            {'messageId': '245e69f0-5b3e-4507-a78d-69f1a3ba8331',
+             'receiptHandle': 'AQEBPlCLDtGCyqsOIcYdFColw9DJPcqm/UD9xgd6mljqObB8woOG5QRNboKFqN6G2NWRfzU3bjv0IerRvBlX8oac1Cny+wV7gpSTiE3/dB7UaEM4aW8gzS6yH03bW+6D4On5x7oDrJKO5oY9KfeyRAaJu1YhjFQVhVS+gvOAyJW27YEbX3CYU6WbYEhOemI/5VLILwaVaj4+gR1mRZnz3TvsXZ+dANLc2NNwv4V3kkOrFekQmkQ/ELXt3hcknXtrfwXAHlYzVBCwjeV8qjHzsi5/A3GKlBJykE35NKNdfH7dAbNGlRSPRZpO2rdQD1+mL5zf2OeNHz8s4XCAlrPNIVFyx+S6wQ1KLrLx85GWN0GUznbZdx1PXxrlB6HAquuY51dQ/eihfbWeutAPCHbc16cWn6H7tYGVte6ATtsCAILtGYkzSAMsIAs8NenlL/f6ddpM',
+             'body': '{\n  "Type" : "Notification",\n  "MessageId" : "0249a7b9-598f-5925-9588-f990c54949eb",\n  "TopicArn" : "arn:aws:sns:us-west-2:125113240993:ideas-insitu-ideas_insitu_s3_pipeline",\n  "Subject" : "Amazon S3 Notification",\n  "Message" : "{\\"Records\\":[{\\"eventVersion\\":\\"2.1\\",\\"eventSource\\":\\"aws:s3\\",\\"awsRegion\\":\\"us-west-2\\",\\"eventTime\\":\\"2024-01-23T10:52:53.708Z\\",\\"eventName\\":\\"ObjectCreated:Put\\",\\"userIdentity\\":{\\"principalId\\":\\"AWS:AROAR2IKURWQRV3EN2IL2:wai.phyo@jpl.nasa.gov\\"},\\"requestParameters\\":{\\"sourceIPAddress\\":\\"137.79.229.31\\"},\\"responseElements\\":{\\"x-amz-request-id\\":\\"J8B4ZB2XSM8ZKJV7\\",\\"x-amz-id-2\\":\\"KuLCMk34lYIFt63Yn06kzVK0ayPOm1nF7wKr6tL9kEJbJFp40kg92+cnC2adt1Jj5i+aPCplSqoL87ZA16P+Wpz+JZpxOitu\\"},\\"s3\\":{\\"s3SchemaVersion\\":\\"1.0\\",\\"configurationId\\":\\"tf-s3-topic-20231213225553553500000001\\",\\"bucket\\":{\\"name\\":\\"aq-in-situ-data-staging\\",\\"ownerIdentity\\":{\\"principalId\\":\\"A1JL5JCHHLR0UL\\"},\\"arn\\":\\"arn:aws:s3:::aq-in-situ-data-staging\\"},\\"object\\":{\\"key\\":\\"GMU/\\",\\"size\\":0,\\"eTag\\":\\"d41d8cd98f00b204e9800998ecf8427e\\",\\"sequencer\\":\\"0065AF9A85A58819E4\\"}}}]}",\n  "Timestamp" : "2024-01-23T10:52:54.395Z",\n  "SignatureVersion" : "1",\n  "Signature" : "iMwsdKPUUEMgwqzb0J0ZFO4nwzSl41+swRJwx7Dde8yTGAFqQsTODPHckvumqkY5HjhEiA1+4V4brSZdfinEauzUCdFUr1xsbCh0FqtOWHACASmfZSAs4vBnzEqkJVB6zC7qtHRqzu5Ho7plyE9uYF2oX9yatvr8yHHqnuJT5XZhRhl2uQOZH2dEriyKHNfJdS3DPCf03UMtlAGVDNnxZLgsupllUxOMtJ/FYJp4DB22jrDch5diWaulPK2ZnYm4ppXf3ZQgth2qFlC9y2zjRhjo0uL8xBfDOrMXN123NMSTGA7WXFci6a98VSEntqCqNjEGVnSHcPY72W+LH+vagg==",\n  "SigningCertURL" : "https://sns.us-west-2.amazonaws.com/SimpleNotificationService-60eadc530605d63b8e62a523676ef735.pem",\n  "UnsubscribeURL" : "https://sns.us-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-west-2:125113240993:ideas-insitu-ideas_insitu_s3_pipeline:c9fdbc99-f2ef-464a-9917-49d4f3ed1cf5"\n}', 'attributes': {'ApproximateReceiveCount': '1108', 'SentTimestamp': '1706007174438', 'SenderId': 'AIDAIYLAVTDLUXBIEIX46', 'ApproximateFirstReceiveTimestamp': '1706007174447'}, 'messageAttributes': {}, 'md5OfBody': 'cfb75229f351e48eb6e501e47c0f2a37', 'eventSource': 'aws:sqs', 'eventSourceARN': 'arn:aws:sqs:us-west-2:125113240993:ideas-insitu-ideas_insitu_s3_pipeline', 'awsRegion': 'us-west-2'}]}
+        stager = S3ToESStager()
+        stager.start(sample_event)
+        return

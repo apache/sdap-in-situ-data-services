@@ -54,7 +54,7 @@ class CDMSConstants:
     config_key_flask_prefix = 'flask_prefix'
 
     es_index_parquet_stats = 'parquet_stats_alias'
-    staging_file_records_index = 'staging_file_records_index_alias'
+    staging_file_records_index = 'staging_file_records'
     entry_file_records_index = 'entry_file_records_alias'
     insitu_records_index_alias = 'insitu_records'
 
