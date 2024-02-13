@@ -504,13 +504,13 @@
                     "description": "",
                     "uri": "",
                     "type": "number",
-                    "units": "µg/m³"
+                    "units": "ppb"
                 },
                 "co": {
                     "description": "",
                     "uri": "",
                     "type": "number",
-                    "units": "ppb"
+                    "units": "ppm"
                 },
                 "co2": {
                     "description": "",
