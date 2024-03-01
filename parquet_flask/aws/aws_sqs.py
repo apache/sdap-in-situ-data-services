@@ -13,28 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import find_packages, setup
+import logging
+from parquet_flask.aws.aws_cred import AwsCred
+
+LOGGER = logging.getLogger(__name__)
 
 
-install_requires = [
-    # 'fastparquet===0.5.0',  # not using it. sticking to pyspark with spark cluster according to Nga
-    'jsonschema==4.16.0',  # to verify json objects
-    'fastjsonschema===2.15.1',
-    'requests===2.26.0',
-    'boto3', 'botocore',
-    'requests_aws4auth===1.1.1',  # to send aws signed headers in requests
-    'elasticsearch===7.13.4',
-    'typing_extensions==4.3.0'
-]
+class AwsSQS(AwsCred):
+    def __init__(self):
+        super().__init__()
+        self.__sqs_client = self.get_client('sqs')
 
-setup(
-    name="parquet_ingestion_search",
-    version="0.0.1",
-    packages=find_packages(),
-    install_requires=install_requires,
-    author="Apache SDAP",
-    author_email="dev@sdap.apache.org",
-    python_requires=">=3.7",
-    license='NONE',
-    include_package_data=True,
-)
+    def send_message(self, queue_url: str, message: str):
+        return self.__sqs_client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=message
+        )
