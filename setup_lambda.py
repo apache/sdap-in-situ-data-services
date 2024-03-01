@@ -18,12 +18,13 @@ from setuptools import find_packages, setup
 
 install_requires = [
     # 'fastparquet===0.5.0',  # not using it. sticking to pyspark with spark cluster according to Nga
-    'jsonschema',  # to verify json objects
+    'jsonschema==4.16.0',  # to verify json objects
     'fastjsonschema===2.15.1',
     'requests===2.26.0',
     'boto3', 'botocore',
     'requests_aws4auth===1.1.1',  # to send aws signed headers in requests
     'elasticsearch===7.13.4',
+    'typing_extensions==4.3.0'
 ]
 
 setup(

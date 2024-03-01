@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import json
 
 from parquet_flask.parquet_stat_extractor.local_statistics_retriever import LocalStatisticsRetriever
 from parquet_flask.utils.file_utils import FileUtils
@@ -80,13 +81,16 @@ class ParquetFileEsIndexer:
         #         'match_all': {}
         #     }
         # }))
+
+        LOGGER.debug(f'Triggering event:\n{json.dumps(event, indent=4)}')
+
         s3_records = S3ToSqs(event)
         ignoring_phrases = ['spark-staging', '_temporary']
         for i in range(s3_records.size()):
             self.__s3_url = s3_records.get_s3_url(i)
             if any([k in self.__s3_url for k in ignoring_phrases]):
                 LOGGER.debug(f'skipping temp file: {self.__s3_url}')
-                return
+                continue
             LOGGER.debug(f'executing: {self.__s3_url}')
             s3_event = s3_records.get_event_name(i).strip().lower()
             if s3_event.startswith('objectcreated'):
@@ -96,5 +100,5 @@ class ParquetFileEsIndexer:
                 LOGGER.debug('executing to remove index')
                 self.remove_file()
             else:
-                raise ValueError(f'invalid s3_event: {s3_event}')
+                LOGGER.error(f'invalid s3_event: {s3_event}; skipping it')
         return

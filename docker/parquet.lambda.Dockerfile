@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM public.ecr.aws/lambda/python:3.7
+FROM public.ecr.aws/lambda/python:3.7.2022.09.27.11
 
 # Reference: https://aws.plainenglish.io/spark-on-aws-lambda-c65877c0ac96
 #USER root

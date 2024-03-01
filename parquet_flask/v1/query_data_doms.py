@@ -96,10 +96,10 @@ class IngestParquet(Resource):
             result_set = query.search()
             LOGGER.debug(f'search params: {payload}b')
             page_info = self.__calculate_4_ranges(result_set['total'])
-            result_set['last'] = f'{request.base_url}?{self.__replace_start_from(page_info["last"])}'
-            result_set['first'] = f'{request.base_url}?{self.__replace_start_from(page_info["first"])}'
-            result_set['next'] = f'{request.base_url}?{self.__replace_start_from(page_info["next"])}'
-            result_set['prev'] = f'{request.base_url}?{self.__replace_start_from(page_info["prev"])}'
+            result_set['last'] = f'{request.base_url}?{self.__replace_start_from(page_info["last"])}'.replace('http://', 'https://')
+            result_set['first'] = f'{request.base_url}?{self.__replace_start_from(page_info["first"])}'.replace('http://', 'https://')
+            result_set['next'] = f'{request.base_url}?{self.__replace_start_from(page_info["next"])}'.replace('http://', 'https://')
+            result_set['prev'] = f'{request.base_url}?{self.__replace_start_from(page_info["prev"])}'.replace('http://', 'https://')
             return result_set, 200
         except Exception as e:
             LOGGER.exception(f'failed to query parquet. cause: {str(e)}')
