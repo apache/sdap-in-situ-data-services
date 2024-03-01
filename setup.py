@@ -37,7 +37,7 @@ install_requires = [
     'werkzeug===2.0.1',
     'jsonschema',  # to verify json objects
     'fastjsonschema===2.15.1',
-    'requests===2.26.0',
+    'requests===2.31.0',
     'boto3', 'botocore',
     'requests_aws4auth===1.1.1',  # to send aws signed headers in requests
     'elasticsearch===7.13.4',
