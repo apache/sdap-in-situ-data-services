@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed helm chart not building/installing
 ### Security
+- Bumped Spark version to fix security vulnerability [CVE-2022-42889](https://nvd.nist.gov/vuln/detail/CVE-2022-42889)
 
 ## [0.3.0] - 2022-07-13
 ### Added
