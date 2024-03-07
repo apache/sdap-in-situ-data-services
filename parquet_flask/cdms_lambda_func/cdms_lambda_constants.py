@@ -14,6 +14,7 @@
 # limitations under the License.
 
 class CdmsLambdaConstants:
+    gmu_url = 'gmu_url'
     es_url = 'es_url'
     es_index = 'es_index'
     es_port = 'es_port'

@@ -26,6 +26,7 @@ flask_env:
   log_level: "DEBUG"
   flask_prefix: "insitu"
   es_url: "https://aws-es-url/"
+  gmu_url: "https://insitu-api.stcenter.net"
   es_port: "443"
   pub_sub_topic: ""
   parquet_metadata_tbl: "cdms_parquet_meta_dev_v1"

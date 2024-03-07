@@ -6,5 +6,5 @@ from parquet_flask.utils.factory_abstract import FactoryAbstract
 class QueryDailyDataFactory(FactoryAbstract):
     def get_instance(self, class_type, **kwargs):
         if 'GMU' in class_type:
-            return GmuInsitu()
+            return GmuInsitu(base_url=kwargs['base_url'])
         return InsituRecordsToEs(es_url=kwargs['es_url'])

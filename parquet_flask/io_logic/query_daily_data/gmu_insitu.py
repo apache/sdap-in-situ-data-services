@@ -12,10 +12,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class GmuInsitu(QueryDailyDataAbsract):
-    def __init__(self):
+    def __init__(self, base_url):
         self.__platform_ids = []
         self.__query_date = None
-        self.__gmu_base_url = 'https://insitu-api.stcenter.net'  # TODO
+        self.__gmu_base_url = base_url
         self.__gmu_base_url = self.__gmu_base_url if self.__gmu_base_url.endswith('/') else f'{self.__gmu_base_url}/'
         self.__ssl_verify = False
         self.__query_props = InsituQueryProps()

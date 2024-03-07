@@ -101,8 +101,9 @@ class IngestParquet(Resource):
             query_props.min_lat_lon = [bounding_box[1], bounding_box[0]]
             query_props.max_lat_lon = [bounding_box[3], bounding_box[2]]
         es_url = os.environ.get(CdmsLambdaConstants.es_url, None)
+        gmu_url = os.environ.get(CdmsLambdaConstants.gmu_url, None)
         try:
-            daily_data_query = QueryDailyDataFactory().get_instance(query_props.provider, es_url=es_url)
+            daily_data_query = QueryDailyDataFactory().get_instance(query_props.provider, es_url=es_url, base_url=gmu_url)
             es_results = daily_data_query.query(query_props)
             resonse = {
                 'total': -1,
