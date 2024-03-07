@@ -27,12 +27,13 @@ class GmuInsitu:
             'date': self.__query_date,
         }
         if len(self.__query_props.min_lat_lon) > 0:
-            query_params['min_lon'] = self.__query_props.min_lat_lon[0]
-            query_params['min_lat'] = self.__query_props.min_lat_lon[1]
+            query_params['min_lon'] = self.__query_props.min_lat_lon[1]
+            query_params['min_lat'] = self.__query_props.min_lat_lon[0]
         if len(self.__query_props.max_lat_lon) > 0:
-            query_params['max_lon'] = self.__query_props.min_lat_lon[0]
-            query_params['max_lat'] = self.__query_props.min_lat_lon[1]
-        query_params['variable'] = 'pm2_5'
+            query_params['max_lon'] = self.__query_props.max_lat_lon[1]
+            query_params['max_lat'] = self.__query_props.max_lat_lon[0]
+        if len(self.__query_props.variable) > 0:
+            query_params['variable'] = ','.join(self.__query_props.variable)
         query_params = [f'{k}={v}' for k, v in query_params.items()]
         self.__platform_ids = []
         get_platforms_url = f'{self.__gmu_base_url}sensor_data?{"&".join(query_params)}'
