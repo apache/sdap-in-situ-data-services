@@ -20,6 +20,7 @@
 replicaCount: 4
 
 flask_env:
+  include_geo_partition: "FALSE"
   parquet_file_name: "s3a://cdms-dev-in-situ-parquet/CDMS_insitu.parquet"
   spark_app_name: "parquet_flask_demo"
   log_level: "DEBUG"

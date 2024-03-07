@@ -79,7 +79,8 @@ class IngestNewJsonFile:
         return
 
     @staticmethod
-    def prepare_spark_df(spark_df, job_id, provider, project, include_geo_partition=False):
+    def prepare_spark_df(spark_df, job_id, provider, project):
+        include_geo_partition = environ.get(CDMSConstants.include_geo_partition, 'FALSE').upper() == 'TRUE'
         LOGGER.debug(f'adding columns')
         try:
             df: DataFrame = spark_df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col)) \
