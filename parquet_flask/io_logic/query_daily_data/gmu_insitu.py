@@ -4,13 +4,14 @@ import logging
 import pandas as pd
 import requests
 
-from parquet_flask.io_logic.insitu_records_to_es import InsituQueryProps
+from parquet_flask.io_logic.query_daily_data.insitu_query_props import InsituQueryProps
+from parquet_flask.io_logic.query_daily_data.query_daily_data_abstract import QueryDailyDataAbsract
 from parquet_flask.utils.general_utils import GeneralUtils
 
 LOGGER = logging.getLogger(__name__)
 
 
-class GmuInsitu:
+class GmuInsitu(QueryDailyDataAbsract):
     def __init__(self):
         self.__platform_ids = []
         self.__query_date = None

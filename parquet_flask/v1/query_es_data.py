@@ -22,11 +22,8 @@ from flask_restx import Resource, Namespace, fields
 from flask import request
 
 from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConstants
-from parquet_flask.io_logic.cdms_constants import CDMSConstants
-from parquet_flask.io_logic.insitu_records_to_es import InsituQueryProps, InsituRecordsToEs
-from parquet_flask.io_logic.query_daily_data.gmu_insitu import GmuInsitu
-from parquet_flask.io_logic.query_v2 import QueryProps, QUERY_PROPS_SCHEMA
-from parquet_flask.io_logic.query_v4 import QueryV4
+from parquet_flask.io_logic.query_daily_data.insitu_query_props import InsituQueryProps
+from parquet_flask.io_logic.query_daily_data.query_daily_data_factory import QueryDailyDataFactory
 from parquet_flask.utils.general_utils import GeneralUtils
 
 api = Namespace('es_insitu_data', description="Querying insitu data in Elasticsearch")
@@ -105,10 +102,8 @@ class IngestParquet(Resource):
             query_props.max_lat_lon = [bounding_box[3], bounding_box[2]]
         es_url = os.environ.get(CdmsLambdaConstants.es_url, None)
         try:
-            if query_props.provider == 'PurpleAir-GMU':  # TODO this comes from config
-                es_results = GmuInsitu().query(query_props)
-            else:
-                es_results = InsituRecordsToEs(es_url).query(query_props)
+            daily_data_query = QueryDailyDataFactory().get_instance(query_props.provider, es_url=es_url)
+            es_results = daily_data_query.query(query_props)
             resonse = {
                 'total': -1,
                 'results': es_results['hits'],
