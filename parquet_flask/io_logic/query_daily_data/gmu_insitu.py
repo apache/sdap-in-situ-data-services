@@ -73,11 +73,11 @@ class GmuInsitu:
         self.__query_date = query_props.timestamp[0:10]  # TODO this is assuming timestamp is in correct format
         self.load_platform_ids()
 
-        start_index = query_props.marker[0] if len(query_props.marker) > 0 else 0
+        start_index = int(query_props.marker[0]) if len(query_props.marker) > 0 else 0
         end_index = start_index + query_props.size
         platform_id_chunk = self.__platform_ids[start_index: end_index]
         result = self.__get_one_page(platform_id_chunk)
         return {
             'hits': result,
-            'marker': [end_index],
+            'marker': [str(end_index)],
         }
