@@ -79,25 +79,45 @@ class IngestNewJsonFile:
         return
 
     @staticmethod
-    def prepare_spark_df(spark_df, job_id, provider, project):
+    def prepare_spark_df(spark_df, job_id, provider, project, include_geo_partition=False):
         LOGGER.debug(f'adding columns')
         try:
             df: DataFrame = spark_df.withColumn(CDMSConstants.time_obj_col, to_timestamp(CDMSConstants.time_col)) \
                 .withColumn(CDMSConstants.year_col, year(CDMSConstants.time_col)) \
                 .withColumn(CDMSConstants.month_col, month(CDMSConstants.time_col)) \
+                .withColumn(CDMSConstants.platform_id_col, spark_df[CDMSConstants.platform_col][CDMSConstants.id_col]) \
                 .withColumn(CDMSConstants.job_id_col, lit(job_id)) \
                 .withColumn(CDMSConstants.provider_col, lit(provider)) \
-                .withColumn(CDMSConstants.project_col, lit(project)) \
-                .withColumn(CDMSConstants.platform_id_col, spark_df[CDMSConstants.platform_col][CDMSConstants.id_col]) \
-                .repartition(1)  # combine to 1 data frame to increase size
+                .withColumn(CDMSConstants.project_col, lit(project))
+            if include_geo_partition:
+                LOGGER.debug(f'creating geo_partition')
+                geospatial_interval_dict = get_geospatial_interval(project)
+                df: DataFrame = df.withColumn(
+                    CDMSConstants.geo_spatial_interval_col,
+                    pyspark_functions.udf(
+                        lambda platform_code, latitude, longitude: f'{int(latitude - divmod(latitude, int(geospatial_interval_dict.get(platform_code, GEOSPATIAL_INTERVAL)))[1])}_{int(longitude - divmod(longitude, int(geospatial_interval_dict.get(platform_code, GEOSPATIAL_INTERVAL)))[1])}',
+                        StringType())(
+                        df[CDMSConstants.platform_code_col],
+                        df[CDMSConstants.lat_col],
+                        df[CDMSConstants.lon_col]))
+            df: DataFrame = df.repartition(1)  # combine to 1 data frame to increase size
             LOGGER.debug(f'create writer')
             all_partitions = [
                 CDMSConstants.provider_col,
                 CDMSConstants.project_col,
                 CDMSConstants.platform_id_col,
+                CDMSConstants.geo_spatial_interval_col,
                 CDMSConstants.year_col,
                 CDMSConstants.month_col,
-                CDMSConstants.job_id_col]
+                CDMSConstants.job_id_col
+            ] if include_geo_partition else [
+                CDMSConstants.provider_col,
+                CDMSConstants.project_col,
+                CDMSConstants.platform_id_col,
+                CDMSConstants.year_col,
+                CDMSConstants.month_col,
+                CDMSConstants.job_id_col
+            ]
             df = df.repartition(1)
             df_writer = df.write
             LOGGER.debug(f'create partitions')
