@@ -74,6 +74,10 @@ spec:
             {{- end }}
             - name: flask_prefix
               value: {{ .Values.flask_env.flask_prefix }}
+            - name: gmu_url
+              value: {{ .Values.flask_env.gmu_url }}
+            - name: pub_sub_topic
+              value: {{ .Values.flask_env.pub_sub_topic }}
             - name: parquet_file_name
               value: {{ .Values.flask_env.parquet_file_name }}
             {{- if ( index .Values "bitnami-spark" "enabled" ) }}
