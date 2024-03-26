@@ -131,7 +131,7 @@ class SubCollectionStatistics:
         :param core_stats:
         :return:
         """
-        core_stats = {
+        core_stats_re = {
             "platform": core_stats['key']['platforms'],
             "platform_short_name": self.__get_platform_shortname_stats(core_stats),
             "total": core_stats['totals']['value'],
@@ -142,8 +142,12 @@ class SubCollectionStatistics:
             CDMSConstants.observation_counts: {k: core_stats[k]['value'] for k in self.__cdms_obs_names},
             'units': {k: self.__insitu_schema['definitions']['observation']['properties'][k]['units'] for k in self.__cdms_obs_names}
         }
-        LOGGER.debug(f'core_stats: {core_stats}')
-        return core_stats
+        if 'min_depth' in core_stats:
+            core_stats_re['min_depth'] = core_stats['min_depth']['value']
+        if 'max_depth' in core_stats:
+            core_stats_re['max_depth'] = core_stats['max_depth']['value']
+        LOGGER.debug(f'core_stats_re: {core_stats_re}')
+        return core_stats_re
 
     def __restructure_stats(self, es_result: dict):
         """
@@ -277,6 +281,11 @@ class SubCollectionStatistics:
             cql_to_dsl = CqlParser(CDMSConstants.observation_min_max).transform(self.__query_props.filter_cql)
             LOGGER.debug(f'cql_to_dsl = {cql_to_dsl}')
             es_terms.append(cql_to_dsl)
+
+        if self.__query_props.min_depth is not None and self.__query_props.max_depth is not None:
+            es_terms.append({'range': {CDMSConstants.max_depth: {'gte': self.__query_props.min_depth}}})
+            es_terms.append({'range': {CDMSConstants.min_depth: {'lte': self.__query_props.max_depth}}})
+
         # Time range
         if self.__query_props.min_datetime is not None and self.__query_props.max_datetime is not None:
             es_terms.append({'range': {CDMSConstants.max_datetime: {'gte': self.__query_props.min_datetime}}})
@@ -300,6 +309,11 @@ class SubCollectionStatistics:
                     "field": CDMSConstants.max_datetime
                 }
             },
+            "max_depth": {
+                "max": {
+                    "field": CDMSConstants.max_depth
+                }
+            },
             "max_lat": {
                 "max": {
                     "field": CDMSConstants.max_lat
@@ -313,6 +327,11 @@ class SubCollectionStatistics:
             "min_datetime": {
                 "min": {
                     "field": CDMSConstants.min_datetime
+                }
+            },
+            "min_depth": {
+                "min": {
+                    "field": CDMSConstants.min_depth
                 }
             },
             "min_lat": {

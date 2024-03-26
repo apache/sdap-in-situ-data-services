@@ -16,6 +16,8 @@ import logging
 from datetime import datetime
 
 import pyspark.sql.functions as F
+
+from parquet_flask.io_logic.query_insitu_data.query_insitu_abstract import QueryInsituAbstract
 from parquet_flask.utils.file_utils import FileUtils
 from pyspark.sql.session import SparkSession
 from pyspark.sql.dataframe import DataFrame
@@ -34,10 +36,14 @@ from parquet_flask.utils.general_utils import GeneralUtils
 LOGGER = logging.getLogger(__name__)
 
 
-class QueryV4:
+class QueryV4(QueryInsituAbstract):
     def __init__(self, props=QueryProps()):
+        super().__init__(props)
         self.__props = props
         config = Config()
+        self.__insitu_schema = FileUtils.read_json(config.get_value(Config.in_situ_schema))
+        self.__mandatory_record_keys = CdmsSchema().get_mandatory_record_keys(self.__insitu_schema)
+
         self.__app_name = config.get_spark_app_name()
         self.__master_spark = config.get_value(Config.master_spark_url)
         self.__parquet_name = config.get_value(Config.parquet_file_name)
@@ -50,10 +56,16 @@ class QueryV4:
         self.__missing_depth_value = CDMSConstants.missing_depth_value
         self.__sorting_columns = [
             CDMSConstants.time_col, 
-            CDMSConstants.platform_id_col, 
+            CDMSConstants.platform_id_col,
+            CDMSConstants.depth_col,
             CDMSConstants.lat_col, 
             CDMSConstants.lon_col
-        ]
+        ] if CDMSConstants.depth_col in self.__mandatory_record_keys else [
+            CDMSConstants.time_col,
+            CDMSConstants.platform_id_col,
+            CDMSConstants.lat_col,
+            CDMSConstants.lon_col
+        ]  # TODO maybe not need this condition and just pass __mandatory_record_keys + platform_id_col
         self.__set_missing_depth_val()
 
     def __set_missing_depth_val(self):
@@ -83,7 +95,7 @@ class QueryV4:
         return distinct_list
 
     def get_unioned_read_df(self, condition_manager: ParquetQueryConditionManagementV4, spark: SparkSession) -> DataFrame:
-        cdms_spark_struct = CdmsSchema().get_schema_from_json(FileUtils.read_json(Config().get_value(Config.in_situ_schema)))
+        cdms_spark_struct = CdmsSchema().get_schema_from_json(self.__insitu_schema)
         if len(condition_manager.parquet_names) < 1:
             LOGGER.fatal(f'cannot find any in ES. returning None instead of searching entire parquet directory for now. ')
             return None

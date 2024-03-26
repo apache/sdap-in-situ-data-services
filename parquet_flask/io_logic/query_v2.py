@@ -44,6 +44,8 @@ QUERY_PROPS_SCHEMA = {
         'filter_cql': {'type': 'string'},
         'min_time': {'type': 'string'},
         'max_time': {'type': 'string'},
+        'min_depth': {'type': 'number'},
+        'max_depth': {'type': 'number'},
         'min_lat_lon': {'type': 'array', 'items': {'type': 'number'}, 'minItems': 2, 'maxItems': 2},
         'max_lat_lon': {'type': 'array', 'items': {'type': 'number'}, 'minItems': 2, 'maxItems': 2},
     },
@@ -143,6 +145,11 @@ class QueryProps:
         self.max_datetime = input_json['max_time']
         self.min_lat_lon = input_json['min_lat_lon']
         self.max_lat_lon = input_json['max_lat_lon']
+
+        if 'min_depth' in input_json:
+            self.min_depth = input_json['min_depth']
+        if 'max_depth' in input_json:
+            self.max_depth = input_json['max_depth']
         if 'project' in input_json:
             self.project = input_json['project']
         if 'provider' in input_json:

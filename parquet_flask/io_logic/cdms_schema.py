@@ -149,6 +149,17 @@ class CdmsSchema:
         obs_names = [k for k in self.__get_obs_defs(in_situ_schema).keys() if k not in self.__non_observation_columns and not k.endswith('_quality')]
         return obs_names
 
+    def get_mandatory_record_keys(self, in_situ_schema: dict):
+        if 'definitions' not in in_situ_schema:
+            raise ValueError(f'missing definitions in in_situ_schema: {in_situ_schema}')
+        base_defs = in_situ_schema['definitions']
+        if 'observation' not in base_defs:
+            raise ValueError(f'missing observation in in_situ_schema["definitions"]: {base_defs}')
+        obs_defs = base_defs['observation']
+        if 'required' not in obs_defs:
+            raise ValueError(f'missing required in in_situ_schema["definitions"]["observation"]: {obs_defs}')
+        return obs_defs['required']
+
     def get_schema_from_json(self, in_situ_schema: dict):
         dynamic_columns = [StructField(k, self.__get_spark_type(self.__get_json_datatype(k, v)), True) for k, v in self.__get_obs_defs(in_situ_schema).items()]
         return StructType(dynamic_columns + self.__default_columns)

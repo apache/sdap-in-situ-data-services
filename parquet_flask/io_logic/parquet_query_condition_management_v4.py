@@ -16,10 +16,13 @@
 import logging
 from typing import List
 
+from parquet_flask.io_logic.cdms_schema import CdmsSchema
 from parquet_flask.io_logic.parquet_paths_es_retriever import ParquetPathsEsRetriever
 from parquet_flask.io_logic.partitioned_parquet_path import PartitionedParquetPath
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
 from parquet_flask.io_logic.query_v2 import QueryProps
+from parquet_flask.utils.config import Config
+from parquet_flask.utils.file_utils import FileUtils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +36,10 @@ class ParquetQueryConditionManagementV4:
         self.__missing_depth_value = missing_depth_value
         self.__parquet_names: List[PartitionedParquetPath] = []
         self.__es_config = es_config
+
+        config = Config()
+        self.__insitu_schema = FileUtils.read_json(config.get_value(Config.in_situ_schema))
+        self.__mandatory_record_keys = CdmsSchema().get_mandatory_record_keys(self.__insitu_schema)
 
     def stringify_parquet_names(self):
         return [k.generate_path() for k in self.__parquet_names]
@@ -211,7 +218,8 @@ class ParquetQueryConditionManagementV4:
         self.__check_filter_cql()
         self.__check_time_range()
         self.__check_platform_id()
-        #self.__check_depth()  # TODO: check depth
+        if CDMSConstants.depth_col in self.__mandatory_record_keys:
+            self.__check_depth()
         self.__add_variables_filter()
         self.__check_columns()
         es_retriever = ParquetPathsEsRetriever(self.__parquet_name, self.__query_props).load_es_from_config(self.__es_config['es_url'], self.__es_config['es_index'], self.__es_config.get('es_port', 443))

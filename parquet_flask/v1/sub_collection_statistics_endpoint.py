@@ -63,6 +63,11 @@ class SubCollectionStatisticsEndpoint(Resource):
             if 'endTime' in request.args:
                 query_props.max_datetime = TimeUtils.get_datetime_obj(request.args.get('endTime')).timestamp()
 
+            if 'minDepth' in request.args:
+                query_props.min_depth = float(request.args.get('minDepth'))
+            if 'maxDepth' in request.args:
+                query_props.max_depth = float(request.args.get('maxDepth'))
+
             # Bounding box (lat lon range)
             if 'bbox' in request.args:
                 bounding_box = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('bbox'), 4)
