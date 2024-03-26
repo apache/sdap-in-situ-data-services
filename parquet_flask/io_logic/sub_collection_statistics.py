@@ -17,6 +17,7 @@ import json
 import logging
 
 from parquet_flask.io_logic.cdms_schema import CdmsSchema
+from parquet_flask.io_logic.query_stats_data.query_stats_data_abstract import QueryStatsDataAbsract
 from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.utils.cql_parser import CqlParser
 from parquet_flask.utils.file_utils import FileUtils
@@ -32,8 +33,9 @@ from parquet_flask.utils.time_utils import TimeUtils
 LOGGER = logging.getLogger(__name__)
 
 
-class SubCollectionStatistics:
+class SubCollectionStatistics(QueryStatsDataAbsract):
     def __init__(self, query_props: QueryProps):
+        super().__init__(query_props)
         config = Config()
         self.__es: ESAbstract = ESFactory().get_instance('AWS',
                                                          index=CDMSConstants.es_index_parquet_stats,

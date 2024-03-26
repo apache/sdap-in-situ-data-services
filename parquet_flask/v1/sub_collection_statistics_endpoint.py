@@ -19,6 +19,7 @@ from copy import deepcopy
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
+from parquet_flask.io_logic.query_stats_data.query_stats_data_factory import QueryStatsDataFactory
 from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.io_logic.sub_collection_statistics import SubCollectionStatistics
 from parquet_flask.utils.general_utils import GeneralUtils
@@ -52,7 +53,6 @@ class SubCollectionStatisticsEndpoint(Resource):
     def get(self):
         try:
             query_props = QueryProps()
-            sub_collection_stats_api = SubCollectionStatistics(query_props)
             query_props.size = 10**4 if 'size' not in request.args else int(request.args.get('size'))
             if 'provider' not in request.args or 'project' not in request.args:
                 return {'message': 'missing provider or project. Requires both', 'details': request.args}, 500
@@ -94,6 +94,7 @@ class SubCollectionStatisticsEndpoint(Resource):
             if 'markerPlatform' in request.args:
                 query_props.marker_platform_code = request.args.get('markerPlatform')
             # Get stats
+            sub_collection_stats_api = QueryStatsDataFactory().get_instance(query_props.provider, query_props=query_props)
             sub_collection_stats = sub_collection_stats_api.start()
             new_args = deepcopy(dict(request.args))
             if 'markerPlatform' in new_args:
