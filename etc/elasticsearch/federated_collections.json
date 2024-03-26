@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "provider": {"type": "keyword"},
+      "project": {"type": "keyword"},
+      "event_time": {"type": "long"}
+    }
+  }
+}
