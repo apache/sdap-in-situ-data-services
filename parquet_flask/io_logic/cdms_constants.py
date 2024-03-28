@@ -53,6 +53,7 @@ class CDMSConstants:
     missing_depth_value = -99999.0
     config_key_flask_prefix = 'flask_prefix'
 
+    federated_collections = 'federated_collections'
     es_index_parquet_stats = 'parquet_stats_alias'
     staging_file_records_index = 'staging_file_records'
     entry_file_records_index = 'entry_file_records_alias'

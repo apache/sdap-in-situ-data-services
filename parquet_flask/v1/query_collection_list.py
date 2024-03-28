@@ -17,6 +17,7 @@ import logging
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
+from parquet_flask.io_logic.federated_collection_crud import FederatedCollectionCrud
 from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.io_logic.sub_collection_statistics import SubCollectionStatistics
 from parquet_flask.utils.general_utils import GeneralUtils
@@ -39,7 +40,8 @@ class QueryCollectionListEndpoint(Resource):
             query_props = QueryProps()
             sub_collection_stats_api = SubCollectionStatistics(query_props)
             collection_list = sub_collection_stats_api.list_collections()
+            result = FederatedCollectionCrud().get()
         except Exception as e:
             LOGGER.exception(f'error while retrieving collection_list')
             return {'message': 'error while retrieving collection_list', 'details': str(e)}, 500
-        return collection_list, 200
+        return collection_list + result, 200
