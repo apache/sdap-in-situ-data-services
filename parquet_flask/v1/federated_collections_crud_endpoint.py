@@ -33,7 +33,7 @@ class FederatedCollectionsCrudEndpoint(Resource):
     def put(self):
         provider = request.args.get('provider', '')
         project = request.args.get('project', '')
-        if any([k is None for k in [provider, project]]):
+        if any([k == '' for k in [provider, project]]):
             return {'message': 'invalid parameters. must provide both provider & project'}, 500
         try:
             FederatedCollectionCrud().insert(provider, project)
@@ -47,7 +47,7 @@ class FederatedCollectionsCrudEndpoint(Resource):
     def post(self):
         provider = request.args.get('provider', '')
         project = request.args.get('project', '')
-        if any([k is None for k in [provider, project]]):
+        if any([k == '' for k in [provider, project]]):
             return {'message': 'invalid parameters. must provide both provider & project'}, 500
         try:
             FederatedCollectionCrud().update(provider, project)
@@ -61,7 +61,7 @@ class FederatedCollectionsCrudEndpoint(Resource):
     def delete(self):
         provider = request.args.get('provider', '')
         project = request.args.get('project', '')
-        if any([k is None for k in [provider, project]]):
+        if any([k == '' for k in [provider, project]]):
             return {'message': 'invalid parameters. must provide both provider & project'}, 500
         try:
             FederatedCollectionCrud().delete(provider, project)

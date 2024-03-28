@@ -211,6 +211,7 @@ class ESMiddleware(ESAbstract):
             raise e
         return True
 
-    def delete_by_query(self, dsl, index=None):
-        raise NotImplementedError('not yet.')
+    def delete_by_query(self, dsl, querying_index=None):
+        index = self.__validate_index(querying_index)
+        return self._engine.delete_by_query(body=dsl, index=index)
 
