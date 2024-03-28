@@ -15,6 +15,9 @@ class FederatedCollectionCrud:
 
     def get(self):
         result = self.__es.query_pages({
+            'sort': [{
+                'event_time': {'order': 'asc'}
+            }],
             'query': {
                 'match_all': {}
             }
