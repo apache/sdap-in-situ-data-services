@@ -22,7 +22,7 @@ class FederatedCollectionCrud:
                 'match_all': {}
             }
         })
-        return [k['_source'] for k in result['hits']['hits']]
+        return [k['_source'] for k in result['items']]
 
     def insert(self, provider, project):
         self.__es.index_one({
