@@ -18,7 +18,7 @@ from flask_restx import Resource, Namespace
 from flask import request
 
 from parquet_flask.io_logic.federated_collection_crud import FederatedCollectionCrud
-
+from parquet_flask.v1.authenticator_decorator import authenticator_decorator
 
 api = Namespace('federated_collections', description="Querying insitu data in Elasticsearch")
 LOGGER = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ LOGGER = logging.getLogger(__name__)
 class FederatedCollectionsCrudEndpoint(Resource):
 
     @api.expect()
+    @authenticator_decorator
     def put(self):
         provider = request.args.get('provider', '')
         project = request.args.get('project', '')
@@ -42,6 +43,7 @@ class FederatedCollectionsCrudEndpoint(Resource):
         return {'message': 'inserted'}, 200
 
     @api.expect()
+    @authenticator_decorator
     def post(self):
         provider = request.args.get('provider', '')
         project = request.args.get('project', '')
@@ -55,6 +57,7 @@ class FederatedCollectionsCrudEndpoint(Resource):
         return {'message': 'updated'}, 200
 
     @api.expect()
+    @authenticator_decorator
     def delete(self):
         provider = request.args.get('provider', '')
         project = request.args.get('project', '')
