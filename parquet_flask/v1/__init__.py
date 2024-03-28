@@ -31,6 +31,7 @@ from .sub_collection_statistics_endpoint import api as sub_collection_statistics
 from .query_collection_list import api as query_collection_list
 from .query_ingested_file import api as query_ingested_file
 from .query_data_doms_custom_pagination import api as query_data_doms_custom_pagination
+from .federated_collections_crud_endpoint import api as federated_collections
 from .es_ingest_json_s3 import api as es_ingest_json_s3
 from .query_es_data import api as query_es_data
 from ..io_logic.cdms_constants import CDMSConstants
@@ -64,3 +65,4 @@ api.add_namespace(extract_statistics_from_parquet_file)
 api.add_namespace(sub_collection_statistics_endpoint)
 api.add_namespace(query_collection_list)
 api.add_namespace(query_ingested_file)
+api.add_namespace(federated_collections)
