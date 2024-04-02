@@ -50,7 +50,7 @@ class GmuInsitu(QueryDailyDataAbsract):
         result = []
         for each_chunk in GeneralUtils.chunk_list(platform_id_chunk, self.__gmu_page_size):
             platforms = ','.join([str(k) for k in each_chunk])
-            get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={platforms}&sd={self.__query_date}&provider={self.__query_props.provider}'
+            get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={platforms}&sd={self.__query_date}&ed={self.__query_date}&provider={self.__query_props.provider}'
             LOGGER.debug(f'loading data for {get_data_url}')
             insitu_data = requests.get(get_data_url, verify=self.__ssl_verify)
             insitu_data.raise_for_status()
