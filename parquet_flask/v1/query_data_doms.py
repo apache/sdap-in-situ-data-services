@@ -107,32 +107,34 @@ class IngestParquet(Resource):
 
     @api.expect()
     def get(self):
-        self.__start_from = int(request.args.get('startIndex', '0'))
-        self.__size = int(request.args.get('itemsPerPage', '10'))
-        query_json = {
-            'start_from': self.__start_from,
-            'size': self.__size,
-        }
-        if 'startTime' in request.args:
-            query_json['min_time'] = request.args.get('startTime')
-        if 'endTime' in request.args:
-            query_json['max_time'] = request.args.get('endTime')
-        if 'minDepth' in request.args:
-            query_json['min_depth'] = float(request.args.get('minDepth'))
-        if 'maxDepth' in request.args:
-            query_json['max_depth'] = float(request.args.get('maxDepth'))
-        if 'bbox' in request.args:
-            bounding_box = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('bbox'), 4)
-            query_json['min_lat_lon'] = [bounding_box[1], bounding_box[0]]
-            query_json['max_lat_lon'] = [bounding_box[3], bounding_box[2]]
-        if 'platform' in request.args:
-            query_json['platform_code'] = [k.strip() for k in request.args.get('platform').strip().split(',')]
-        if 'provider' in request.args:
-            query_json['provider'] = request.args.get('provider')
-        if 'project' in request.args:
-            query_json['project'] = request.args.get('project')
-        if 'columns' in request.args and request.args.get('columns').strip() != '':
-            query_json['columns'] = [k.strip() for k in request.args.get('columns').split(',')]
-        if 'variable' in request.args and request.args.get('variable').strip() != '':
-            query_json['variable'] = [k.strip() for k in request.args.get('variable').split(',')]
-        return self.__execute_query(query_json)
+        # self.__start_from = int(request.args.get('startIndex', '0'))
+        # self.__size = int(request.args.get('itemsPerPage', '10'))
+        # query_json = {
+        #     'start_from': self.__start_from,
+        #     'size': self.__size,
+        # }
+        # if 'startTime' in request.args:
+        #     query_json['min_time'] = request.args.get('startTime')
+        # if 'endTime' in request.args:
+        #     query_json['max_time'] = request.args.get('endTime')
+        # if 'minDepth' in request.args:
+        #     query_json['min_depth'] = float(request.args.get('minDepth'))
+        # if 'maxDepth' in request.args:
+        #     query_json['max_depth'] = float(request.args.get('maxDepth'))
+        # if 'bbox' in request.args:
+        #     bounding_box = GeneralUtils.gen_float_list_from_comma_sep_str(request.args.get('bbox'), 4)
+        #     query_json['min_lat_lon'] = [bounding_box[1], bounding_box[0]]
+        #     query_json['max_lat_lon'] = [bounding_box[3], bounding_box[2]]
+        # if 'platform' in request.args:
+        #     query_json['platform_code'] = [k.strip() for k in request.args.get('platform').strip().split(',')]
+        # if 'provider' in request.args:
+        #     query_json['provider'] = request.args.get('provider')
+        # if 'project' in request.args:
+        #     query_json['project'] = request.args.get('project')
+        # if 'columns' in request.args and request.args.get('columns').strip() != '':
+        #     query_json['columns'] = [k.strip() for k in request.args.get('columns').split(',')]
+        # if 'variable' in request.args and request.args.get('variable').strip() != '':
+        #     query_json['variable'] = [k.strip() for k in request.args.get('variable').split(',')]
+        # return self.__execute_query(query_json)
+        return {'message': 'no longer available. Pls use query_data_doms'}, 410
+

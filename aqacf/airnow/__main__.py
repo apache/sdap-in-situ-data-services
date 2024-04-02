@@ -8,8 +8,9 @@ os.environ['LOG_LEVEL'] = '10'
 os.environ['provider'] = 'AirNow'
 os.environ['project'] = 'air_quality'
 os.environ['staging_bucket'] = 'aq-in-situ-data-staging'
-os.environ['year'] = '2023'
-os.environ['month'] = '11'
+os.environ['year'] = '2024'
+os.environ['start_month'] = '2'
+os.environ['end_month'] = '4'
 os.environ['chunk_size'] = '2'
 os.environ['AWS_REGION'] = 'us-west-2'
 
@@ -22,6 +23,9 @@ if __name__ == '__main__':
     AirNowWrapper(os.environ.get('provider'),
                   os.environ.get('project'),
                   os.environ.get('staging_bucket'),
-                  int(os.environ.get('chunk_size', '10'))).start(int(os.environ.get('year')), int(os.environ.get('month', '1')))
+                  int(os.environ.get('chunk_size', '10'))).start(int(os.environ.get('year')),
+                                                                 int(os.environ.get('start_month', '1')),
+                                                                 int(os.environ.get('end_month', '12')),
+                                                                 )
 # CI/CD is successful.
 # https://hub.docker.com/layers/waiphyojpl/cdms.parquet.flask/build-aqacf-3/images/sha256-754d57d785e8a8723e95eaf98aec7c9dee88a25f1899135a0344cf1e2fc04f6c?context=repo

@@ -14,13 +14,16 @@
 # limitations under the License.
 
 import logging
+import os
 import signal
 from copy import deepcopy
 
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
+from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConstants
 from parquet_flask.io_logic.cdms_constants import CDMSConstants
+from parquet_flask.io_logic.query_insitu_data.query_insitu_data_factory import QueryInsituDataFactory
 from parquet_flask.io_logic.query_v2 import QueryProps, QUERY_PROPS_SCHEMA
 from parquet_flask.io_logic.query_v4 import QueryV4
 from parquet_flask.utils.general_utils import GeneralUtils
@@ -109,7 +112,9 @@ class IngestParquet(Resource):
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
         try:
             LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination calling QueryV4: {request.args}')
-            query = QueryV4(QueryProps().from_json(payload))
+            query_props = QueryProps().from_json(payload)
+            gmu_url = os.environ.get(CdmsLambdaConstants.gmu_url, None)
+            query = QueryInsituDataFactory().get_instance(query_props.provider, query_props=query_props, base_url=gmu_url)
             # with timeout(seconds=20):
             #     result_set = query.search()
             result_set = query.search()

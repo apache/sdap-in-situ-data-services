@@ -26,6 +26,7 @@ class GmuInsitu(QueryDailyDataAbsract):
             raise ValueError(f'pls set __query_date before calling this method')
         query_params = {
             'date': self.__query_date,
+            'provider': self.__query_props.provider,
         }
         if len(self.__query_props.min_lat_lon) > 0:
             query_params['min_lon'] = self.__query_props.min_lat_lon[1]
@@ -49,7 +50,7 @@ class GmuInsitu(QueryDailyDataAbsract):
         result = []
         for each_chunk in GeneralUtils.chunk_list(platform_id_chunk, self.__gmu_page_size):
             platforms = ','.join([str(k) for k in each_chunk])
-            get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={platforms}&sd={self.__query_date}&resolution_type=hourly'
+            get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={platforms}&sd={self.__query_date}&provider={self.__query_props.provider}'
             LOGGER.debug(f'loading data for {get_data_url}')
             insitu_data = requests.get(get_data_url, verify=self.__ssl_verify)
             insitu_data.raise_for_status()

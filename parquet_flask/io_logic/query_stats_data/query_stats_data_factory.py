@@ -6,5 +6,5 @@ from parquet_flask.utils.factory_abstract import FactoryAbstract
 class QueryStatsDataFactory(FactoryAbstract):
     def get_instance(self, class_type, **kwargs):
         if 'GMU' in class_type:
-            return QueryGmuStatsData(query_props=kwargs['query_props'])
+            return QueryGmuStatsData(query_props=kwargs['query_props'], base_url=kwargs['base_url'])
         return SubCollectionStatistics(query_props=kwargs['query_props'])

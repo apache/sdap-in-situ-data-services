@@ -48,12 +48,13 @@ class AirNowWrapper:
             LOGGER.debug(f'uploaded data for: {raw_json_file}')
         return
 
-    def start(self, year, start_month=1):
-        for i in range(start_month, 12):
-            start_date = f'{year}-{i:02d}-15'
+    def start(self, year, start_month=1, end_month=12):
+        for i in range(start_month, end_month):
+            start_date = f'{year}-{i:02d}-01'
             end_date = f'{year}-{i+1:02d}-01'
             self.execute_month(start_date, end_date)
-        start_date = f'{year}-12-01'
-        end_date = f'{year+1}-01-01'
-        self.execute_month(start_date, end_date)
+        if end_month == 12:
+            start_date = f'{year}-12-01'
+            end_date = f'{year+1}-01-01'
+            self.execute_month(start_date, end_date)
         return

@@ -14,11 +14,13 @@
 # limitations under the License.
 
 import logging
+import os
 from copy import deepcopy
 
 from flask_restx import Resource, Namespace, fields
 from flask import request
 
+from parquet_flask.cdms_lambda_func.cdms_lambda_constants import CdmsLambdaConstants
 from parquet_flask.io_logic.query_stats_data.query_stats_data_factory import QueryStatsDataFactory
 from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.io_logic.sub_collection_statistics import SubCollectionStatistics
@@ -94,7 +96,8 @@ class SubCollectionStatisticsEndpoint(Resource):
             if 'markerPlatform' in request.args:
                 query_props.marker_platform_code = request.args.get('markerPlatform')
             # Get stats
-            sub_collection_stats_api = QueryStatsDataFactory().get_instance(query_props.provider, query_props=query_props)
+            gmu_url = os.environ.get(CdmsLambdaConstants.gmu_url, None)
+            sub_collection_stats_api = QueryStatsDataFactory().get_instance(query_props.provider, query_props=query_props, base_url=gmu_url)
             sub_collection_stats = sub_collection_stats_api.start()
             new_args = deepcopy(dict(request.args))
             if 'markerPlatform' in new_args:
