@@ -7,7 +7,8 @@ from parquet_flask.io_logic.query_daily_data.query_daily_data_factory import Que
 class TestQueryDailyDataFactory(TestCase):
     def test_gmu(self):
         query_props = InsituQueryProps()
-        query_props.provider = 'PurpleAir-GMU-Cal'
+        # query_props.provider = 'PurpleAir-GMU-Cal'
+        query_props.provider = 'PurpleAir-GMU-Intermediate'
         query_props.project = 'air_quality'
         query_props.timestamp = '2023-01-01'
         query_props.min_lat_lon = [-90, -180]

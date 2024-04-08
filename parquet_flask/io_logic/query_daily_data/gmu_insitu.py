@@ -58,7 +58,7 @@ class GmuInsitu(QueryDailyDataAbsract):
             df = pd.DataFrame(insitu_data['observations'])
 
             # Add the 'providers' column
-            df['time'] = pd.to_datetime(df['time'])
+            df['time'] = pd.to_datetime(df['date'])
             result_df = df.groupby(['platform_id', df['time'].dt.date]).mean().reset_index()
             result_df['time'] = result_df['time'].astype('datetime64').dt.strftime('%Y-%m-%dT%H:%M:%SZ')
             result_df['platform'] = result_df['platform_id'].apply(lambda x: {"id": x, "short_name": ''})

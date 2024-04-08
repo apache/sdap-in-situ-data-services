@@ -31,15 +31,17 @@ class QueryGmuInsituData(QueryInsituAbstract):
         insitu_data = requests.get(get_data_url, verify=self.__ssl_verify)
         insitu_data.raise_for_status()
         insitu_data = json.loads(insitu_data.content.decode('utf-8'))
-        df = pd.DataFrame(insitu_data['observations'])
+        result_df = pd.DataFrame(insitu_data['observations'])
         # Add the 'providers' column
-        df['time'] = pd.to_datetime(df['time'])
-        result_df = df.groupby(['platform_id', df['time'].dt.date]).mean().reset_index()
-        result_df['time'] = result_df['time'].astype('datetime64').dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+        result_df['time'] = pd.to_datetime(result_df['date'])
+        # df['time'] = pd.to_datetime(df['time'])
+        # result_df = df.groupby(['platform_id', df['time'].dt.date]).mean().reset_index()
+        result_df['time'] = result_df['time'].dt.strftime('%Y-%m-%dT%H:%M:%SZ')
         result_df['platform'] = result_df['platform_id'].apply(lambda x: {"id": x, "short_name": ''})
         result_df['provider'] = insitu_data['provider']
         result_df['project'] = insitu_data['project']
         result_df.drop('platform_id', axis=1, inplace=True)
+        result_df.pop('date')
         result.extend(result_df.to_dict(orient='records'))
         return result
 
