@@ -8,6 +8,7 @@ from parquet_flask.io_logic.query_daily_data.insitu_query_props import InsituQue
 from parquet_flask.io_logic.query_stats_data.query_stats_data_abstract import QueryStatsDataAbsract
 from parquet_flask.io_logic.query_v2 import QueryProps
 from parquet_flask.utils.general_utils import GeneralUtils
+from parquet_flask.utils.time_utils import TimeUtils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,6 +25,11 @@ class QueryGmuStatsData(QueryStatsDataAbsract):
         raise NotImplementedError(f'not necessary to call this method')
 
     def start(self):
+        if self._query_props.min_datetime is None:
+            current_year = TimeUtils.get_current_time_unix() - (31557600000 / 4)
+            self._query_props.min_datetime = TimeUtils.get_time_str(current_year, in_ms=True)
+        if self._query_props.max_datetime is None:
+            self._query_props.max_datetime = TimeUtils.get_time_str(TimeUtils.get_current_time_unix(), in_ms=True)
         # https://insitu-api.stcenter.net/statistics?provider=PurpleAir-GMU-Raw&startTime=2022-07-01T00:00:00Z&endTime=2022-07-02T00:00:00Z
         query_params = {
             'provider': self._query_props.provider,
