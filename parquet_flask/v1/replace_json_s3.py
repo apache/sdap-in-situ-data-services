@@ -67,6 +67,7 @@ class IngestParquet(Resource):
         # props = IngestAwsJsonProps()
         config = Config()
         props = IngestProps()
+        props.chunk_size = 10**4
         props.es_url = config.get_value(Config.es_url)
         props.es_port = int(config.get_value(Config.es_port, '443'))
         props.pub_sub_topic = config.get_value(Config.pub_sub_topic, None)

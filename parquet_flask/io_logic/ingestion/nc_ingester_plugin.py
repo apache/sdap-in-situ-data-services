@@ -46,6 +46,7 @@ class NcIngesterPlugin(AwsFileIngesterPluginAbstract):
             LOGGER.debug(f'ingesting file: {self._saved_file_name}')
             start_time = TimeUtils.get_current_time_unix()
 
+            total_num_records = []
             with xr.open_dataset(self._saved_file_name) as x_ds:
                 platforms = x_ds[self._props.platform_id_key].values
                 LOGGER.debug(f'total platforms: {len(platforms)}')
@@ -69,6 +70,7 @@ class NcIngesterPlugin(AwsFileIngesterPluginAbstract):
                     num_records = IngestNewJsonFile(self._props.is_replacing).ingest_df(df, self._props.uuid,
                                                                                          self._props.provider,
                                                                                          self._props.project)
+                    total_num_records.append(num_records)
             end_time = TimeUtils.get_current_time_unix()
             LOGGER.debug(f'uploading to metadata table')
             self._generate_db_record(start_time, end_time, num_records)
