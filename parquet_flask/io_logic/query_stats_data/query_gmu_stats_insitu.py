@@ -34,11 +34,18 @@ class QueryGmuStatsData(QueryStatsDataAbsract):
         LOGGER.debug(f'loading stats for {get_platforms_url}')
         statistics = requests.get(get_platforms_url, verify=self.__ssl_verify)
         statistics.raise_for_status()
+        statistics = statistics.json()
+        for each_platform_stats in statistics['projects'][0]['platforms']:
+            each_platform_stats['lat'] = each_platform_stats['latitude']
+            each_platform_stats['lon'] = each_platform_stats['longitude']
+            each_platform_stats.pop('latitude')
+            each_platform_stats.pop('longitude')
+            each_platform_stats['platform'] = str(each_platform_stats['platform'])
         adding_providers = {
             'providers': [
                 {
                     'provider': self._query_props.provider,
-                    **statistics.json()
+                    **statistics
                 }
             ]
         }
