@@ -114,7 +114,7 @@ class IngestParquet(Resource):
             LOGGER.debug(f'<delay_check> query_data_doms_custom_pagination calling QueryV4: {request.args}')
             query_props = QueryProps().from_json(payload)
             gmu_url = os.environ.get(CdmsLambdaConstants.gmu_url, None)
-            query = QueryInsituDataFactory().get_instance(query_props.provider, query_props=query_props, base_url=gmu_url)
+            query = QueryInsituDataFactory().get_instance(query_props.provider[0], query_props=query_props, base_url=gmu_url)
             # with timeout(seconds=20):
             #     result_set = query.search()
             result_set = query.search()
