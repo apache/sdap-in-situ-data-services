@@ -34,4 +34,12 @@ class QueryGmuStatsData(QueryStatsDataAbsract):
         LOGGER.debug(f'loading stats for {get_platforms_url}')
         statistics = requests.get(get_platforms_url, verify=self.__ssl_verify)
         statistics.raise_for_status()
-        return statistics.json()
+        adding_providers = {
+            'providers': [
+                {
+                    'provider': self._query_props.provider,
+                    **statistics.json()
+                }
+            ]
+        }
+        return adding_providers
