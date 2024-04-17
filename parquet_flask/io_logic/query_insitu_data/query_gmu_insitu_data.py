@@ -26,7 +26,8 @@ class QueryGmuInsituData(QueryInsituAbstract):
 
     def __get_one_page(self):
         result = []
-        get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={",".join(self._query_props.platform_id)}&sd={self._query_props.min_datetime}&ed={self._query_props.max_datetime}&provider={self._query_props.provider}'
+        provider_name = self._query_props.provider[0] if isinstance(self._query_props.provider, list) else self._query_props.provider
+        get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={",".join(self._query_props.platform_id)}&sd={self._query_props.min_datetime}&ed={self._query_props.max_datetime}&provider={provider_name}'
         LOGGER.debug(f'loading data for {get_data_url}')
         insitu_data = requests.get(get_data_url, verify=self.__ssl_verify)
         insitu_data.raise_for_status()
