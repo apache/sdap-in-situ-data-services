@@ -30,7 +30,8 @@ class AirNowWrapper:
         MergeData(tmp_dir_name, concat_dir).start()
         LOGGER.debug(f'merged data for: {start_month}')
 
-        ParquetJsonFormatter(self.__provider, self.__project).start(os.path.join(concat_dir, 'daily.csv'))
+        # TODO stop converting to JSON. finish csv_ingester_plugin to ingest csv directly
+        # ParquetJsonFormatter(self.__provider, self.__project).start(os.path.join(concat_dir, 'daily.csv'))
         LOGGER.debug(f'converted daily data for: {start_month}')
         daily_json_file = os.path.join(concat_dir, f'{start_month}_daily.json.gz')
         daily_json_file = FileUtils.gzip_file_unix_os(os.path.join(concat_dir, 'daily.csv_0.json'), output_file_path=daily_json_file, overwrite=True)

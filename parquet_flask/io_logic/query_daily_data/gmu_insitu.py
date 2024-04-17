@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import timedelta
 
 import pandas as pd
 import requests
@@ -7,6 +8,7 @@ import requests
 from parquet_flask.io_logic.query_daily_data.insitu_query_props import InsituQueryProps
 from parquet_flask.io_logic.query_daily_data.query_daily_data_abstract import QueryDailyDataAbsract
 from parquet_flask.utils.general_utils import GeneralUtils
+from parquet_flask.utils.time_utils import TimeUtils
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,6 +17,7 @@ class GmuInsitu(QueryDailyDataAbsract):
     def __init__(self, base_url):
         self.__platform_ids = []
         self.__query_date = None
+        self.__query_date_end = None
         self.__gmu_base_url = base_url
         self.__gmu_base_url = self.__gmu_base_url if self.__gmu_base_url.endswith('/') else f'{self.__gmu_base_url}/'
         self.__ssl_verify = False
@@ -50,13 +53,15 @@ class GmuInsitu(QueryDailyDataAbsract):
         result = []
         for each_chunk in GeneralUtils.chunk_list(platform_id_chunk, self.__gmu_page_size):
             platforms = ','.join([str(k) for k in each_chunk])
-            get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={platforms}&sd={self.__query_date}&ed={self.__query_date}&provider={self.__query_props.provider}'
+            get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={platforms}&sd={self.__query_date}&ed={self.__query_date_end}&provider={self.__query_props.provider}'
             LOGGER.debug(f'loading data for {get_data_url}')
+            # print(get_data_url)
             insitu_data = requests.get(get_data_url, verify=self.__ssl_verify)
             insitu_data.raise_for_status()
             insitu_data = json.loads(insitu_data.content.decode('utf-8'))
             df = pd.DataFrame(insitu_data['observations'])
-
+            if df.shape[0] < 1:
+                continue
             # Add the 'providers' column
             df['time'] = pd.to_datetime(df['date'])
             result_df = df.groupby(['platform_id', df['time'].dt.date]).mean().reset_index()
@@ -72,7 +77,9 @@ class GmuInsitu(QueryDailyDataAbsract):
         if any([k is None for k in [query_props.timestamp, query_props.project, query_props.provider]]):
             raise ValueError(f'missing timestamp or project or provider')
         self.__query_props = query_props
-        self.__query_date = query_props.timestamp[0:10]  # TODO this is assuming timestamp is in correct format
+        self.__query_date = query_props.timestamp  # [0:10]  # TODO this is assuming timestamp is in correct format
+        self.__query_date_end = TimeUtils.get_datetime_obj(self.__query_date) + timedelta(days=1)
+        self.__query_date_end = TimeUtils.get_time_str( self.__query_date_end.timestamp(), in_ms=False)
         self.load_platform_ids()
 
         start_index = int(query_props.marker[0]) if len(query_props.marker) > 0 else 0

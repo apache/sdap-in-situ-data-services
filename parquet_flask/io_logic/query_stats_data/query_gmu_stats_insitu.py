@@ -25,16 +25,9 @@ class QueryGmuStatsData(QueryStatsDataAbsract):
         raise NotImplementedError(f'not necessary to call this method')
 
     def start(self):
-        if self._query_props.min_datetime is None:
-            current_year = TimeUtils.get_current_time_unix() - (31557600000 / 4)
-            self._query_props.min_datetime = TimeUtils.get_time_str(current_year, in_ms=True)
-        if self._query_props.max_datetime is None:
-            self._query_props.max_datetime = TimeUtils.get_time_str(TimeUtils.get_current_time_unix(), in_ms=True)
         # https://insitu-api.stcenter.net/statistics?provider=PurpleAir-GMU-Raw&startTime=2022-07-01T00:00:00Z&endTime=2022-07-02T00:00:00Z
         query_params = {
             'provider': self._query_props.provider,
-            'startTime': self._query_props.min_datetime,
-            'endTime': self._query_props.max_datetime,
         }
         query_params = [f'{k}={v}' for k, v in query_params.items()]
         get_platforms_url = f'{self.__gmu_base_url}statistics?{"&".join(query_params)}'

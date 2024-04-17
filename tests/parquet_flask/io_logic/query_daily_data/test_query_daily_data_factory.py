@@ -9,8 +9,10 @@ class TestQueryDailyDataFactory(TestCase):
         query_props = InsituQueryProps()
         # query_props.provider = 'PurpleAir-GMU-Cal'
         query_props.provider = 'PurpleAir-GMU-Intermediate'
+        # query_props.provider = 'PurpleAir-GMU-Raw-Hourly'
         query_props.project = 'air_quality'
-        query_props.timestamp = '2023-01-01'
+        query_props.timestamp = '2023-01-01T00:00:00Z'
+        # query_props.marker = [15000]
         query_props.min_lat_lon = [-90, -180]
         query_props.max_lat_lon = [90, 180]
         # https://ideas-digitaltwin.jpl.nasa.gov/insitu_airnow/1.0/es_insitu_data?itemsPerPage=500&bbox=-180,-90,180,90&provider=PurpleAir-GMU-Intermediate&project=AQIC&timestamp=2023-06-01T00:00:00Z
