@@ -33,6 +33,8 @@ class QueryGmuInsituData(QueryInsituAbstract):
         insitu_data.raise_for_status()
         insitu_data = json.loads(insitu_data.content.decode('utf-8'))
         result_df = pd.DataFrame(insitu_data['observations'])
+        if result_df.shape[0] < 1:
+            return result
         # Add the 'providers' column
         result_df['time'] = pd.to_datetime(result_df['date'])
         # df['time'] = pd.to_datetime(df['time'])
