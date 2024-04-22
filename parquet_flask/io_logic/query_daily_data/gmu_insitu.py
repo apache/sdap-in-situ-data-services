@@ -66,7 +66,7 @@ class GmuInsitu(QueryDailyDataAbsract):
             df['time'] = pd.to_datetime(df['date'])
             result_df = df.groupby(['platform_id', df['time'].dt.date]).mean().reset_index()
             result_df['time'] = result_df['time'].astype('datetime64').dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-            result_df['platform'] = result_df['platform_id'].apply(lambda x: {"id": x, "short_name": ''})
+            result_df['platform'] = result_df['platform_id'].apply(lambda x: {"id": str(x), "short_name": ''})
             result_df['provider'] = insitu_data['provider']
             result_df['project'] = insitu_data['project']
             result_df.drop('platform_id', axis=1, inplace=True)

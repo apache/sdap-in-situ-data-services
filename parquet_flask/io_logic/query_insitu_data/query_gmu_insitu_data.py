@@ -52,6 +52,9 @@ class QueryGmuInsituData(QueryInsituAbstract):
         # if platforms, call them directly
         self.__get_platforms()
         result = self.__get_one_page()
+        for v in result:
+            v['platform']['id'] = str(v['platform']['id'])
+
         return {
             'total': len(result),
             'results': result,
