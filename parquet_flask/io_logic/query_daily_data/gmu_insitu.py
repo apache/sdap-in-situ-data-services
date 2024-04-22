@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import pandas as pd
 import requests
+from requests import HTTPError
 
 from parquet_flask.io_logic.query_daily_data.insitu_query_props import InsituQueryProps
 from parquet_flask.io_logic.query_daily_data.query_daily_data_abstract import QueryDailyDataAbsract
@@ -44,7 +45,11 @@ class GmuInsitu(QueryDailyDataAbsract):
         get_platforms_url = f'{self.__gmu_base_url}sensor_data?{"&".join(query_params)}'
         LOGGER.debug(f'loading platforms for {get_platforms_url}')
         platforms = requests.get(get_platforms_url, verify=self.__ssl_verify)
-        platforms.raise_for_status()
+        if platforms.status_code >= 400:
+            http_error_msg = ['Requests Error', f'status={platforms.status_code}',
+                              f'message={platforms.content.decode("utf-8")}', get_platforms_url]
+            raise HTTPError('::'.join(http_error_msg), response=self)
+
         self.__platform_ids = sorted([k['platform_id'] for k in platforms.json()])
         # FileUtils.write_json(f'gmu_platforms_{self.__query_date}.json', self.__platform_ids, overwrite=True, prettify=True)
         return self
@@ -57,7 +62,10 @@ class GmuInsitu(QueryDailyDataAbsract):
             LOGGER.debug(f'loading data for {get_data_url}')
             # print(get_data_url)
             insitu_data = requests.get(get_data_url, verify=self.__ssl_verify)
-            insitu_data.raise_for_status()
+            if insitu_data.status_code >= 400:
+                http_error_msg = ['Requests Error', f'status={insitu_data.status_code}',
+                                  f'message={insitu_data.content.decode("utf-8")}', get_data_url]
+                raise HTTPError('::'.join(http_error_msg), response=self)
             insitu_data = json.loads(insitu_data.content.decode('utf-8'))
             df = pd.DataFrame(insitu_data['observations'])
             if df.shape[0] < 1:

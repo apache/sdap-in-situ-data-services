@@ -3,6 +3,7 @@ import logging
 
 import pandas as pd
 import requests
+from requests import HTTPError
 
 from parquet_flask.io_logic.query_insitu_data.query_insitu_abstract import QueryInsituAbstract
 from parquet_flask.io_logic.query_v2 import QueryProps
@@ -30,7 +31,9 @@ class QueryGmuInsituData(QueryInsituAbstract):
         get_data_url = f'{self.__gmu_base_url}activities?sensor_ids={",".join(self._query_props.platform_id)}&sd={self._query_props.min_datetime}&ed={self._query_props.max_datetime}&provider={provider_name}'
         LOGGER.debug(f'loading data for {get_data_url}')
         insitu_data = requests.get(get_data_url, verify=self.__ssl_verify)
-        insitu_data.raise_for_status()
+        if insitu_data.status_code >= 400:
+            http_error_msg = ['Requests Error', f'status={insitu_data.status_code}', f'message={insitu_data.content.decode("utf-8")}', get_data_url]
+            raise HTTPError('::'.join(http_error_msg), response=self)
         insitu_data = json.loads(insitu_data.content.decode('utf-8'))
         result_df = pd.DataFrame(insitu_data['observations'])
         if result_df.shape[0] < 1:

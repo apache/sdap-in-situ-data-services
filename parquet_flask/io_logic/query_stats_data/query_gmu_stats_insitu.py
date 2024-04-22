@@ -3,6 +3,7 @@ import logging
 
 import pandas as pd
 import requests
+from requests import HTTPError
 
 from parquet_flask.io_logic.query_daily_data.insitu_query_props import InsituQueryProps
 from parquet_flask.io_logic.query_stats_data.query_stats_data_abstract import QueryStatsDataAbsract
@@ -33,7 +34,10 @@ class QueryGmuStatsData(QueryStatsDataAbsract):
         get_platforms_url = f'{self.__gmu_base_url}statistics?{"&".join(query_params)}'
         LOGGER.debug(f'loading stats for {get_platforms_url}')
         statistics = requests.get(get_platforms_url, verify=self.__ssl_verify)
-        statistics.raise_for_status()
+        if statistics.status_code >= 400:
+            http_error_msg = ['Requests Error', f'status={statistics.status_code}',
+                              f'message={statistics.content.decode("utf-8")}', get_platforms_url]
+            raise HTTPError('::'.join(http_error_msg), response=self)
         statistics = statistics.json()
         for each_platform_stats in statistics['projects'][0]['platforms']:
             each_platform_stats['lat'] = each_platform_stats['latitude']
