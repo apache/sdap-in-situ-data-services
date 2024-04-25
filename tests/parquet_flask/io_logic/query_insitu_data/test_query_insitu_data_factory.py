@@ -11,7 +11,7 @@ class TestQueryInsituDataFactory(TestCase):
         query_props.provider = 'PurpleAir-GMU-Raw-Hourly'
         query_props.project = 'air_quality'
         query_props.min_datetime = '2023-01-01T00:00:00'
-        query_props.max_datetime = '2023-01-07T23:00:00'
+        query_props.max_datetime = '2023-04-07T23:00:00'
         query_props.platform_id = ['9678']
         stats = QueryInsituDataFactory().get_instance(query_props.provider, query_props=query_props, base_url='https://insitu-api.stcenter.net')
         results = stats.search()

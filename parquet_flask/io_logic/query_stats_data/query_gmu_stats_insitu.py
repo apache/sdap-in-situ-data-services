@@ -39,18 +39,11 @@ class QueryGmuStatsData(QueryStatsDataAbsract):
                               f'message={statistics.content.decode("utf-8")}', get_platforms_url]
             raise HTTPError('::'.join(http_error_msg), response=self)
         statistics = statistics.json()
-        for each_platform_stats in statistics['projects'][0]['platforms']:
-            each_platform_stats['lat'] = each_platform_stats['latitude']
-            each_platform_stats['lon'] = each_platform_stats['longitude']
-            each_platform_stats.pop('latitude')
-            each_platform_stats.pop('longitude')
+        for each_platform_stats in statistics['providers'][0]['projects'][0]['platforms']:
+            # each_platform_stats['lat'] = each_platform_stats['latitude']
+            # each_platform_stats['lon'] = each_platform_stats['longitude']
+            # each_platform_stats.pop('latitude')
+            # each_platform_stats.pop('longitude')
             each_platform_stats['platform'] = str(each_platform_stats['platform'])
-        adding_providers = {
-            'providers': [
-                {
-                    'provider': self._query_props.provider,
-                    **statistics
-                }
-            ]
-        }
-        return adding_providers
+        # adding_providers = statistics
+        return statistics
