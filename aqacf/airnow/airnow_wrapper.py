@@ -50,6 +50,7 @@ class AirNowWrapper:
         return
 
     def start(self, year, start_month=1, end_month=12):
+        raise ValueError('Check Units First')
         for i in range(start_month, end_month):
             start_date = f'{year}-{i:02d}-01'
             end_date = f'{year}-{i+1:02d}-01'
