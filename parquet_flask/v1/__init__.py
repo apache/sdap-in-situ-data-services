@@ -33,6 +33,7 @@ from .query_ingested_file import api as query_ingested_file
 from .query_data_doms_custom_pagination import api as query_data_doms_custom_pagination
 from .federated_collections_crud_endpoint import api as federated_collections
 from .es_ingest_json_s3 import api as es_ingest_json_s3
+from .s3_directory_ingester import api as s3_directory_ingester
 from .query_es_data import api as query_es_data
 from ..io_logic.cdms_constants import CDMSConstants
 
@@ -54,6 +55,7 @@ api = Api(blueprint,
 api.add_namespace(query_es_data)
 api.add_namespace(es_ingest_json_s3)
 api.add_namespace(cdms_schema_api)
+api.add_namespace(s3_directory_ingester)
 api.add_namespace(ingest_nc_s3)
 api.add_namespace(replace_nc_s3)
 api.add_namespace(ingest_parquet_json_s3)
