@@ -46,6 +46,9 @@ class JsonIngesterPlugin(AwsFileIngesterPluginAbstract):
                 input_json = FileUtils.read_json(self._saved_file_name)
 
             total_num_records = []
+            self._props.provider = input_json['provider']
+            self._props.project = input_json['project']
+            LOGGER.debug(f'adding missing {self._props.provider} -- {self._props.project}')
             for i, each_chunk in enumerate(GeneralUtils.chunk_list(input_json[CDMSConstants.observations_key], self._props.chunk_size)):
                 LOGGER.debug(f'processing chunk {i}')
                 df = DataFrame(each_chunk)
