@@ -25,7 +25,7 @@ from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.v1.authenticator_decorator import authenticator_decorator
 from parquet_flask.v1.ingest_aws_json import IngestAwsJsonProps, IngestAwsJson
 
-api = Namespace('ingest_json_s3', description="Ingesting JSON files")
+api = Namespace('ingest_s3_directory', description="Ingesting JSON files")
 LOGGER = logging.getLogger(__name__)
 
 query_model = api.model('ingest_s3_dir', {
