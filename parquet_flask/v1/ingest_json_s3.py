@@ -23,7 +23,6 @@ from parquet_flask.io_logic.ingestion.ingester_core import IngesterCore
 from parquet_flask.utils.config import Config
 from parquet_flask.utils.general_utils import GeneralUtils
 from parquet_flask.v1.authenticator_decorator import authenticator_decorator
-from parquet_flask.v1.ingest_aws_json import IngestAwsJsonProps, IngestAwsJson
 
 api = Namespace('ingest_json_s3', description="Ingesting JSON files")
 LOGGER = logging.getLogger(__name__)
@@ -63,7 +62,6 @@ class IngestParquet(Resource):
         is_valid, json_error = GeneralUtils.is_json_valid(payload, _QUERY_SCHEMA)
         if not is_valid:
             return {'message': 'invalid request body', 'details': str(json_error)}, 400
-        # props = IngestAwsJsonProps()
         config = Config()
         props = IngestProps()
         props.chunk_size = 10**4 if 'chunk_size' not in payload else payload['chunk_size']
@@ -80,4 +78,3 @@ class IngestParquet(Resource):
             return props.result_json, props.result_status_code
         except Exception as e:
             return {'message': 'failed to ingest to parquet', 'details': str(e)}, 500
-        # return IngestAwsJson(props).ingest()
