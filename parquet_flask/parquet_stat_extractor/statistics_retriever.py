@@ -226,9 +226,12 @@ class StatisticsRetriever:
         self.__observation_count = {}
         for each_obs_key in self.__observation_keys:
             if each_obs_key in self.__input_dataset.columns:
-                stats = self.__input_dataset.select(
+                stats = self.__input_dataset.filter(
+                    pyspark_functions.col(each_obs_key).isNotNull() & ~pyspark_functions.isnan(each_obs_key)
+                    # Remove NaN values
+                ).select(
                     pyspark_functions.min(each_obs_key),
-                    pyspark_functions.max(each_obs_key),
+                    pyspark_functions.max(each_obs_key)
                 ).collect()
                 stats = stats[0].asDict()
                 self.__observation_min_max[f'min_{each_obs_key}'] = stats[f'min({each_obs_key})']
