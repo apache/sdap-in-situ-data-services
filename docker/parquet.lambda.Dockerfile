@@ -41,6 +41,8 @@ COPY etc/lambda-spark/spark-class $SPARK_HOME/bin/spark-class
 RUN chmod 777 $SPARK_HOME/bin/spark-class
 COPY etc/lambda-spark/spark-defaults.conf $SPARK_HOME/conf/spark-defaults.conf
 
+RUN mkdir -p /dev/fd/62
+ENV PYSPARK_SUBMIT_ARGS="--conf spark.driver.extraJavaOptions=-Dlog4j2.formatMsgNoLookups=true pyspark-shell"
 
 RUN mkdir /usr/app
 WORKDIR /usr/app

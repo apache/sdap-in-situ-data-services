@@ -27,5 +27,6 @@ class LocalSparkSession(metaclass=Singleton):
 
             self.__spark_session = SparkSession.builder \
                 .appName('TestAppName') \
+                .master("local[*]") \
                 .getOrCreate()
         return self.__spark_session
