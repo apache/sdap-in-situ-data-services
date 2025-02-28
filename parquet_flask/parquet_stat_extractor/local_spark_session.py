@@ -24,9 +24,13 @@ class LocalSparkSession(metaclass=Singleton):
 
     def get_spark_session(self) -> SparkSession:
         if self.__spark_session is None:
-
-            self.__spark_session = SparkSession.builder \
-                .appName('TestAppName') \
-                .master("local[*]") \
-                .getOrCreate()
+            try:
+                self.__spark_session = SparkSession.builder \
+                    .appName('TestAppName') \
+                    .master("local") \
+                    .config("spark.driver.extraJavaOptions", "-Dlog4j2.debug") \
+                    .getOrCreate()
+            except Exception as e:
+                print("Spark initialization failed:", str(e))
+                raise e
         return self.__spark_session
