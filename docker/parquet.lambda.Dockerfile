@@ -13,20 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM public.ecr.aws/lambda/python:3.7
+FROM public.ecr.aws/lambda/python:3.8
 
 # Reference: https://aws.plainenglish.io/spark-on-aws-lambda-c65877c0ac96
 #USER root
 #RUN apt-get update -y && apt-get install vim -y
 
-RUN yum -y install java-1.8.0-openjdk-1.8.0.382.b05-1.79.amzn1 wget curl
-RUN python3 -m pip install pyspark==3.2.3
+RUN yum -y install java-11-amazon-corretto wget curl
+RUN python3 -m pip install pyspark==3.5.5
 #ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto/jre
-ENV JAVA_HOME="/usr/lib/jvm/jre-1.8.0-openjdk.x86_64"
+ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
 ENV PATH=${PATH}:${JAVA_HOME}/bin
-ENV SPARK_HOME="/var/lang/lib/python3.7/site-packages/pyspark"
+ENV SPARK_HOME="/var/lang/lib/python3.8/site-packages/pyspark"
 ENV PATH=$PATH:$SPARK_HOME/bin
-ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9-src.zip:$PYTHONPATH
+ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$PYTHONPATH
 ENV PATH=$SPARK_HOME/python:$PATH
 RUN mkdir $SPARK_HOME/conf
 RUN echo "SPARK_LOCAL_IP=127.0.0.1" > $SPARK_HOME/conf/spark-env.sh
