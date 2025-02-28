@@ -19,7 +19,7 @@ FROM public.ecr.aws/lambda/python:3.7
 #USER root
 #RUN apt-get update -y && apt-get install vim -y
 
-RUN yum -y install java-1.8.0-openjdk wget curl
+RUN yum -y install java-1.8.0-openjdk-1.8.0.382.b05-1.79.amzn1 wget curl
 RUN python3 -m pip install pyspark==3.2.3
 #ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto/jre
 ENV JAVA_HOME="/usr/lib/jvm/jre-1.8.0-openjdk.x86_64"
